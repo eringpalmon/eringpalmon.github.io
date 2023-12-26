@@ -21,7 +21,11 @@ const config = {
     // Load your assets here (images, spritesheets, etc.)
     this.load.image('bakery', 'images/bakery.png');
     this.load.image('house', 'images/House_01.png');
-    // this.load.image('sprite', 'images/bakery.png');
+      // Load the sprite sheet containing the walking animation frames
+      this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
+        frameWidth: 192,
+        frameHeight: 352,
+    });
   }
   
   function create() {
@@ -117,25 +121,26 @@ const config = {
     counterText.setScrollFactor(0); // Keep the text fixed on the screen
 
 
-
-    //  // Define what happens when the sprite is clicked
-    // bakery.on('pointerdown', function() {
-    //      // Increment the click count
-    //     totalCounter += counterValue;
-     
-    //     // Update the counter text with the new click count
-    //     counterText.setText('Clicks: ' + totalCounter);
-
-    //     // Handle the click event (e.g., add functionality)
-    //     console.log('Sprite clicked!');
-    // });
+    /////WALKING ANIMATION
+      // Create the walking animation
+      this.anims.create({
+        key: 'walk',
+        frames: this.anims.generateFrameNumbers('walkingCharacter', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+        }),
+        frameRate: 5,
+        repeat: -1 // Set to -1 for infinite looping
+    });
 
 
     //////BAKERY ON CLICK
     bakery.on('pointerdown', function() {
         if (!walkingSprite) {
             const randomHouse = Phaser.Math.RND.pick(houses);
-            walkingSprite = this.add.sprite(bakery.x, bakery.y, 'sprite');
+            walkingSprite = this.add.sprite(bakery.x, bakery.y, 'walkingCharacter');
+            walkingSprite.play('walk');
+
             const houseX = randomHouse.x;
             const houseY = randomHouse.y;
     
