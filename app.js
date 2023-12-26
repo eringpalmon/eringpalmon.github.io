@@ -23,8 +23,8 @@ const config = {
     this.load.image('house', 'images/House_01.png');
       // Load the sprite sheet containing the walking animation frames
       this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
-        frameWidth: 192,
-        frameHeight: 352,
+        frameWidth: 32,
+        frameHeight: 32,
     });
   }
   
@@ -128,8 +128,10 @@ const config = {
         frames: this.anims.generateFrameNumbers('walkingCharacter', {
             /* Define the frame range for the walking animation */
             /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:21, 
+            end: 25
         }),
-        frameRate: 5,
+        frameRate: 10,
         repeat: -1 // Set to -1 for infinite looping
     });
 
@@ -139,7 +141,7 @@ const config = {
         if (!walkingSprite) {
             const randomHouse = Phaser.Math.RND.pick(houses);
             walkingSprite = this.add.sprite(bakery.x, bakery.y, 'walkingCharacter');
-            walkingSprite.play('walk');
+            walkingSprite.anims.play('walk');
 
             const houseX = randomHouse.x;
             const houseY = randomHouse.y;
