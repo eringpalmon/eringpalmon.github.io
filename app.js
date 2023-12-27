@@ -19,6 +19,7 @@ const config = {
 
   let sparkle;
   let walkingSprite;
+  let walkingSprites = [];
 
   
   function preload() {
@@ -193,54 +194,53 @@ const config = {
 
     //////COURIER ON CLICK
     courier.on('pointerdown', function() {
-        if(craftedCookies > 0){
+        if (craftedCookies > 0) {
             craftedCookies -= counterValue;
             craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
-
+    
             sparkle = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
             sparkle.setScale(courier.scaleX, courier.scaleY);
             sparkle.anims.play('sparkleAnim');
     
-            // if (!walkingSprite) {
-                const randomHouse = Phaser.Math.RND.pick(houses);
-                walkingSprite = this.add.sprite(courier.x, courier.y, 'walkingCharacter');
-                walkingSprite.anims.play('walk');
+            const randomHouse = Phaser.Math.RND.pick(houses);
+            let newWalkingSprite = this.add.sprite(courier.x, courier.y + 60, 'walkingCharacter');
+            newWalkingSprite.anims.play('walk');
+            walkingSprites.push(newWalkingSprite);
     
-                const houseX = randomHouse.x;
-                const houseY = randomHouse.y;
-        
-                this.tweens.add({
-                    targets: walkingSprite,
-                    x: houseX,
-                    y: houseY,
-                    duration: 1000, // Duration for the sprite to reach the house
-                    onComplete: () => {
-                        walkingSprite.setVisible(false);
+            const houseX = randomHouse.x;
+            const houseY = randomHouse.y;
     
-                        treatTokens += counterValue;
-                        treatTokensText.setText('Treat Tokens: ' + treatTokens);
+            this.tweens.add({
+                targets: newWalkingSprite,
+                x: houseX,
+                y: houseY,
+                duration: 1000, // Duration for the sprite to reach the house
+                onComplete: () => {
+                    newWalkingSprite.setVisible(false);
     
-                        // Using setTimeout with arrow function to maintain 'this' context
-                        setTimeout(() => {
-                            walkingSprite.setVisible(true);
-                            walkingSprite.setPosition(houseX, houseY);
-        
-                            this.tweens.add({
-                                targets: walkingSprite,
-                                x: courier.x,
-                                y: courier.y,
-                                duration: 1000, // Duration for the sprite to return to the courier
-                                onComplete: () => {
-                                    walkingSprite.setVisible(false);
-                                    walkingSprite = null;
-                                },
-                                onCompleteScope: this
-                            });
-                        }, 500); // Delay before returning to the courier in milliseconds
-                    },
-                    onCompleteScope: this
-                });
-            // }
+                    treatTokens += counterValue;
+                    treatTokensText.setText('Treat Tokens: ' + treatTokens);
+    
+                    setTimeout(() => {
+                        newWalkingSprite.setVisible(true);
+                        newWalkingSprite.setPosition(houseX, houseY);
+    
+                        this.tweens.add({
+                            targets: newWalkingSprite,
+                            x: courier.x,
+                            y: courier.y,
+                            duration: 1000, // Duration for the sprite to return to the courier
+                            onComplete: () => {
+                                newWalkingSprite.setVisible(false);
+                                walkingSprites = walkingSprites.filter(sprite => sprite !== newWalkingSprite);
+                                newWalkingSprite.destroy();
+                            },
+                            onCompleteScope: this
+                        });
+                    }, 500); // Delay before returning to the courier in milliseconds
+                },
+                onCompleteScope: this
+            });
         }
     }, this);
     
