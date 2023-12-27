@@ -21,6 +21,8 @@ const config = {
   let walkingSprite;
   let walkingSprites = [];
 
+  let speedMultiplier = 1.0;
+
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
@@ -198,23 +200,55 @@ const config = {
             craftedCookies -= counterValue;
             craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
     
+            const randomHouse = Phaser.Math.RND.pick(houses);
+            const houseX = randomHouse.x;
+            const houseY = randomHouse.y + 20;
+          
+
+            //SPARKLE
             sparkle = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
             sparkle.setScale(courier.scaleX, courier.scaleY);
             sparkle.anims.play('sparkleAnim');
-    
-            const randomHouse = Phaser.Math.RND.pick(houses);
-            let newWalkingSprite = this.add.sprite(courier.x, courier.y + 60, 'walkingCharacter');
+            
+           
+            let isAboveCourier = true;
+            if(houseY > courier.y){
+                isAboveCourier = false;
+            }
+            
+
+            /////WALKING SPRITE
+            let newWalkingSprite = this.add.sprite(courier.x, courier.y + 70, 'walkingCharacter');
+            
+            newWalkingSprite.setDepth(3); // Set walkingSprite's depth
+            courier.setDepth(3); // Set courier's depth
+            bakery.setDepth(1);
+
+            newWalkingSprite.depth = isAboveCourier ? courier.depth - 1 : courier.depth + 1;
+
             newWalkingSprite.anims.play('walk');
             walkingSprites.push(newWalkingSprite);
-    
-            const houseX = randomHouse.x;
-            const houseY = randomHouse.y;
-    
+
+
+
+            ///////WALKING SPEED
+            const distance = Phaser.Math.Distance.Between(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY);
+
+            const referenceDistance = 1000; // You can adjust this based on your preferences
+            const referenceDuration = 1000; // The reference duration in milliseconds
+
+            // Calculate speed multiplier based on the distance relative to the reference distance
+            walkingDuration = Phaser.Math.Interpolation.Linear([referenceDistance, referenceDuration], distance);
+            // speedMultiplier = walkingDuration / referenceDuration;
+
+            console.log(walkingDuration, distance);
+
+            ////WALKING BACK
             this.tweens.add({
                 targets: newWalkingSprite,
                 x: houseX,
                 y: houseY,
-                duration: 1000, // Duration for the sprite to reach the house
+                duration: walkingDuration, // Duration for the sprite to reach the house
                 onComplete: () => {
                     newWalkingSprite.setVisible(false);
     
@@ -228,8 +262,8 @@ const config = {
                         this.tweens.add({
                             targets: newWalkingSprite,
                             x: courier.x,
-                            y: courier.y,
-                            duration: 1000, // Duration for the sprite to return to the courier
+                            y: courier.y + 70,
+                            duration: walkingDuration, // Duration for the sprite to return to the courier
                             onComplete: () => {
                                 newWalkingSprite.setVisible(false);
                                 walkingSprites = walkingSprites.filter(sprite => sprite !== newWalkingSprite);
