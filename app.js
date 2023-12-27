@@ -11,18 +11,27 @@ const config = {
   
   const game = new Phaser.Game(config);
 
-  let counterText;
-  let totalCounter = 0;
+  let treatTokensText;
+  let treatTokens = 0;
+  let craftedCookiesText;
+  let craftedCookies = 0;
   let counterValue = 1;
+
+  let sparkle;
   let walkingSprite;
 
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
     this.load.image('bakery', 'images/bakery.png');
+    this.load.image('courier', 'images/courier.png');
     this.load.image('house', 'images/House_01.png');
       // Load the sprite sheet containing the walking animation frames
       this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
+        frameWidth: 32,
+        frameHeight: 32,
+    });
+    this.load.spritesheet('sparkle', 'images/sparkle.png', {
         frameWidth: 32,
         frameHeight: 32,
     });
@@ -87,12 +96,20 @@ const config = {
 
     ///////ADD BAKERY
     // Create a sprite at the calculated center, set it interactive for clicking, and set its display size
-    const bakery = this.add.sprite(centerX, centerY, 'bakery').setInteractive();
+    const bakery = this.add.sprite(centerX - 53, centerY, 'bakery').setInteractive();
 
     // Set a fixed size for the sprite relative to the game's dimensions
-    const scaleX = fixedWidth / bakery.width;
-    const scaleY = fixedHeight / bakery.height;
-    bakery.setScale(scaleX, scaleY);
+    const bScaleX = fixedWidth / bakery.width;
+    const bScaleY = fixedHeight / bakery.height;
+    bakery.setScale(bScaleX, bScaleY);
+
+    ///////ADD COURIER
+     const courier = this.add.sprite(centerX + 53, centerY, 'courier').setInteractive();
+
+     // Set a fixed size for the sprite relative to the game's dimensions
+     const cScaleX = fixedWidth / courier.width;
+     const cScaleY = fixedHeight / courier.height;
+     courier.setScale(cScaleX, cScaleY);
 
 
     ///////ADD HOUSE
@@ -106,22 +123,37 @@ const config = {
 
     //////MENU
       // Create overlay text at the center of the screen
-      counterText = this.add.text(
+      treatTokensText = this.add.text(
         game.config.width - (game.config.width /5),
         game.config.height /5,
-        'Clicks: 0',
+        'Treat Tokens: 0',
         {
             fontSize: '16px',
             fill: '#ffffff',
             align: 'right'
         }
     );
-    counterText.setOrigin(1, 0); // Set text origin to center
+    treatTokensText.setOrigin(1, 0); // Set text origin to center
 
-    counterText.setScrollFactor(0); // Keep the text fixed on the screen
+    treatTokensText.setScrollFactor(0); // Keep the text fixed on the screen
+
+       // Create overlay text at the center of the screen
+       craftedCookiesText = this.add.text(
+        game.config.width - (game.config.width /5),
+        game.config.height /4,
+        'Crafted Cookies: 0',
+        {
+            fontSize: '16px',
+            fill: '#ffffff',
+            align: 'right'
+        }
+    );
+    craftedCookiesText.setOrigin(1, 0); // Set text origin to center
+
+    craftedCookiesText.setScrollFactor(0); // Keep the text fixed on the screen
 
 
-    /////WALKING ANIMATION
+    /////ANIMATIONS
       // Create the walking animation
       this.anims.create({
         key: 'walk',
@@ -135,47 +167,80 @@ const config = {
         repeat: -1 // Set to -1 for infinite looping
     });
 
+    this.anims.create({
+        key: 'sparkleAnim',
+        frames: this.anims.generateFrameNumbers('sparkle', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:0, 
+            end: 5
+        }),
+        frameRate: 5,
+        repeat: 0 // Set to -1 for infinite looping
+    });
+
 
     //////BAKERY ON CLICK
     bakery.on('pointerdown', function() {
-        if (!walkingSprite) {
-            const randomHouse = Phaser.Math.RND.pick(houses);
-            walkingSprite = this.add.sprite(bakery.x, bakery.y, 'walkingCharacter');
-            walkingSprite.anims.play('walk');
+        craftedCookies += counterValue;
+        craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
 
-            const houseX = randomHouse.x;
-            const houseY = randomHouse.y;
+        sparkle = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+        sparkle.setScale(bakery.scaleX, bakery.scaleY);
+        sparkle.anims.play('sparkleAnim');
+
+    }, this);
+
+    //////COURIER ON CLICK
+    courier.on('pointerdown', function() {
+        if(craftedCookies > 0){
+            craftedCookies -= counterValue;
+            craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
+
+            sparkle = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
+            sparkle.setScale(courier.scaleX, courier.scaleY);
+            sparkle.anims.play('sparkleAnim');
     
-            this.tweens.add({
-                targets: walkingSprite,
-                x: houseX,
-                y: houseY,
-                duration: 1000, // Duration for the sprite to reach the house
-                onComplete: () => {
-                    walkingSprite.setVisible(false);
-                    totalCounter += counterValue;
-                    counterText.setText('Clicks: ' + totalCounter);
+            // if (!walkingSprite) {
+                const randomHouse = Phaser.Math.RND.pick(houses);
+                walkingSprite = this.add.sprite(courier.x, courier.y, 'walkingCharacter');
+                walkingSprite.anims.play('walk');
     
-                    // Using setTimeout with arrow function to maintain 'this' context
-                    setTimeout(() => {
-                        walkingSprite.setVisible(true);
-                        walkingSprite.setPosition(houseX, houseY);
+                const houseX = randomHouse.x;
+                const houseY = randomHouse.y;
+        
+                this.tweens.add({
+                    targets: walkingSprite,
+                    x: houseX,
+                    y: houseY,
+                    duration: 1000, // Duration for the sprite to reach the house
+                    onComplete: () => {
+                        walkingSprite.setVisible(false);
     
-                        this.tweens.add({
-                            targets: walkingSprite,
-                            x: bakery.x,
-                            y: bakery.y,
-                            duration: 1000, // Duration for the sprite to return to the bakery
-                            onComplete: () => {
-                                walkingSprite.setVisible(false);
-                                walkingSprite = null;
-                            },
-                            onCompleteScope: this
-                        });
-                    }, 500); // Delay before returning to the bakery in milliseconds
-                },
-                onCompleteScope: this
-            });
+                        treatTokens += counterValue;
+                        treatTokensText.setText('Treat Tokens: ' + treatTokens);
+    
+                        // Using setTimeout with arrow function to maintain 'this' context
+                        setTimeout(() => {
+                            walkingSprite.setVisible(true);
+                            walkingSprite.setPosition(houseX, houseY);
+        
+                            this.tweens.add({
+                                targets: walkingSprite,
+                                x: courier.x,
+                                y: courier.y,
+                                duration: 1000, // Duration for the sprite to return to the courier
+                                onComplete: () => {
+                                    walkingSprite.setVisible(false);
+                                    walkingSprite = null;
+                                },
+                                onCompleteScope: this
+                            });
+                        }, 500); // Delay before returning to the courier in milliseconds
+                    },
+                    onCompleteScope: this
+                });
+            // }
         }
     }, this);
     
