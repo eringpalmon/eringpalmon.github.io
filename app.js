@@ -226,6 +226,7 @@ const config = {
 
             newWalkingSprite.depth = isAboveCourier ? courier.depth - 1 : courier.depth + 1;
 
+            
             newWalkingSprite.anims.play('walk');
             walkingSprites.push(newWalkingSprite);
 
