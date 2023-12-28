@@ -34,8 +34,8 @@ const config = {
 
     // Load the sprite sheet containing the walking animation frames
     this.load.spritesheet('walkingCharacter', 'images/cat-anim.png', {
-        frameWidth: 64,
-        frameHeight: 64,
+        frameWidth: 320,
+        frameHeight: 320,
     });
     this.load.spritesheet('sparkle', 'images/sparkle.png', {
         frameWidth: 32,
@@ -398,7 +398,10 @@ const config = {
 
             /////WALKING SPRITE
             let newWalkingSprite = this.add.sprite(courier.x, courier.y + 70, 'walkingCharacter');
-            
+
+            ////WALKING SPRITE SCALE
+            newWalkingSprite.setScale(0.2, 0.2)
+
             ////WALKING SPRITE DEPTH
             newWalkingSprite.setDepth(4); // Set walkingSprite's depth
             courier.setDepth(4); // Set courier's depth
