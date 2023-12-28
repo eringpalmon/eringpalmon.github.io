@@ -45,6 +45,10 @@ const config = {
         frameWidth: 320,
         frameHeight: 320,
     });
+    this.load.spritesheet('courierAnim', 'images/courier-anim.png', {
+        frameWidth: 320,
+        frameHeight: 320,
+    });
     this.load.spritesheet('heartAnim', 'images/heart-anim.png', {
         frameWidth: 64,
         frameHeight: 64,
@@ -120,7 +124,7 @@ const config = {
 
     ///////ADD BAKERY
     // Create a sprite at the calculated center, set it interactive for clicking, and set its display size
-    const bakery = this.add.sprite(centerX - 53, centerY, 'bakery').setInteractive();
+    const bakery = this.add.sprite(centerX - 55, centerY, 'bakery').setInteractive();
 
     // Set a fixed size for the sprite relative to the game's dimensions
     const bScaleX = fixedWidth / bakery.width;
@@ -128,12 +132,12 @@ const config = {
     bakery.setScale(bScaleX, bScaleY);
 
     ///////ADD COURIER
-     const courier = this.add.sprite(centerX + 53, centerY, 'courier').setInteractive();
+     const courier = this.add.sprite(centerX + 55, centerY+25, 'courier').setInteractive();
 
      // Set a fixed size for the sprite relative to the game's dimensions
      const cScaleX = fixedWidth / courier.width;
      const cScaleY = fixedHeight / courier.height;
-     courier.setScale(cScaleX, cScaleY);
+     courier.setScale(cScaleX/1.5, cScaleY/1.5);
 
 
     ///////ADD HOUSE
@@ -146,6 +150,8 @@ const config = {
 
 
     //////MENU
+
+    ////MENU - TREAT TOKENS
       // Create overlay text at the center of the screen
       treatTokensText = this.add.text(
         game.config.width - (game.config.width /5),
@@ -161,6 +167,7 @@ const config = {
 
     treatTokensText.setScrollFactor(0); // Keep the text fixed on the screen
 
+    ////MENU - CRAFTED COOKIES
        // Create overlay text at the center of the screen
        craftedCookiesText = this.add.text(
         game.config.width - (game.config.width /5),
@@ -175,6 +182,8 @@ const config = {
     craftedCookiesText.setOrigin(1, 0); // Set text origin to center
 
     craftedCookiesText.setScrollFactor(0); // Keep the text fixed on the screen
+
+    
 
 
     /////ANIMATIONS
@@ -240,6 +249,18 @@ const config = {
     });
 
     this.anims.create({
+        key: 'courierAnim',
+        frames: this.anims.generateFrameNumbers('courierAnim', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:0, 
+            end: 3
+        }),
+        frameRate: 9,
+        repeat: 0 // Set to -1 for infinite looping
+    });
+
+    this.anims.create({
         key: 'heartAnim',
         frames: this.anims.generateFrameNumbers('heartAnim', {
             /* Define the frame range for the walking animation */
@@ -254,11 +275,6 @@ const config = {
 
     //////BAKERY ON CLICK
     bakery.on('pointerdown', function() {
-        let activeAnimations = 0;
-        let firstAnimation;
-        let secondAnimation;
-
-
         craftedCookies += counterValue;
         craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
 
@@ -272,70 +288,21 @@ const config = {
         }
 
       ///////SPARKLE
-        if (activeAnimations < 2) {
-            if (!firstAnimation || !firstAnimation.anims.isPlaying) {
-                firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-                firstAnimation.setScale(2);
-                firstAnimation.anims.play('sparkleAnim');
-    
-                firstAnimation.on('animationcomplete', function () {
-                    firstAnimation.setVisible(false);
-                    activeAnimations--;
-                }, this);
-    
-                activeAnimations++;
-            } else if (!secondAnimation || !secondAnimation.anims.isPlaying) {
-                secondAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-                secondAnimation.setScale(2);
-                secondAnimation.anims.play('sparkleAnim');
-    
-                secondAnimation.on('animationcomplete', function () {
-                    secondAnimation.setVisible(false);
-                    activeAnimations--;
-                }, this);
-    
-                activeAnimations++;
-            }
-        } else {
-            // Reset first animation
-            if (firstAnimation && firstAnimation.anims.isPlaying) {
-                firstAnimation.anims.stop();
-                firstAnimation.setVisible(false);
-                activeAnimations--;
-            }
-            // Play new animation
-            firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-            firstAnimation.setScale(2);
-            firstAnimation.anims.play('sparkleAnim');
-    
-            firstAnimation.on('animationcomplete', function () {
-                firstAnimation.setVisible(false);
-                activeAnimations--;
-            }, this);
-        }
+      if (!sparkle || !sparkle.anims.isPlaying) {
+        sparkle = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+        sparkle.setScale(2.5);
+        sparkle.anims.play('sparkleAnim');
 
-        // if (sparkle && sparkle.anims.isPlaying) {
-        //     sparkle.anims.restart();
-        // } else {
-        //     sparkle = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-        //     sparkle.setScale(2);
-        //     sparkle.anims.play('sparkleAnim');
-
-        //     sparkle.on('animationcomplete', function () {
-        //         sparkle.setVisible(false);
-        //     }, this);
-        // }
+        sparkle.on('animationcomplete', function () {
+            sparkle.setVisible(false);
+        }, this);
+    }
 
     }, this);
 
     //////COURIER ON CLICK
     courier.on('pointerdown', function() {
         if (craftedCookies > 0) {
-            let activeAnimations = 0;
-            let firstAnimation;
-            let secondAnimation;
-
-            
             craftedCookies -= counterValue;
             craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
     
@@ -345,48 +312,23 @@ const config = {
           
 
             //SPARKLE
-            if (activeAnimations < 2) {
-                if (!firstAnimation || !firstAnimation.anims.isPlaying) {
-                    firstAnimation = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
-                    firstAnimation.setScale(2);
-                    firstAnimation.anims.play('sparkleAnim');
+            if (!sparkle || !sparkle.anims.isPlaying) {
+                sparkle = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
+                sparkle.setScale(2.5);
+                sparkle.anims.play('sparkleAnim');
         
-                    firstAnimation.on('animationcomplete', function () {
-                        firstAnimation.setVisible(false);
-                        activeAnimations--;
-                    }, this);
-        
-                    activeAnimations++;
-                } else if (!secondAnimation || !secondAnimation.anims.isPlaying) {
-                    secondAnimation = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
-                    secondAnimation.setScale(2);
-                    secondAnimation.anims.play('sparkleAnim');
-        
-                    secondAnimation.on('animationcomplete', function () {
-                        secondAnimation.setVisible(false);
-                        activeAnimations--;
-                    }, this);
-        
-                    activeAnimations++;
-                }
-            } else {
-                // Reset first animation
-                if (firstAnimation && firstAnimation.anims.isPlaying) {
-                    firstAnimation.anims.stop();
-                    firstAnimation.setVisible(false);
-                    activeAnimations--;
-                }
-                // Play new animation
-                firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-                firstAnimation.setScale(2);
-                firstAnimation.anims.play('sparkleAnim');
-        
-                firstAnimation.on('animationcomplete', function () {
-                    firstAnimation.setVisible(false);
-                    activeAnimations--;
+                sparkle.on('animationcomplete', function () {
+                    sparkle.setVisible(false);
                 }, this);
             }
 
+               /////BOUNCE
+                if (courier.anims.isPlaying) {
+                    courier.anims.stop('courierAnim'); // Stop the animation if it's already playing
+                    courier.setFrame(0); // Reset the bakery sprite to the first frame
+                } else {
+                    courier.play('courierAnim'); // Play the bakery animation if it's not playing
+                }
             
             
            
@@ -397,7 +339,7 @@ const config = {
             
 
             /////WALKING SPRITE
-            let newWalkingSprite = this.add.sprite(courier.x, courier.y + 70, 'walkingCharacter');
+            let newWalkingSprite = this.add.sprite(courier.x, courier.y +30, 'walkingCharacter');
 
             ////WALKING SPRITE SCALE
             newWalkingSprite.setScale(0.2, 0.2)
@@ -411,16 +353,18 @@ const config = {
 
             ////WALKING SPRITE DIRECTION
             let direction;
-            if (houseX < courier.x) {
+            const horizontalThreshold = 10; // Set the vertical distance threshold
+
+            if (houseY > courier.y && Math.abs(houseX - courier.x) < horizontalThreshold) {
+                direction = 'walkDown'; // Use 'walkDown' if the vertical distance exceeds the threshold
+            } else if (houseX < courier.x) {
                 direction = 'walkLeft';
             } else if (houseX > courier.x) {
                 direction = 'walkRight';
-            } else if (houseY > courier.y) {
-                direction = 'walkDown';
             } else {
-                direction = 'walkDown';
+                direction = 'walkRight'; // Default direction if both X and Y are equal
             }
-            console.log(direction)
+            
             // Play the respective animation based on direction
             newWalkingSprite.anims.play(direction);
             walkingSprites.push(newWalkingSprite);
@@ -457,32 +401,33 @@ const config = {
                         newWalkingSprite.setPosition(houseX, houseY);
 
                          ////WALKING SPRITE DIRECTION
-                        let direction;
-                        if (courier.x < houseX) {
-                            direction = 'walkLeft'; // Moving left when returning
-                        } else if (courier.x > houseX) {
-                            direction = 'walkRight'; // Moving right when returning
+                        let directionBack;
+                        const horizontalThreshold = 10; // Set the vertical distance threshold
+
+                        if (houseY < courier.y && Math.abs(houseX - courier.x) < horizontalThreshold) {
+                            directionBack = 'walkDown'; // Use 'walkDown' if the vertical distance exceeds the threshold
+                        } else if (houseX > courier.x) {
+                            directionBack = 'walkLeft';
+                        } else if (houseX < courier.x) {
+                            directionBack = 'walkRight';
                         } else {
-                            direction = 'walkDown'; // Moving down when returning
+                            directionBack = 'walkRight'; // Default direction if both X and Y are equal
                         }
                         
                         // Play the respective animation based on direction
-                        newWalkingSprite.anims.play(direction);
+                        newWalkingSprite.anims.play(directionBack);
                         walkingSprites.push(newWalkingSprite);
 
                         ////WALKING SPEED
                         // Calculate speed multiplier based on the distance relative to the reference distance
                         walkingDuration = calculateDeliveryDuration(newWalkingSprite.x, newWalkingSprite.y, courier.x, courier.y + 70);
 
-                        
-                        newWalkingSprite.anims.play('walk');
-                        walkingSprites.push(newWalkingSprite);
     
                         ////WALKING BACK
                         this.tweens.add({
                             targets: newWalkingSprite,
                             x: courier.x,
-                            y: courier.y + 70,
+                            y: courier.y + 30,
                             duration: walkingDuration, // Duration for the sprite to return to the courier
                             onComplete: () => {
                                 newWalkingSprite.setVisible(false);
