@@ -87,26 +87,31 @@ const config = {
     // Enable drag functionality for the camera (allowing the screen to be dragged)
     this.input.addPointer(2); // Enable multi-touch
 
+   
     // Enable drag functionality for the camera (allowing the screen to be dragged)
+    var isDragging = false;
+    var lastPointer;
+
     this.input.on('pointerdown', function (pointer) {
-        if (pointer.isDown) {
-            this.input.mouse.requestPointerLock(); // Lock the mouse pointer for dragging
-        }
+        isDragging = true;
+        lastPointer = pointer.position.clone();
     }, this);
 
     this.input.on('pointermove', function (pointer) {
-        if (pointer.isDown) {
-            if (this.input.mouse.locked) {
-                this.cameras.main.scrollX -= pointer.movementX / this.cameras.main.zoom;
-                this.cameras.main.scrollY -= pointer.movementY / this.cameras.main.zoom;
-            }
+        if (isDragging) {
+            var movementX = pointer.position.x - lastPointer.x;
+            var movementY = pointer.position.y - lastPointer.y;
+
+            this.cameras.main.scrollX -= movementX / this.cameras.main.zoom;
+            this.cameras.main.scrollY -= movementY / this.cameras.main.zoom;
+
+            lastPointer = pointer.position.clone();
         }
     }, this);
 
-    this.input.on('pointerup', function (pointer) {
-        this.input.mouse.releasePointerLock(); // Release the mouse pointer lock
+    this.input.on('pointerup', function () {
+        isDragging = false;
     }, this);
-
 
     ///////ADD BACKGROUND
     // Create a rectangle filled with the specified color
