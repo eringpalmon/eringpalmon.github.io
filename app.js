@@ -33,9 +33,9 @@ const config = {
     this.load.image('house', 'images/House_01.png');
 
     // Load the sprite sheet containing the walking animation frames
-    this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
-        frameWidth: 32,
-        frameHeight: 32,
+    this.load.spritesheet('walkingCharacter', 'images/cat-anim.png', {
+        frameWidth: 64,
+        frameHeight: 64,
     });
     this.load.spritesheet('sparkle', 'images/sparkle.png', {
         frameWidth: 32,
@@ -178,16 +178,40 @@ const config = {
 
 
     /////ANIMATIONS
-      // Create the walking animation
-      this.anims.create({
-        key: 'walk',
+    // Create the walking animation
+    this.anims.create({
+    key: 'walkDown',
+    frames: this.anims.generateFrameNumbers('walkingCharacter', {
+        /* Define the frame range for the walking animation */
+        /* For example: start: 0, end: 7 (assuming 8 frames) */
+        start:0, 
+        end: 3
+    }),
+    frameRate: 8,
+    repeat: -1 // Set to -1 for infinite looping
+    });
+
+    this.anims.create({
+        key: 'walkLeft',
         frames: this.anims.generateFrameNumbers('walkingCharacter', {
             /* Define the frame range for the walking animation */
             /* For example: start: 0, end: 7 (assuming 8 frames) */
-            start:21, 
-            end: 25
+            start:4, 
+            end: 7
         }),
-        frameRate: 10,
+        frameRate: 8,
+        repeat: -1 // Set to -1 for infinite looping
+    });
+
+    this.anims.create({
+        key: 'walkRight',
+        frames: this.anims.generateFrameNumbers('walkingCharacter', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:8, 
+            end: 11
+        }),
+        frameRate: 8,
         repeat: -1 // Set to -1 for infinite looping
     });
 
@@ -367,7 +391,7 @@ const config = {
             
            
             let isAboveCourier = true;
-            if(houseY > courier.y){
+            if(houseY > courier.y + 70){
                 isAboveCourier = false;
             }
             
@@ -375,16 +399,28 @@ const config = {
             /////WALKING SPRITE
             let newWalkingSprite = this.add.sprite(courier.x, courier.y + 70, 'walkingCharacter');
             
+            ////WALKING SPRITE DEPTH
             newWalkingSprite.setDepth(4); // Set walkingSprite's depth
             courier.setDepth(4); // Set courier's depth
             bakery.setDepth(2);
 
             newWalkingSprite.depth = isAboveCourier ? courier.depth - 3 : courier.depth + 3;
 
-            
-            newWalkingSprite.anims.play('walk');
+            ////WALKING SPRITE DIRECTION
+            let direction;
+            if (houseX < courier.x) {
+                direction = 'walkLeft';
+            } else if (houseX > courier.x) {
+                direction = 'walkRight';
+            } else if (houseY > courier.y) {
+                direction = 'walkDown';
+            } else {
+                direction = 'walkDown';
+            }
+            console.log(direction)
+            // Play the respective animation based on direction
+            newWalkingSprite.anims.play(direction);
             walkingSprites.push(newWalkingSprite);
-
 
 
             ////WALKING SPEED
@@ -416,6 +452,20 @@ const config = {
                     setTimeout(() => {
                         newWalkingSprite.setVisible(true);
                         newWalkingSprite.setPosition(houseX, houseY);
+
+                         ////WALKING SPRITE DIRECTION
+                        let direction;
+                        if (courier.x < houseX) {
+                            direction = 'walkLeft'; // Moving left when returning
+                        } else if (courier.x > houseX) {
+                            direction = 'walkRight'; // Moving right when returning
+                        } else {
+                            direction = 'walkDown'; // Moving down when returning
+                        }
+                        
+                        // Play the respective animation based on direction
+                        newWalkingSprite.anims.play(direction);
+                        walkingSprites.push(newWalkingSprite);
 
                         ////WALKING SPEED
                         // Calculate speed multiplier based on the distance relative to the reference distance
