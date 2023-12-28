@@ -26,11 +26,14 @@ const config = {
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
+    this.load.image('grass', 'images/Tileset/64x64Rumput.png');
+
     this.load.image('bakery', 'images/bakery.png');
     this.load.image('courier', 'images/courier.png');
     this.load.image('house', 'images/House_01.png');
-      // Load the sprite sheet containing the walking animation frames
-      this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
+
+    // Load the sprite sheet containing the walking animation frames
+    this.load.spritesheet('walkingCharacter', 'images/slimebuddy.png', {
         frameWidth: 32,
         frameHeight: 32,
     });
@@ -41,6 +44,10 @@ const config = {
     this.load.spritesheet('bakeryAnim', 'images/bakery-anim.png', {
         frameWidth: 320,
         frameHeight: 320,
+    });
+    this.load.spritesheet('heartAnim', 'images/heart-anim.png', {
+        frameWidth: 64,
+        frameHeight: 64,
     });
   }
   
@@ -102,6 +109,13 @@ const config = {
     const graphics = this.add.graphics();
     graphics.fillStyle(0x8CDE76); // Set the fill color using hexadecimal value
     graphics.fillRect(0, 0, width, height); // Fill the entire canvas with the color
+
+     // Create a tiling sprite using the loaded tile image
+     const tileSprite = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass');
+     // Set the origin of the tiling sprite to the top-left corner
+     tileSprite.setOrigin(0, 0);
+     // Set the scale mode to repeat
+     tileSprite.setTileScale(1, 1); // Adjust the scale as needed
 
 
     ///////ADD BAKERY
@@ -198,6 +212,18 @@ const config = {
             end: 7
         }),
         frameRate: 24,
+        repeat: 0 // Set to -1 for infinite looping
+    });
+
+    this.anims.create({
+        key: 'heartAnim',
+        frames: this.anims.generateFrameNumbers('heartAnim', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:0, 
+            end: 5
+        }),
+        frameRate: 10,
         repeat: 0 // Set to -1 for infinite looping
     });
 
@@ -365,7 +391,6 @@ const config = {
             // Calculate speed multiplier based on the distance relative to the reference distance
             walkingDuration = calculateDeliveryDuration(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY);
             
-            console.log(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY, walkingDuration);
 
 
             ////WALKING TO DELIVER
@@ -376,6 +401,17 @@ const config = {
                 duration: walkingDuration, // Duration for the sprite to reach the house
                 onComplete: () => {
                     newWalkingSprite.setVisible(false);
+
+                    // Create a sprite for the heart animation
+                    let heartSprite = this.add.sprite(houseX, houseY - 60, 'heartAnim');
+                    heartSprite.setScale(2,2)
+                    // Play the 'heartAnim' animation
+                    heartSprite.anims.play('heartAnim');
+                    // You might want to set a callback to hide the heart sprite after the animation completes
+                    heartSprite.on('animationcomplete', function () {
+                        heartSprite.setVisible(false);
+                    }, this);
+
     
                     setTimeout(() => {
                         newWalkingSprite.setVisible(true);
@@ -384,7 +420,7 @@ const config = {
                         ////WALKING SPEED
                         // Calculate speed multiplier based on the distance relative to the reference distance
                         walkingDuration = calculateDeliveryDuration(newWalkingSprite.x, newWalkingSprite.y, courier.x, courier.y + 70);
-                        console.log(newWalkingSprite.x, newWalkingSprite.y, courier.x, courier.y + 70, walkingDuration);
+
                         
                         newWalkingSprite.anims.play('walk');
                         walkingSprites.push(newWalkingSprite);
