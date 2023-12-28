@@ -38,6 +38,10 @@ const config = {
         frameWidth: 32,
         frameHeight: 32,
     });
+    this.load.spritesheet('bakeryAnim', 'images/bakery-anim.png', {
+        frameWidth: 320,
+        frameHeight: 320,
+    });
   }
   
   function create() {
@@ -68,6 +72,9 @@ const config = {
     // Enable Phaser's built-in drag feature for the game camera
     this.cameras.main.setBounds(0, 0, width, height); // Set bounds of the map
     this.cameras.main.setZoom(zoomLevel); // Set initial zoom level
+
+    // Enable drag functionality for the camera (allowing the screen to be dragged)
+    this.input.addPointer(2); // Enable multi-touch
 
     // Enable drag functionality for the camera (allowing the screen to be dragged)
     this.input.on('pointerdown', function (pointer) {
@@ -178,25 +185,107 @@ const config = {
             start:0, 
             end: 5
         }),
-        frameRate: 5,
+        frameRate: 15,
+        repeat: 0 // Set to -1 for infinite looping
+    });
+
+    this.anims.create({
+        key: 'bakeryAnim',
+        frames: this.anims.generateFrameNumbers('bakeryAnim', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:0, 
+            end: 7
+        }),
+        frameRate: 24,
         repeat: 0 // Set to -1 for infinite looping
     });
 
 
     //////BAKERY ON CLICK
     bakery.on('pointerdown', function() {
+        let activeAnimations = 0;
+        let firstAnimation;
+        let secondAnimation;
+
+
         craftedCookies += counterValue;
         craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
 
-        sparkle = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
-        sparkle.setScale(bakery.scaleX, bakery.scaleY);
-        sparkle.anims.play('sparkleAnim');
+
+        /////BOUNCE
+        if (bakery.anims.isPlaying) {
+            bakery.anims.stop('bakeryAnim'); // Stop the animation if it's already playing
+            bakery.setFrame(0); // Reset the bakery sprite to the first frame
+        } else {
+            bakery.play('bakeryAnim'); // Play the bakery animation if it's not playing
+        }
+
+      ///////SPARKLE
+        if (activeAnimations < 2) {
+            if (!firstAnimation || !firstAnimation.anims.isPlaying) {
+                firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+                firstAnimation.setScale(2);
+                firstAnimation.anims.play('sparkleAnim');
+    
+                firstAnimation.on('animationcomplete', function () {
+                    firstAnimation.setVisible(false);
+                    activeAnimations--;
+                }, this);
+    
+                activeAnimations++;
+            } else if (!secondAnimation || !secondAnimation.anims.isPlaying) {
+                secondAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+                secondAnimation.setScale(2);
+                secondAnimation.anims.play('sparkleAnim');
+    
+                secondAnimation.on('animationcomplete', function () {
+                    secondAnimation.setVisible(false);
+                    activeAnimations--;
+                }, this);
+    
+                activeAnimations++;
+            }
+        } else {
+            // Reset first animation
+            if (firstAnimation && firstAnimation.anims.isPlaying) {
+                firstAnimation.anims.stop();
+                firstAnimation.setVisible(false);
+                activeAnimations--;
+            }
+            // Play new animation
+            firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+            firstAnimation.setScale(2);
+            firstAnimation.anims.play('sparkleAnim');
+    
+            firstAnimation.on('animationcomplete', function () {
+                firstAnimation.setVisible(false);
+                activeAnimations--;
+            }, this);
+        }
+
+        // if (sparkle && sparkle.anims.isPlaying) {
+        //     sparkle.anims.restart();
+        // } else {
+        //     sparkle = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+        //     sparkle.setScale(2);
+        //     sparkle.anims.play('sparkleAnim');
+
+        //     sparkle.on('animationcomplete', function () {
+        //         sparkle.setVisible(false);
+        //     }, this);
+        // }
 
     }, this);
 
     //////COURIER ON CLICK
     courier.on('pointerdown', function() {
         if (craftedCookies > 0) {
+            let activeAnimations = 0;
+            let firstAnimation;
+            let secondAnimation;
+
+            
             craftedCookies -= counterValue;
             craftedCookiesText.setText('Crafted Cookies: ' + craftedCookies);
     
@@ -206,9 +295,49 @@ const config = {
           
 
             //SPARKLE
-            sparkle = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
-            sparkle.setScale(courier.scaleX, courier.scaleY);
-            sparkle.anims.play('sparkleAnim');
+            if (activeAnimations < 2) {
+                if (!firstAnimation || !firstAnimation.anims.isPlaying) {
+                    firstAnimation = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
+                    firstAnimation.setScale(2);
+                    firstAnimation.anims.play('sparkleAnim');
+        
+                    firstAnimation.on('animationcomplete', function () {
+                        firstAnimation.setVisible(false);
+                        activeAnimations--;
+                    }, this);
+        
+                    activeAnimations++;
+                } else if (!secondAnimation || !secondAnimation.anims.isPlaying) {
+                    secondAnimation = this.add.sprite(courier.x, courier.y - 50, 'sparkle');
+                    secondAnimation.setScale(2);
+                    secondAnimation.anims.play('sparkleAnim');
+        
+                    secondAnimation.on('animationcomplete', function () {
+                        secondAnimation.setVisible(false);
+                        activeAnimations--;
+                    }, this);
+        
+                    activeAnimations++;
+                }
+            } else {
+                // Reset first animation
+                if (firstAnimation && firstAnimation.anims.isPlaying) {
+                    firstAnimation.anims.stop();
+                    firstAnimation.setVisible(false);
+                    activeAnimations--;
+                }
+                // Play new animation
+                firstAnimation = this.add.sprite(bakery.x, bakery.y - 50, 'sparkle');
+                firstAnimation.setScale(2);
+                firstAnimation.anims.play('sparkleAnim');
+        
+                firstAnimation.on('animationcomplete', function () {
+                    firstAnimation.setVisible(false);
+                    activeAnimations--;
+                }, this);
+            }
+
+            
             
            
             let isAboveCourier = true;
@@ -220,11 +349,11 @@ const config = {
             /////WALKING SPRITE
             let newWalkingSprite = this.add.sprite(courier.x, courier.y + 70, 'walkingCharacter');
             
-            newWalkingSprite.setDepth(3); // Set walkingSprite's depth
-            courier.setDepth(3); // Set courier's depth
-            bakery.setDepth(1);
+            newWalkingSprite.setDepth(4); // Set walkingSprite's depth
+            courier.setDepth(4); // Set courier's depth
+            bakery.setDepth(2);
 
-            newWalkingSprite.depth = isAboveCourier ? courier.depth - 1 : courier.depth + 1;
+            newWalkingSprite.depth = isAboveCourier ? courier.depth - 3 : courier.depth + 3;
 
             
             newWalkingSprite.anims.play('walk');
@@ -232,19 +361,14 @@ const config = {
 
 
 
-            ///////WALKING SPEED
-            const distance = Phaser.Math.Distance.Between(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY);
-
-            const referenceDistance = 1000; // You can adjust this based on your preferences
-            const referenceDuration = 1000; // The reference duration in milliseconds
-
+            ////WALKING SPEED
             // Calculate speed multiplier based on the distance relative to the reference distance
-            walkingDuration = Phaser.Math.Interpolation.Linear([referenceDistance, referenceDuration], distance);
-            // speedMultiplier = walkingDuration / referenceDuration;
+            walkingDuration = calculateDeliveryDuration(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY);
+            
+            console.log(newWalkingSprite.x, newWalkingSprite.y, houseX, houseY, walkingDuration);
 
-            console.log(walkingDuration, distance);
 
-            ////WALKING BACK
+            ////WALKING TO DELIVER
             this.tweens.add({
                 targets: newWalkingSprite,
                 x: houseX,
@@ -253,13 +377,19 @@ const config = {
                 onComplete: () => {
                     newWalkingSprite.setVisible(false);
     
-                    treatTokens += counterValue;
-                    treatTokensText.setText('Treat Tokens: ' + treatTokens);
-    
                     setTimeout(() => {
                         newWalkingSprite.setVisible(true);
                         newWalkingSprite.setPosition(houseX, houseY);
+
+                        ////WALKING SPEED
+                        // Calculate speed multiplier based on the distance relative to the reference distance
+                        walkingDuration = calculateDeliveryDuration(newWalkingSprite.x, newWalkingSprite.y, courier.x, courier.y + 70);
+                        console.log(newWalkingSprite.x, newWalkingSprite.y, courier.x, courier.y + 70, walkingDuration);
+                        
+                        newWalkingSprite.anims.play('walk');
+                        walkingSprites.push(newWalkingSprite);
     
+                        ////WALKING BACK
                         this.tweens.add({
                             targets: newWalkingSprite,
                             x: courier.x,
@@ -269,6 +399,9 @@ const config = {
                                 newWalkingSprite.setVisible(false);
                                 walkingSprites = walkingSprites.filter(sprite => sprite !== newWalkingSprite);
                                 newWalkingSprite.destroy();
+
+                                treatTokens += counterValue;
+                                treatTokensText.setText('Treat Tokens: ' + treatTokens);
                             },
                             onCompleteScope: this
                         });
@@ -287,4 +420,17 @@ const config = {
 function createHouse(scene, x, y) {
     const house = scene.add.image(x, y, 'house');
     // Add other house settings or functionality here if desired
+}
+
+function calculateDeliveryDuration(fromX, fromY, toX, toY){
+
+    ///////WALKING SPEED
+    const distance = Phaser.Math.Distance.Between(fromX, fromY, toX, toY);
+
+    const referenceDistance = 100; // You can adjust this based on your preferences
+    const referenceDuration = 1000; // The reference duration in milliseconds
+
+    const speedMultiplier = distance / referenceDistance;
+    // Calculate speed multiplier based on the distance relative to the reference distance
+    return walkingDuration = referenceDuration * speedMultiplier;
 }
