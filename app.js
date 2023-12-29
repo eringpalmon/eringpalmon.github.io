@@ -17,6 +17,8 @@ const config = {
   let craftedCookies = 0;
   let counterValue = 1;
 
+  let menu;
+
   let sparkle;
   let walkingSprite;
   let walkingSprites = [];
@@ -31,6 +33,12 @@ const config = {
     this.load.image('bakery', 'images/bakery.png');
     this.load.image('courier', 'images/courier.png');
     this.load.image('house', 'images/House_01.png');
+
+    /////MENU
+    this.load.spritesheet('menu', 'images/menu.png', {
+        frameWidth: 960,
+        frameHeight: 960,
+    });
 
     // Load the sprite sheet containing the walking animation frames
     this.load.spritesheet('walkingCharacter', 'images/cat-anim.png', {
@@ -155,6 +163,46 @@ const config = {
 
 
     //////MENU
+   ////MENU BASE
+    let currentFrame = 0; // Track the current frame displayed
+
+    // Create menu sprite and position it at the center of the screen
+    const menuSprite = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'menuSheet', currentFrame);
+
+    // Assuming the frame 0 contains non-transparent areas for xMask
+    const xMaskGraphic = this.make.graphics();
+    xMaskGraphic.fillStyle(0xffffff); // Fill color used for mask visualization (replace with actual color used for non-transparent areas)
+    xMaskGraphic.fillRect(340, 13, 50, 45); // Replace with the dimensions of the non-transparent area in frame 0
+    const xMask = xMaskGraphic.createGeometryMask(); // Create a mask from the graphics object
+
+    // Assuming the frame 2 contains non-transparent areas for hamburgMask
+    const hamburgMaskGraphic = this.make.graphics();
+    hamburgMaskGraphic.fillStyle(0xffffff); // Fill color used for mask visualization (replace with actual color used for non-transparent areas)
+    hamburgMaskGraphic.fillRect(29, 26, 99, 88); // Replace with the dimensions of the non-transparent area in frame 2
+    const hamburgMask = hamburgMaskGraphic.createGeometryMask(); // Create a mask from the graphics object
+
+    menuSprite.setMask(xMask); // Set the xMask as the mask for frame 0 initially
+
+    // Set interactive to enable pointer events
+    menuSprite.setInteractive({ pixelPerfect: true });
+
+    menuSprite.on('pointerdown', function () {
+        if (currentFrame === 0) {
+            menuSprite.setMask(hamburgMask); // Set hamburgMask as the mask for frame 2
+            currentFrame = 2;
+        } else if (currentFrame === 2) {
+            menuSprite.setMask(xMask); // Set xMask as the mask for frame 0
+            currentFrame = 0;
+        }
+
+        menuSprite.setTexture('menuSheet', currentFrame);
+    });
+
+
+    menuSprite.setOrigin(1, 0); // Set text origin to center
+
+    menuSprite.setScrollFactor(0); // Keep the text fixed on the screen
+
 
     ////MENU - TREAT TOKENS
       // Create overlay text at the center of the screen
@@ -228,6 +276,43 @@ const config = {
         frameRate: 8,
         repeat: -1 // Set to -1 for infinite looping
     });
+
+    ///tokens
+    this.anims.create({
+        key: 'walkDownToken',
+        frames: this.anims.generateFrameNumbers('walkingCharacter', {
+            /* Define the frame range for the walking animation */
+            /* For example: start: 0, end: 7 (assuming 8 frames) */
+            start:12, 
+            end: 15
+        }),
+        frameRate: 8,
+        repeat: -1 // Set to -1 for infinite looping
+        });
+    
+        this.anims.create({
+            key: 'walkLeftToken',
+            frames: this.anims.generateFrameNumbers('walkingCharacter', {
+                /* Define the frame range for the walking animation */
+                /* For example: start: 0, end: 7 (assuming 8 frames) */
+                start:16, 
+                end: 19
+            }),
+            frameRate: 8,
+            repeat: -1 // Set to -1 for infinite looping
+        });
+    
+        this.anims.create({
+            key: 'walkRightToken',
+            frames: this.anims.generateFrameNumbers('walkingCharacter', {
+                /* Define the frame range for the walking animation */
+                /* For example: start: 0, end: 7 (assuming 8 frames) */
+                start:20, 
+                end: 23
+            }),
+            frameRate: 8,
+            repeat: -1 // Set to -1 for infinite looping
+        });
 
     this.anims.create({
         key: 'sparkleAnim',
@@ -410,13 +495,13 @@ const config = {
                         const horizontalThreshold = 10; // Set the vertical distance threshold
 
                         if (houseY < courier.y && Math.abs(houseX - courier.x) < horizontalThreshold) {
-                            directionBack = 'walkDown'; // Use 'walkDown' if the vertical distance exceeds the threshold
+                            directionBack = 'walkDownToken'; // Use 'walkDown' if the vertical distance exceeds the threshold
                         } else if (houseX > courier.x) {
-                            directionBack = 'walkLeft';
+                            directionBack = 'walkLeftToken';
                         } else if (houseX < courier.x) {
-                            directionBack = 'walkRight';
+                            directionBack = 'walkRightToken';
                         } else {
-                            directionBack = 'walkRight'; // Default direction if both X and Y are equal
+                            directionBack = 'walkRightToken'; // Default direction if both X and Y are equal
                         }
                         
                         // Play the respective animation based on direction
