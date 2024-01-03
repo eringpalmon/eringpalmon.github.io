@@ -25,6 +25,31 @@ const config = {
 
   let speedMultiplier = 1.0;
 
+
+  /////UPGRADES STATUS 
+  let domainUP = 1;
+  let cookieMakerUP = 1;
+  let deliveryUP = 1;
+  let sandTRUP = 1;
+  let tallGrassTRUP = 1;
+  let snowTRUP = 1;
+  let waterTRUP = 1;
+
+  //////UPGRADES COST
+  const domainUP2 = 2000; 
+  const domainUP3 = 4000;
+  const domainUP4 = 8000;
+  const domainUP5 = 10000;   
+
+  const cookieMakerUP2 = 200;
+  const cookieMakerUP3 = 800;
+  const cookieMakerUP4 = 1000;
+  const cookieMakerUP5 = 1500;
+
+  const deliveryUP2 = 200;
+  const deliveryUP3 = 800;
+  const deliveryUP4 = 1000;
+  const deliveryUP5 = 1500;
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
@@ -36,8 +61,8 @@ const config = {
 
     /////MENU
     this.load.spritesheet('menu', 'images/menu.png', {
-        frameWidth: 960,
-        frameHeight: 960,
+        frameWidth: 800,
+        frameHeight: 800,
     });
 
     // Load the sprite sheet containing the walking animation frames
@@ -134,10 +159,16 @@ const config = {
      // Set the scale mode to repeat
      tileSprite.setTileScale(1, 1); // Adjust the scale as needed
 
+     const blockCells = (x, y) => {
+        const gridX = Math.floor(x / gridSize);
+        const gridY = Math.floor(y / gridSize);
+        grid[gridX][gridY] = 1; // Mark the cell as blocked (1 represents blocked)
+    };
+
 
     ///////ADD BAKERY
     // Create a sprite at the calculated center, set it interactive for clicking, and set its display size
-    const bakery = this.add.sprite(centerX - 55, centerY, 'bakery').setInteractive();
+    const bakery = this.add.sprite(centerX - 55, centerY, 'bakery').setInteractive({ pixelPerfect: true });
 
     // Set a fixed size for the sprite relative to the game's dimensions
     const bScaleX = fixedWidth / bakery.width;
@@ -145,7 +176,7 @@ const config = {
     bakery.setScale(bScaleX, bScaleY);
 
     ///////ADD COURIER
-     const courier = this.add.sprite(centerX + 55, centerY+25, 'courier').setInteractive();
+     const courier = this.add.sprite(centerX + 55, centerY+25, 'courier').setInteractive({ pixelPerfect: true });
 
      // Set a fixed size for the sprite relative to the game's dimensions
      const cScaleX = fixedWidth / courier.width;
@@ -160,48 +191,125 @@ const config = {
       createHouse(this, 300, 500);
 
 
+    ////////BLOCK
+    const gridSize = 10; // Define the size of each grid cell
+    const gridWidth = game.config.width / gridSize;
+    const gridHeight = game.config.height / gridSize;
+
+    const grid = [];
+    for (let i = 0; i < gridWidth; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridHeight; j++) {
+            grid[i][j] = 0; // Initialize each cell as unblocked (0 represents unblocked)
+        }
+    }
+
+    // Example usage for the bakery, courier, and houses
+    blockCells(bakery.x, bakery.y);
+    blockCells(courier.x, courier.y);
+    blockCells(200, 100); // For the houses at specific positions
+    blockCells(600, 300);
+    blockCells(300, 500);
 
 
     //////MENU
    ////MENU BASE
     let currentFrame = 0; // Track the current frame displayed
 
-    // Create menu sprite and position it at the center of the screen
-    const menuSprite = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'menuSheet', currentFrame);
+     // Create menu sprite and position it at the center of the screen
+     const menuSprite1 = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', currentFrame);
+     const menuSpriteX = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 2);
+     const menuSpriteArrow = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 3);
+     const menuSpriteInventory = this.add.sprite(this.cameras.main.width / 6, 0, 'menu', 6);
+    //  const menuSprite1 = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', currentFrame);
 
-    // Assuming the frame 0 contains non-transparent areas for xMask
-    const xMaskGraphic = this.make.graphics();
-    xMaskGraphic.fillStyle(0xffffff); // Fill color used for mask visualization (replace with actual color used for non-transparent areas)
-    xMaskGraphic.fillRect(340, 13, 50, 45); // Replace with the dimensions of the non-transparent area in frame 0
-    const xMask = xMaskGraphic.createGeometryMask(); // Create a mask from the graphics object
+     menuSprite1.setScale(0.5,0.5);
+     menuSprite1.setDepth(98);
 
-    // Assuming the frame 2 contains non-transparent areas for hamburgMask
-    const hamburgMaskGraphic = this.make.graphics();
-    hamburgMaskGraphic.fillStyle(0xffffff); // Fill color used for mask visualization (replace with actual color used for non-transparent areas)
-    hamburgMaskGraphic.fillRect(29, 26, 99, 88); // Replace with the dimensions of the non-transparent area in frame 2
-    const hamburgMask = hamburgMaskGraphic.createGeometryMask(); // Create a mask from the graphics object
+     menuSpriteX.setVisible(false);
+     menuSpriteX.setScale(0.5,0.5);
+     menuSpriteX.setDepth(99);
 
-    menuSprite.setMask(xMask); // Set the xMask as the mask for frame 0 initially
+     menuSpriteArrow.setVisible(false);
+     menuSpriteArrow.setScale(0.5,0.5);
+     menuSpriteArrow.setDepth(99);
+     
+     menuSpriteInventory.setScale(0.68,0.68);
+     menuSpriteInventory.setDepth(97);
 
-    // Set interactive to enable pointer events
-    menuSprite.setInteractive({ pixelPerfect: true });
+     // Set interactive to enable pointer events
+     menuSprite1.setInteractive({ pixelPerfect: true });
+     menuSpriteX.setInteractive({ pixelPerfect: true });
+     menuSpriteArrow.setInteractive({ pixelPerfect: true });
+     menuSpriteInventory.setInteractive({ pixelPerfect: true });
 
-    menuSprite.on('pointerdown', function () {
-        if (currentFrame === 0) {
-            menuSprite.setMask(hamburgMask); // Set hamburgMask as the mask for frame 2
-            currentFrame = 2;
-        } else if (currentFrame === 2) {
-            menuSprite.setMask(xMask); // Set xMask as the mask for frame 0
-            currentFrame = 0;
+     menuSprite1.on('pointerdown', function () {
+        if(currentFrame == 0){
+            currentFrame = 1;
+            menuSpriteX.setVisible(true);
+            menuSpriteArrow.setVisible(true);
+    
+            menuSprite1.setTexture('menu', currentFrame);
+            menuSpriteX.setTexture('menu', 2)
+            menuSpriteArrow.setTexture('menu', 3)
+
+            menuSprite1.setScale(0.5,0.5);
+            menuSpriteX.setScale(0.5,0.5);
         }
+     });
 
-        menuSprite.setTexture('menuSheet', currentFrame);
+     menuSpriteX.on('pointerdown', function () {
+        currentFrame = 0;
+        menuSpriteX.setVisible(false);
+        menuSpriteArrow.setVisible(false);
+
+        menuSprite1.setTexture('menu', currentFrame);
+
+        menuSprite1.setScale(0.5,0.5);
+        menuSpriteX.setScale(0.5,0.5);
     });
 
+    menuSpriteArrow.on('pointerdown', function () {
+        if(currentFrame == 1){
+            currentFrame = 4;
+            menuSpriteX.setVisible(true);
+            menuSpriteArrow.setVisible(false);
+    
+            menuSprite1.setTexture('menu', currentFrame);
+            menuSpriteX.setTexture('menu', 5);
 
-    menuSprite.setOrigin(1, 0); // Set text origin to center
+            menuSprite1.setScale(0.5,0.5);
+            menuSpriteX.setScale(0.5,0.5);
+        }
+    });
 
-    menuSprite.setScrollFactor(0); // Keep the text fixed on the screen
+    //  // Create menu sprite and position it at the center of the screen
+    //  const menuSprite = this.add.sprite(this.cameras.main.width/6, this.cameras.main.height/6, 'menu', currentFrame);
+    //  menuSprite.setScale(0.5, 0.5);
+
+    //  // Set interactive to enable pointer events
+    //  menuSprite.setInteractive();
+
+    //  menuSprite.on('pointerdown', function () {
+    //      if (currentFrame === 0) {
+    //          currentFrame = 1;
+    //      } else if (currentFrame === 1) {
+    //          currentFrame = 0;
+    //      }
+
+    //      menuSprite.setTexture('menu', currentFrame);
+    //  });
+
+
+
+    menuSprite1.setOrigin(0, 0); // Set text origin to center
+    menuSprite1.setScrollFactor(0); // Keep the text fixed on the screen
+    menuSpriteX.setOrigin(0, 0); // Set text origin to center
+    menuSpriteX.setScrollFactor(0); // Keep the text fixed on the screen
+    menuSpriteArrow.setOrigin(0, 0); // Set text origin to center
+    menuSpriteArrow.setScrollFactor(0); // Keep the text fixed on the screen
+    menuSpriteInventory.setOrigin(0, 0); // Set text origin to center
+    menuSpriteInventory.setScrollFactor(0); // Keep the text fixed on the screen
 
 
     ////MENU - TREAT TOKENS
