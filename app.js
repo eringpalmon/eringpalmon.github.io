@@ -1,8 +1,8 @@
 // Initialize Phaser
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 1600,
+    height: 1200,
     scene: {
       preload: preload,
       create: create
@@ -16,6 +16,7 @@ const config = {
   let craftedCookiesText;
   let craftedCookies = 0;
   let counterValue = 1;
+  let testText;
 
   let menu;
 
@@ -32,8 +33,8 @@ const config = {
   let deliveryUP = 1;
   let sandTRUP = 1;
   let tallGrassTRUP = 1;
-  let snowTRUP = 1;
   let waterTRUP = 1;
+  let snowTRUP = 1;
 
   //////UPGRADES COST
   const domainUP2 = 2000; 
@@ -50,6 +51,24 @@ const config = {
   const deliveryUP3 = 800;
   const deliveryUP4 = 1000;
   const deliveryUP5 = 1500;
+
+  const sandTRUP2 = 800;
+  const sandTRUP3 = 2000;
+  const sandTRUP4 = 5000;
+
+  const tallGrassTRUP2 = 1000;
+  const tallGrassTRUP3 = 2000;
+  const tallGrassTRUP4 = 5000;
+
+  const waterTRUP2 = 1500;
+  const waterTRUP3 = 3000;
+  const waterTRUP4 = 8000;
+
+  const snowTRUP2 = 1500;
+  const snowTRUP3 = 3000;
+  const snowTRUPP4 = 8000;
+
+  
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
@@ -88,8 +107,7 @@ const config = {
     });
   }
   
-  function create() {
-    ///////SET DIMENSIONS
+  function create() {///////SET DIMENSIONS
     // Get the dimensions of the game canvas
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
@@ -102,20 +120,75 @@ const config = {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
-    const zoomLevel = 1.5;
+    let zoomLevel = 1.0;
+    const maxZoomLevel = 2.0;
+    let currentZoomIndex = 0;
+    const zoomLevels = [1.0, 1.5, 1.8, 2.5];
+
+    const boundsWidth = 800;
+    const boundsHeight = 600;
+    const boundsX = centerX - boundsWidth / 2;
+    const boundsY = centerY - boundsHeight / 2;
 
     const houses = [
-        { x: 200, y: 100 },
-        { x: 600, y: 300 },
-        { x: 300, y: 500 }
+        // Houses for zoom level 1.0 (Keeping original)
+        { x: 600, y: 500 },
+        { x: 1000, y: 600 },
+        { x: 700, y: 800 },
+        { x: 550, y: 300 }, // Additional house for 1.0 zoom level
+        { x: 120, y: 290 }, 
+        { x: 250, y: 370 }, 
+        { x: 435, y: 450 }, 
+        { x: 135, y: 530 }, 
+        { x: 330, y: 580 }, 
+        { x: 220, y: 930 }, 
+        { x: 600, y: 970 }, 
+        { x: 1480, y: 300 }, 
+        { x: 1450, y: 700 }, 
+
+        // Houses for zoom level 1.3 (Replacing 1.5)
+        { x: 800, y: 300 },
+        { x: 400, y: 900 },
+        { x: 500, y: 200 },
+        { x: 100, y: 1100 }, // Additional house for 1.3 zoom level
+        { x: 520, y: 690 }, 
+        { x: 1200, y: 530 }, 
+        { x: 1220, y: 750 }, 
+        { x: 1170, y: 950 }, 
+        { x: 1370, y: 880 }, 
+        { x: 820, y: 1040 }, 
+        { x: 1300, y: 630 }, 
+        { x: 1050, y: 1090 }, 
+        { x: 1340, y: 1030 }, 
+        { x: 1465, y: 1080 }, 
+
+        // Houses for zoom level 1.8 (Keeping original)
+        { x: 200, y: 700 },
+        { x: 1400, y: 500 },
+        { x: 300, y: 1100 },
+        { x: 1200, y: 200 }, // Additional house for 1.8 zoom level
+        { x: 1000, y: 420 }, 
+        { x: 980, y: 930 }, 
+        { x: 770, y: 925 }, 
+        { x: 1100, y: 830 }, 
+
+        // Houses for zoom level 2.5 (Keeping original)
+        { x: 1200, y: 300 },
+        { x: 200, y: 1100 },
+        { x: 600, y: 200 },
+        { x: 300, y: 800 } // Additional house for 2.5 zoom level
     ];
 
 
 
     //////DRAGGABLE SCENE
     // Enable Phaser's built-in drag feature for the game camera
-    this.cameras.main.setBounds(0, 0, width, height); // Set bounds of the map
+    this.cameras.main.setBounds(0,0,width,height);
+    // this.cameras.main.setBounds(boundsX, boundsY, boundsWidth, boundsHeight); // Set bounds of the map
     this.cameras.main.setZoom(zoomLevel); // Set initial zoom level
+
+     // Center the camera on load
+    this.cameras.main.centerToBounds();
 
     // Enable drag functionality for the camera (allowing the screen to be dragged)
     this.input.addPointer(2); // Enable multi-touch
@@ -145,6 +218,20 @@ const config = {
     this.input.on('pointerup', function () {
         isDragging = false;
     }, this);
+
+    // Limit maximum zoom level
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+        currentZoomIndex -= Phaser.Math.Clamp(deltaY, -1, 1);
+        currentZoomIndex = Phaser.Math.Clamp(currentZoomIndex, 0, zoomLevels.length - 1);
+    
+        const newZoomLevel = zoomLevels[currentZoomIndex];
+        const currentZoomLevel = this.cameras.main.zoom;
+    
+        if (newZoomLevel !== currentZoomLevel) {
+          this.cameras.main.zoomTo(newZoomLevel, 300); // Adjust the duration (300 milliseconds) as needed
+        }
+      });
+
 
     ///////ADD BACKGROUND
     // Create a rectangle filled with the specified color
@@ -186,9 +273,9 @@ const config = {
 
     ///////ADD HOUSE
       // Create houses at specific positions
-      createHouse(this, 200, 100);
-      createHouse(this, 600, 300);
-      createHouse(this, 300, 500);
+      houses.forEach(element => {
+        createHouse(this, element.x, element.y);
+      });
 
 
     ////////BLOCK
@@ -221,7 +308,6 @@ const config = {
      const menuSpriteX = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 2);
      const menuSpriteArrow = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 3);
      const menuSpriteInventory = this.add.sprite(this.cameras.main.width / 6, 0, 'menu', 6);
-    //  const menuSprite1 = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', currentFrame);
 
      menuSprite1.setScale(0.5,0.5);
      menuSprite1.setDepth(98);
@@ -235,13 +321,13 @@ const config = {
      menuSpriteArrow.setDepth(99);
      
      menuSpriteInventory.setScale(0.68,0.68);
-     menuSpriteInventory.setDepth(97);
+     menuSpriteInventory.setDepth(97)
+     menuSpriteInventory.setVisible(false);
 
      // Set interactive to enable pointer events
      menuSprite1.setInteractive({ pixelPerfect: true });
      menuSpriteX.setInteractive({ pixelPerfect: true });
      menuSpriteArrow.setInteractive({ pixelPerfect: true });
-     menuSpriteInventory.setInteractive({ pixelPerfect: true });
 
      menuSprite1.on('pointerdown', function () {
         if(currentFrame == 0){
@@ -343,6 +429,28 @@ const config = {
     craftedCookiesText.setOrigin(1, 0); // Set text origin to center
 
     craftedCookiesText.setScrollFactor(0); // Keep the text fixed on the screen
+    
+
+
+    //////TEST
+    // Create overlay text at the center of the screen
+    testText = this.add.text(
+        game.config.width - (game.config.width /5),
+        game.config.height /3,
+        'testing',
+        {
+            fontSize: '16px',
+            fill: '#ffffff',
+            align: 'right'
+        }
+    );
+    testText.setOrigin(1, 0); // Set text origin to center
+
+    testText.setScrollFactor(0); // Keep the text fixed on the screen
+
+    this.input.on('pointermove', (pointer) => {
+        testText.setText(`Mouse X: ${pointer.x}, Mouse Y: ${pointer.y}`);
+      });
 
     
 
@@ -651,6 +759,7 @@ const config = {
 
 function createHouse(scene, x, y) {
     const house = scene.add.image(x, y, 'house');
+    house.setScale(0.7, 0.7)
     // Add other house settings or functionality here if desired
 }
 
@@ -665,4 +774,33 @@ function calculateDeliveryDuration(fromX, fromY, toX, toY){
     const speedMultiplier = distance / referenceDistance;
     // Calculate speed multiplier based on the distance relative to the reference distance
     return walkingDuration = referenceDuration * speedMultiplier;
+}
+
+
+function upgradeDomain(){
+
+}
+
+function upgradeCookieMaker(){
+
+}
+
+function upgradeDelivery(){
+
+}
+
+function upgradeSandTR(){
+
+}
+
+function upgradeTallGrassTR(){
+
+}
+
+function upgradeWaterTR(){
+
+}
+
+function upgradeSnow(){
+    
 }
