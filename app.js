@@ -1,11 +1,20 @@
 // Initialize Phaser
 const config = {
     type: Phaser.AUTO,
-    width: 1600,
-    height: 1200,
+    width: '100%',
+    height: '100%',
     scene: {
       preload: preload,
       create: create
+    },
+    scale: {
+        mode: Phaser.Scale.FIT, // Ensures the game scales to fit the screen
+        autoCenter: Phaser.Scale.CENTER_BOTH, // Centers the game on the screen
+        // Optionally, you can set the minimum and maximum game sizes
+        minWidth: 320, // Minimum width (e.g., for small devices)
+        minHeight: 240, // Minimum height (e.g., for small devices)
+        maxWidth: 1920, // Maximum width (e.g., for large screens)
+        maxHeight: 1080 // Maximum height (e.g., for large screens)
     }
   };
   
@@ -16,7 +25,6 @@ const config = {
   let craftedCookiesText;
   let craftedCookies = 0;
   let counterValue = 1;
-  let testText;
 
   let menu;
 
@@ -25,6 +33,8 @@ const config = {
   let walkingSprites = [];
 
   let speedMultiplier = 1.0;
+
+  let uiScene;
 
 
   /////UPGRADES STATUS 
@@ -80,8 +90,8 @@ const config = {
 
     /////MENU
     this.load.spritesheet('menu', 'images/menu.png', {
-        frameWidth: 800,
-        frameHeight: 800,
+        frameWidth: 799,
+        frameHeight: 799,
     });
 
     // Load the sprite sheet containing the walking animation frames
@@ -109,19 +119,18 @@ const config = {
   
   function create() {///////SET DIMENSIONS
     // Get the dimensions of the game canvas
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
+    const width = this.game.config.width;
+    const height = this.game.config.height;
 
     // Define a fixed size for the sprite (adjust as needed)
     const fixedWidth = 200;
     const fixedHeight = 200;
 
     // Calculate the center of the game's dimensions
-    const centerX = this.cameras.main.centerX;
-    const centerY = this.cameras.main.centerY;
+    const centerX = this.game.config.width/2;
+    const centerY = this.game.config.height/2;
 
-    let zoomLevel = 1.0;
-    const maxZoomLevel = 2.0;
+    let zoomLevel = 2.5;
     let currentZoomIndex = 0;
     const zoomLevels = [1.0, 1.5, 1.8, 2.5];
 
@@ -185,7 +194,7 @@ const config = {
     // Enable Phaser's built-in drag feature for the game camera
     this.cameras.main.setBounds(0,0,width,height);
     // this.cameras.main.setBounds(boundsX, boundsY, boundsWidth, boundsHeight); // Set bounds of the map
-    this.cameras.main.setZoom(zoomLevel); // Set initial zoom level
+    // this.cameras.main.setZoom(zoomLevel); // Set initial zoom level
 
      // Center the camera on load
     this.cameras.main.centerToBounds();
@@ -240,17 +249,17 @@ const config = {
     graphics.fillRect(0, 0, width, height); // Fill the entire canvas with the color
 
      // Create a tiling sprite using the loaded tile image
-     const tileSprite = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass');
+     const tileSprite = this.add.tileSprite(0, 0, width, height, 'grass');
      // Set the origin of the tiling sprite to the top-left corner
      tileSprite.setOrigin(0, 0);
      // Set the scale mode to repeat
      tileSprite.setTileScale(1, 1); // Adjust the scale as needed
 
-     const blockCells = (x, y) => {
-        const gridX = Math.floor(x / gridSize);
-        const gridY = Math.floor(y / gridSize);
-        grid[gridX][gridY] = 1; // Mark the cell as blocked (1 represents blocked)
-    };
+    //  const blockCells = (x, y) => {
+    //     const gridX = Math.floor(x / gridSize);
+    //     const gridY = Math.floor(y / gridSize);
+    //     grid[gridX][gridY] = 1; // Mark the cell as blocked (1 represents blocked)
+    // };
 
 
     ///////ADD BAKERY
@@ -291,166 +300,42 @@ const config = {
         }
     }
 
-    // Example usage for the bakery, courier, and houses
-    blockCells(bakery.x, bakery.y);
-    blockCells(courier.x, courier.y);
-    blockCells(200, 100); // For the houses at specific positions
-    blockCells(600, 300);
-    blockCells(300, 500);
+    // // Example usage for the bakery, courier, and houses
+    // blockCells(bakery.x, bakery.y);
+    // blockCells(courier.x, courier.y);
+    // blockCells(200, 100); // For the houses at specific positions
+    // blockCells(600, 300);
+    // blockCells(300, 500);
 
 
     //////MENU
    ////MENU BASE
-    let currentFrame = 0; // Track the current frame displayed
-
-     // Create menu sprite and position it at the center of the screen
-     const menuSprite1 = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', currentFrame);
-     const menuSpriteX = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 2);
-     const menuSpriteArrow = this.add.sprite(this.cameras.main.width / 6, this.cameras.main.height / 6, 'menu', 3);
-     const menuSpriteInventory = this.add.sprite(this.cameras.main.width / 6, 0, 'menu', 6);
-
-     menuSprite1.setScale(0.5,0.5);
-     menuSprite1.setDepth(98);
-
-     menuSpriteX.setVisible(false);
-     menuSpriteX.setScale(0.5,0.5);
-     menuSpriteX.setDepth(99);
-
-     menuSpriteArrow.setVisible(false);
-     menuSpriteArrow.setScale(0.5,0.5);
-     menuSpriteArrow.setDepth(99);
-     
-     menuSpriteInventory.setScale(0.68,0.68);
-     menuSpriteInventory.setDepth(97)
-     menuSpriteInventory.setVisible(false);
-
-     // Set interactive to enable pointer events
-     menuSprite1.setInteractive({ pixelPerfect: true });
-     menuSpriteX.setInteractive({ pixelPerfect: true });
-     menuSpriteArrow.setInteractive({ pixelPerfect: true });
-
-     menuSprite1.on('pointerdown', function () {
-        if(currentFrame == 0){
-            currentFrame = 1;
-            menuSpriteX.setVisible(true);
-            menuSpriteArrow.setVisible(true);
-    
-            menuSprite1.setTexture('menu', currentFrame);
-            menuSpriteX.setTexture('menu', 2)
-            menuSpriteArrow.setTexture('menu', 3)
-
-            menuSprite1.setScale(0.5,0.5);
-            menuSpriteX.setScale(0.5,0.5);
-        }
-     });
-
-     menuSpriteX.on('pointerdown', function () {
-        currentFrame = 0;
-        menuSpriteX.setVisible(false);
-        menuSpriteArrow.setVisible(false);
-
-        menuSprite1.setTexture('menu', currentFrame);
-
-        menuSprite1.setScale(0.5,0.5);
-        menuSpriteX.setScale(0.5,0.5);
-    });
-
-    menuSpriteArrow.on('pointerdown', function () {
-        if(currentFrame == 1){
-            currentFrame = 4;
-            menuSpriteX.setVisible(true);
-            menuSpriteArrow.setVisible(false);
-    
-            menuSprite1.setTexture('menu', currentFrame);
-            menuSpriteX.setTexture('menu', 5);
-
-            menuSprite1.setScale(0.5,0.5);
-            menuSpriteX.setScale(0.5,0.5);
-        }
-    });
-
-    //  // Create menu sprite and position it at the center of the screen
-    //  const menuSprite = this.add.sprite(this.cameras.main.width/6, this.cameras.main.height/6, 'menu', currentFrame);
-    //  menuSprite.setScale(0.5, 0.5);
-
-    //  // Set interactive to enable pointer events
-    //  menuSprite.setInteractive();
-
-    //  menuSprite.on('pointerdown', function () {
-    //      if (currentFrame === 0) {
-    //          currentFrame = 1;
-    //      } else if (currentFrame === 1) {
-    //          currentFrame = 0;
-    //      }
-
-    //      menuSprite.setTexture('menu', currentFrame);
-    //  });
+   // Create a separate UI scene
+    uiScene = this.scene.add('UIScene', UIScene, true);
 
 
+   
+ 
 
-    menuSprite1.setOrigin(0, 0); // Set text origin to center
-    menuSprite1.setScrollFactor(0); // Keep the text fixed on the screen
-    menuSpriteX.setOrigin(0, 0); // Set text origin to center
-    menuSpriteX.setScrollFactor(0); // Keep the text fixed on the screen
-    menuSpriteArrow.setOrigin(0, 0); // Set text origin to center
-    menuSpriteArrow.setScrollFactor(0); // Keep the text fixed on the screen
-    menuSpriteInventory.setOrigin(0, 0); // Set text origin to center
-    menuSpriteInventory.setScrollFactor(0); // Keep the text fixed on the screen
+    // //////TEST
+    // // Create overlay text at the center of the screen
+    // testText = this.add.text(
+    //     game.config.width - (game.config.width /5),
+    //     game.config.height /3,
+    //     'testing',
+    //     {
+    //         fontSize: '16px',
+    //         fill: '#ffffff',
+    //         align: 'right'
+    //     }
+    // );
+    // testText.setOrigin(1, 0); // Set text origin to center
 
+    // testText.setScrollFactor(0); // Keep the text fixed on the screen
 
-    ////MENU - TREAT TOKENS
-      // Create overlay text at the center of the screen
-      treatTokensText = this.add.text(
-        game.config.width - (game.config.width /5),
-        game.config.height /5,
-        'Treat Tokens: 0',
-        {
-            fontSize: '16px',
-            fill: '#ffffff',
-            align: 'right'
-        }
-    );
-    treatTokensText.setOrigin(1, 0); // Set text origin to center
-
-    treatTokensText.setScrollFactor(0); // Keep the text fixed on the screen
-
-    ////MENU - CRAFTED COOKIES
-       // Create overlay text at the center of the screen
-       craftedCookiesText = this.add.text(
-        game.config.width - (game.config.width /5),
-        game.config.height /4,
-        'Crafted Cookies: 0',
-        {
-            fontSize: '16px',
-            fill: '#ffffff',
-            align: 'right'
-        }
-    );
-    craftedCookiesText.setOrigin(1, 0); // Set text origin to center
-
-    craftedCookiesText.setScrollFactor(0); // Keep the text fixed on the screen
-    
-
-
-    //////TEST
-    // Create overlay text at the center of the screen
-    testText = this.add.text(
-        game.config.width - (game.config.width /5),
-        game.config.height /3,
-        'testing',
-        {
-            fontSize: '16px',
-            fill: '#ffffff',
-            align: 'right'
-        }
-    );
-    testText.setOrigin(1, 0); // Set text origin to center
-
-    testText.setScrollFactor(0); // Keep the text fixed on the screen
-
-    this.input.on('pointermove', (pointer) => {
-        testText.setText(`Mouse X: ${pointer.x}, Mouse Y: ${pointer.y}`);
-      });
+    // this.input.on('pointermove', (pointer) => {
+    //     testText.setText(`Mouse X: ${pointer.x}, Mouse Y: ${pointer.y}`);
+    //   });
 
     
 
@@ -776,6 +661,155 @@ function calculateDeliveryDuration(fromX, fromY, toX, toY){
     return walkingDuration = referenceDuration * speedMultiplier;
 }
 
+
+// Define the UIScene
+const UIScene = new Phaser.Class({
+
+    Extends: Phaser.Scene,
+  
+    initialize:
+  
+    function UIScene ()
+    {
+      Phaser.Scene.call(this, { key: 'UIScene', active: true });
+    },
+  
+    create: function ()
+    {
+       ////MENU - TREAT TOKENS
+      // Create overlay text at the center of the screen
+      treatTokensText = this.add.text(
+        game.config.width - 70, // Adjusted x coordinate
+        30,
+        'Treat Tokens: 0',
+        {
+            fontSize: '16px',
+            fill: '#ffffff',
+            align: 'right'
+        }
+        );
+        treatTokensText.setOrigin(1, 0); // Set text origin to center
+
+        treatTokensText.setScrollFactor(0); // Keep the text fixed on the screen
+
+        ////MENU - CRAFTED COOKIES
+        // Create overlay text at the center of the screen
+        craftedCookiesText = this.add.text(
+            game.config.width - 70, // Adjusted x coordinate (assuming a small margin between the two texts)
+            80,
+            'Crafted Cookies: 0',
+            {
+                fontSize: '16px',
+                fill: '#ffffff',
+                align: 'right'
+            }
+        );
+        
+        craftedCookiesText.setOrigin(1, 0); // Set text origin to the top-right
+        craftedCookiesText.setScrollFactor(0);
+        
+
+        let currentFrame = 0; // Track the current frame displayed
+
+        // Create menu sprite and position it at the center of the screen
+        const menuSprite1 = this.add.sprite(70, 0, 'menu', currentFrame);
+        const menuSpriteX = this.add.sprite(70, 0, 'menu', 2);
+        const menuSpriteArrow = this.add.sprite(70, 0, 'menu', 3);
+        const menuSpriteInventory = this.add.sprite(70, 0, 'menu', 7);
+   
+        // menuSprite1.setScale(0.5,0.5);
+        menuSprite1.setDepth(98);
+   
+        menuSpriteX.setVisible(false);
+        // menuSpriteX.setScale(0.5,0.5);
+        menuSpriteX.setDepth(99);
+   
+        menuSpriteArrow.setVisible(false);
+        // menuSpriteArrow.setScale(0.5,0.5);
+        menuSpriteArrow.setDepth(99);
+        
+        menuSpriteInventory.setScale(2,2);
+        menuSpriteInventory.setDepth(97)
+        // menuSpriteInventory.setVisible(false);
+   
+        // Set interactive to enable pointer events
+        menuSprite1.setInteractive({ pixelPerfect: true });
+        menuSpriteX.setInteractive({ pixelPerfect: true });
+        menuSpriteArrow.setInteractive({ pixelPerfect: true });
+   
+        menuSprite1.on('pointerdown', function () {
+           if(currentFrame == 0){
+               currentFrame = 1;
+               menuSpriteX.setVisible(true);
+               menuSpriteArrow.setVisible(true);
+       
+               menuSprite1.setTexture('menu', currentFrame);
+               menuSpriteX.setTexture('menu', 2)
+               menuSpriteArrow.setTexture('menu', 3)
+   
+            //    menuSprite1.setScale(0.5,0.5);
+            //    menuSpriteX.setScale(0.5,0.5);
+           }
+        });
+   
+        menuSpriteX.on('pointerdown', function () {
+           currentFrame = 0;
+           menuSpriteX.setVisible(false);
+           menuSpriteArrow.setVisible(false);
+   
+           menuSprite1.setTexture('menu', currentFrame);
+           menuSprite1.setOrigin(0,0)
+        //    menuSprite1.setScale(0.5,0.5);
+        //    menuSpriteX.setScale(0.5,0.5);
+       });
+   
+       menuSpriteArrow.on('pointerdown', function () {
+           if(currentFrame == 1){
+               currentFrame = 4;
+               menuSpriteX.setVisible(true);
+               menuSpriteArrow.setVisible(false);
+       
+               menuSprite1.setTexture('menu', currentFrame);
+               menuSpriteX.setTexture('menu', 5);
+   
+            //    menuSprite1.setScale(0.5,0.5);
+            //    menuSpriteX.setScale(0.5,0.5);
+           }
+       });
+   
+       //  // Create menu sprite and position it at the center of the screen
+       //  const menuSprite = this.add.sprite(this.cameras.main.width/6, this.cameras.main.height/6, 'menu', currentFrame);
+       //  menuSprite.setScale(0.5, 0.5);
+   
+       //  // Set interactive to enable pointer events
+       //  menuSprite.setInteractive();
+   
+       //  menuSprite.on('pointerdown', function () {
+       //      if (currentFrame === 0) {
+       //          currentFrame = 1;
+       //      } else if (currentFrame === 1) {
+       //          currentFrame = 0;
+       //      }
+   
+       //      menuSprite.setTexture('menu', currentFrame);
+       //  });
+   
+   
+   
+       menuSprite1.setOrigin(0, 0); // Set text origin to center
+       menuSprite1.setScrollFactor(0); // Keep the text fixed on the screen
+       menuSpriteX.setOrigin(0, 0); // Set text origin to center
+       menuSpriteX.setScrollFactor(0); // Keep the text fixed on the screen
+       menuSpriteArrow.setOrigin(0, 0); // Set text origin to center
+       menuSpriteArrow.setScrollFactor(0); // Keep the text fixed on the screen
+       menuSpriteInventory.setOrigin(0, 0); // Set text origin to center
+       menuSpriteInventory.setScrollFactor(0); // Keep the text fixed on the screen
+   
+   
+        
+
+    }
+  });
 
 function upgradeDomain(){
 
