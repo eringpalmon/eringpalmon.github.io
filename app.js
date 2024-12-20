@@ -1,8 +1,8 @@
 // Initialize Phaser
 const config = {
     type: Phaser.AUTO,
-    width: '100%',
-    height: '100%',
+    width: 800,
+    height: 600,
     scene: {
       preload: preload,
       create: create
@@ -11,10 +11,10 @@ const config = {
         mode: Phaser.Scale.FIT, // Ensures the game scales to fit the screen
         autoCenter: Phaser.Scale.CENTER_BOTH, // Centers the game on the screen
         // Optionally, you can set the minimum and maximum game sizes
-        minWidth: 320, // Minimum width (e.g., for small devices)
-        minHeight: 240, // Minimum height (e.g., for small devices)
-        maxWidth: 1920, // Maximum width (e.g., for large screens)
-        maxHeight: 1080 // Maximum height (e.g., for large screens)
+        // minWidth: 320, // Minimum width (e.g., for small devices)
+        // minHeight: 240, // Minimum height (e.g., for small devices)
+        // maxWidth: 1920, // Maximum width (e.g., for large screens)
+        // maxHeight: 1080 // Maximum height (e.g., for large screens)
     }
   };
   
