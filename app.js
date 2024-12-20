@@ -243,6 +243,20 @@ const config = {
         }
       });
 
+       // Enable pinch-to-zoom for mobile devices
+    this.input.on('pointermove', function (pointer) {
+        if (pointer.data.pointerCount === 2) { // Two fingers detected for pinch-to-zoom
+            const pointer1 = this.input.activePointer;
+            const pointer2 = this.input.pointer1;
+            const distance = Phaser.Math.Distance.Between(pointer1.x, pointer1.y, pointer2.x, pointer2.y);
+
+            // Adjust the zoom level based on pinch distance
+            const zoomFactor = distance / 500; // Adjust the scaling factor as needed
+            zoomLevel = Phaser.Math.Clamp(zoomFactor, zoomLevels[0], zoomLevels[zoomLevels.length - 1]);
+            this.cameras.main.setZoom(zoomLevel); // Apply zoom to the camera
+        }
+    });
+
 
     ///////ADD BACKGROUND
     // Create a rectangle filled with the specified color
