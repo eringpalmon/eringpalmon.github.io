@@ -626,7 +626,7 @@ const config = {
                                 newWalkingSprite.destroy();
 
                                 treatTokens += counterValue;
-                                treatTokensText.setText('Treat Tokens: ' + treatTokens);
+                                treatTokensText.setText('Treat Tokensrrrrr: ' + treatTokens);
                             },
                             onCompleteScope: this
                         });
