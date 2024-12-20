@@ -232,16 +232,21 @@ const config = {
 
     // Limit maximum zoom level
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-        currentZoomIndex -= Phaser.Math.Clamp(deltaY, -1, 1);
+        // Invert the scroll direction
+        currentZoomIndex += Phaser.Math.Clamp(deltaY, -1, 1);  // Reverse the direction of deltaY
+    
+        // Clamp the zoom index to stay within bounds
         currentZoomIndex = Phaser.Math.Clamp(currentZoomIndex, 0, zoomLevels.length - 1);
     
+        // Get the new zoom level from the zoomLevels array
         const newZoomLevel = zoomLevels[currentZoomIndex];
         const currentZoomLevel = this.cameras.main.zoom;
     
+        // Apply the new zoom level if it's different from the current zoom level
         if (newZoomLevel !== currentZoomLevel) {
-          this.cameras.main.zoomTo(newZoomLevel, 300); // Adjust the duration (300 milliseconds) as needed
+            this.cameras.main.zoomTo(newZoomLevel, 300); // Zoom with a smooth transition (300ms)
         }
-      });
+    });
 
        // Enable pinch-to-zoom for mobile devices
     this.input.on('pointermove', function (pointer) {
