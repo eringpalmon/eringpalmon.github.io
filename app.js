@@ -681,7 +681,7 @@ const UIScene = new Phaser.Class({
       treatTokensText = this.add.text(
         game.config.width - 70, // Adjusted x coordinate
         30,
-        'Treat Tokens: 0',
+        'Treat Tokenssssssssssssssss: 0',
         {
             fontSize: '16px',
             fill: '#ffffff',
