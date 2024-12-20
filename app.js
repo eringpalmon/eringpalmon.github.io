@@ -82,6 +82,8 @@ const config = {
   
   function preload() {
     // Load your assets here (images, spritesheets, etc.)
+    console.log('Game width:', width, 'Game height:', height);
+
     this.load.image('grass', 'images/Tileset/64x64Rumput.png');
 
     this.load.image('bakery', 'images/bakery.png');
