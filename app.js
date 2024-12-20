@@ -10,6 +10,8 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT, // Ensures the game scales to fit the screen
         autoCenter: Phaser.Scale.CENTER_BOTH, // Centers the game on the screen
+        width: window.innerWidth,  // Set the width based on the window's available width
+        height: window.innerHeight, // Set the height based on the window's available height
         // Optionally, you can set the minimum and maximum game sizes
         // minWidth: 320, // Minimum width (e.g., for small devices)
         // minHeight: 240, // Minimum height (e.g., for small devices)
