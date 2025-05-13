@@ -1,10 +1,12 @@
 {
   "name": "gamehub",
   "version": "1.0.0",
+  "homepage": "https://eringpalmon.github.io/eringpalmon.github.io",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
     "easystarjs": "^0.4.4",
