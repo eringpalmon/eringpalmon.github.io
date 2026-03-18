@@ -8,16 +8,25 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:#0c0c10;min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  overflow:hidden;font-family:'Nunito',sans-serif;color:#e0e0e8;
+  background:#0c0c10;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;
+  overflow-y:auto;overflow-x:hidden;
+  font-family:'Nunito',sans-serif;color:#e0e0e8;
+  padding:24px 16px 40px;
+  transition:background .4s;
 }
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
-.scene{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;}
+.scene{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  width:100%;max-width:480px;
+}
 
 /* ── city window ── */
 .city-window{
-  width:480px;border-radius:10px 10px 0 0;overflow:hidden;
+  width:100%;border-radius:10px 10px 0 0;overflow:hidden;
   border:2px solid #2e2e42;border-bottom:none;
   opacity:0;transition:opacity 0.8s ease;
 }
@@ -34,14 +43,13 @@ body{
   letter-spacing:.14em;text-transform:uppercase;color:#404060;
   margin-right:34px;
 }
-/* timer inside window bar */
 .win-timer{
   font-family:'Boogaloo',cursive;font-size:15px;letter-spacing:.06em;
   color:#7070a0;transition:color .3s;margin-right:4px;min-width:52px;text-align:right;
 }
 .win-timer.active{color:#c0c0f0;}
 .win-timer.paused{color:#505070;}
-#city{display:block;width:480px;height:160px;image-rendering:pixelated;}
+#city{display:block;width:100%;height:140px;image-rendering:pixelated;}
 
 /* ── button ── */
 .btn-stage{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;margin-top:-8px;}
@@ -81,7 +89,7 @@ body{
 #btn.locked:active{transform:none!important;}
 
 /* ── controls panel ── */
-.controls{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:11px;width:480px;padding:0 2px;}
+.controls{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;}
 
 .ctrl-row{display:flex;justify-content:space-between;align-items:center;width:100%;}
 .lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#505060;}
@@ -102,6 +110,35 @@ input[type=range]::-webkit-slider-thumb{
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
 .ticks{display:flex;justify-content:space-between;width:100%;}
 .ticks span{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#333344;}
+
+/* ── collapsible settings ── */
+.settings-toggle{
+  width:100%;display:flex;align-items:center;gap:10px;cursor:pointer;
+  background:none;border:none;padding:4px 0;
+  user-select:none;
+}
+.settings-toggle:hover .toggle-line{background:#383850;}
+.toggle-line{flex:1;height:1px;background:#22223a;transition:background .2s;}
+.toggle-label{
+  display:flex;align-items:center;gap:6px;
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:#404055;
+  transition:color .2s,border-color .2s;white-space:nowrap;
+  border:1.5px solid #2a2a3e;border-radius:6px;
+  padding:5px 12px;
+}
+.settings-toggle:hover .toggle-label{color:#606080;border-color:#44445a;}
+.toggle-arrow{
+  font-size:10px;transition:transform .3s ease;display:inline-block;line-height:1;
+}
+.toggle-arrow.open{transform:rotate(180deg);}
+.settings-body{
+  width:100%;overflow:hidden;
+  max-height:0;
+  transition:max-height .35s ease, opacity .3s ease;
+  opacity:0;
+}
+.settings-body.open{max-height:400px;opacity:1;}
 
 /* ── two-col settings row ── */
 .settings-row{
@@ -213,52 +250,62 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
       </div>
     </div>
 
-    <!-- settings divider -->
-    <div style="width:100%;display:flex;align-items:center;gap:10px;margin-top:4px;">
-      <div style="flex:1;height:1px;background:#22223a;"></div>
-      <span style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#303045;">Settings</span>
-      <div style="flex:1;height:1px;background:#22223a;"></div>
-    </div>
+    <!-- collapsible settings toggle -->
+    <button class="settings-toggle" id="settings-toggle" aria-expanded="false">
+      <div class="toggle-line"></div>
+      <span class="toggle-label">
+        <span>Settings</span>
+        <span class="toggle-arrow" id="toggle-arrow">▾</span>
+      </span>
+      <div class="toggle-line"></div>
+    </button>
 
-    <!-- settings: pause limit + bg color — NOW BELOW -->
-    <div class="settings-row">
-      <!-- pause limit -->
-      <div class="setting-block">
-        <div class="setting-top">
-          <span class="lbl">Max pauses</span>
-          <span class="val-badge" id="max-pause-val" style="color:#888">2</span>
-        </div>
-        <input type="range" id="slider-maxpause" min="1" max="10" step="1" value="2" style="background:#1e1e28;">
-      </div>
-      <!-- bg color -->
-      <div class="setting-block">
-        <span class="lbl" style="margin-bottom:6px;">App background</span>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div style="display:flex;align-items:center;gap:5px;">
-            <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Dark</span>
-            <div class="swatch-row" id="swatch-row">
-              <div class="swatch active" data-color="#0c0c10" title="Void" style="background:#0c0c10;outline:1px solid #444;"></div>
-              <div class="swatch" data-color="#0a0f1a" title="Midnight" style="background:#0a0f1a;outline:1px solid #2a3a5a;"></div>
-              <div class="swatch" data-color="#100a1a" title="Nebula" style="background:#100a1a;outline:1px solid #3a2a4a;"></div>
-              <div class="swatch" data-color="#0a1a0e" title="Forest" style="background:#0a1a0e;outline:1px solid #1a3a22;"></div>
-              <div class="swatch" data-color="#1a0a08" title="Ember" style="background:#1a0a08;outline:1px solid #3a1a14;"></div>
-              <div class="swatch" data-color="#001616" title="Deep teal" style="background:#001616;outline:1px solid #003a3a;"></div>
-              <div class="swatch" data-color="#141414" title="Charcoal" style="background:#141414;outline:1px solid #383838;"></div>
+    <!-- collapsible settings body -->
+    <div class="settings-body" id="settings-body">
+      <div style="display:flex;flex-direction:column;gap:11px;padding-top:4px;">
+
+        <!-- settings: pause limit + bg color — BELOW -->
+        <div class="settings-row">
+          <!-- pause limit -->
+          <div class="setting-block">
+            <div class="setting-top">
+              <span class="lbl">Max pauses</span>
+              <span class="val-badge" id="max-pause-val" style="color:#888">2</span>
+            </div>
+            <input type="range" id="slider-maxpause" min="1" max="10" step="1" value="2" style="background:#1e1e28;">
+          </div>
+          <!-- bg color -->
+          <div class="setting-block">
+            <span class="lbl" style="margin-bottom:6px;">App background</span>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Dark</span>
+                <div class="swatch-row" id="swatch-row">
+                  <div class="swatch active" data-color="#0c0c10" title="Void" style="background:#0c0c10;outline:1px solid #444;"></div>
+                  <div class="swatch" data-color="#0a0f1a" title="Midnight" style="background:#0a0f1a;outline:1px solid #2a3a5a;"></div>
+                  <div class="swatch" data-color="#100a1a" title="Nebula" style="background:#100a1a;outline:1px solid #3a2a4a;"></div>
+                  <div class="swatch" data-color="#0a1a0e" title="Forest" style="background:#0a1a0e;outline:1px solid #1a3a22;"></div>
+                  <div class="swatch" data-color="#1a0a08" title="Ember" style="background:#1a0a08;outline:1px solid #3a1a14;"></div>
+                  <div class="swatch" data-color="#001616" title="Teal" style="background:#001616;outline:1px solid #003a3a;"></div>
+                  <div class="swatch" data-color="#141414" title="Charcoal" style="background:#141414;outline:1px solid #383838;"></div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Light</span>
+                <div class="swatch-row" id="swatch-row-light">
+                  <div class="swatch" data-color="#f5f5f0" title="Cream" style="background:#f5f5f0;outline:1px solid #ccc;"></div>
+                  <div class="swatch" data-color="#eef2f8" title="Frost" style="background:#eef2f8;outline:1px solid #bbc;"></div>
+                  <div class="swatch" data-color="#f0eef8" title="Lavender" style="background:#f0eef8;outline:1px solid #c8c0e0;"></div>
+                  <div class="swatch" data-color="#eef5ee" title="Mint" style="background:#eef5ee;outline:1px solid #b0d0b0;"></div>
+                  <div class="swatch" data-color="#fdf0e8" title="Peach" style="background:#fdf0e8;outline:1px solid #ddc0a0;"></div>
+                  <div class="swatch" data-color="#e8f5f5" title="Sky" style="background:#e8f5f5;outline:1px solid #a0c8c8;"></div>
+                  <div class="swatch" data-color="#f8f8f8" title="Paper" style="background:#f8f8f8;outline:1px solid #ccc;"></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Light</span>
-            <div class="swatch-row" id="swatch-row-light">
-              <div class="swatch" data-color="#f5f5f0" title="Cream" style="background:#f5f5f0;outline:1px solid #ccc;"></div>
-              <div class="swatch" data-color="#eef2f8" title="Frost" style="background:#eef2f8;outline:1px solid #bbc;"></div>
-              <div class="swatch" data-color="#f0eef8" title="Lavender" style="background:#f0eef8;outline:1px solid #c8c0e0;"></div>
-              <div class="swatch" data-color="#eef5ee" title="Mint" style="background:#eef5ee;outline:1px solid #b0d0b0;"></div>
-              <div class="swatch" data-color="#fdf0e8" title="Peach" style="background:#fdf0e8;outline:1px solid #ddc0a0;"></div>
-              <div class="swatch" data-color="#e8f5f5" title="Sky" style="background:#e8f5f5;outline:1px solid #a0c8c8;"></div>
-              <div class="swatch" data-color="#f8f8f8" title="Paper" style="background:#f8f8f8;outline:1px solid #ccc;"></div>
-            </div>
-          </div>
         </div>
+
       </div>
     </div>
 
@@ -470,6 +517,16 @@ sliderMax.addEventListener('input',()=>{
   if(pauseCount<maxPauses && btn.classList.contains('locked')) unlockBtn();
 });
 
+// ── settings collapse toggle ──
+const settingsToggle = document.getElementById('settings-toggle');
+const settingsBody   = document.getElementById('settings-body');
+const toggleArrow    = document.getElementById('toggle-arrow');
+settingsToggle.addEventListener('click',()=>{
+  const open = settingsBody.classList.toggle('open');
+  toggleArrow.classList.toggle('open', open);
+  settingsToggle.setAttribute('aria-expanded', open);
+});
+
 // ── swatches — change app background (dark + light rows) ──
 const allSwatches = document.querySelectorAll('.swatch');
 allSwatches.forEach(s=>{
@@ -500,7 +557,7 @@ sliderMax.style.background='linear-gradient(to right,#6060a0 0%,#6060a0 11%,#1e1
 
 // ── ISO CITY ──
 const cv=cityEl, cx=cv.getContext('2d');
-const CW=480, CH=160;
+let CW=480, CH=140;
 const TW=22, TH=11;
 
 function isoX(gx,gy){ return CW/2+(gx-gy)*(TW/2); }
@@ -572,8 +629,8 @@ function cityFrame(t){
   const dt=Math.min(t-prevT,60); prevT=t;
   worldX+=SCROLL_SPEEDS[intensity-1]*(dt/16);
   ensureColumns();
-  cx.clearRect(0,0,CW,CH);
-  cx.fillStyle=cityBg; cx.fillRect(0,0,CW,CH);
+  cx.clearRect(0,0,cv.width,CH);
+  cx.fillStyle=cityBg; cx.fillRect(0,0,cv.width,CH);
   // ground tiles
   for(let xi=Math.floor(worldX)-1;xi<Math.floor(worldX)+25;xi++){
     for(let yi=0;yi<GRID_D;yi++){
@@ -603,6 +660,12 @@ function cityFrame(t){
 function startCity(){ prevT=null; if(rafId){cancelAnimationFrame(rafId);rafId=null;} rafId=requestAnimationFrame(cityFrame); }
 function stopCity(){ if(rafId){cancelAnimationFrame(rafId);rafId=null;} }
 
+function resizeCity(){
+  const w=Math.round(cityEl.getBoundingClientRect().width);
+  if(w>0&&cityEl.width!==w){ cityEl.width=w; CW=w; }
+}
+window.addEventListener('resize',resizeCity);
+setTimeout(resizeCity,50);
 ensureColumns();
 </script>
 </body>
