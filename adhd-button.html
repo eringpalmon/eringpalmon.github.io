@@ -8,19 +8,14 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:#0c0c10;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  font-family:'Nunito',sans-serif;
-  color:#e0e0e8;
+  background:#0c0c10;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;font-family:'Nunito',sans-serif;color:#e0e0e8;
 }
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
 .scene{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;}
 
+/* ── city window ── */
 .city-window{
   width:480px;border-radius:10px 10px 0 0;overflow:hidden;
   border:2px solid #2e2e42;border-bottom:none;
@@ -28,7 +23,7 @@ body{
 }
 .city-window.on{opacity:1;}
 .window-bar{
-  background:#22223a;padding:7px 12px;
+  background:#22223a;padding:6px 12px;
   display:flex;align-items:center;gap:7px;
   border-bottom:1px solid #2e2e42;
 }
@@ -39,8 +34,16 @@ body{
   letter-spacing:.14em;text-transform:uppercase;color:#404060;
   margin-right:34px;
 }
+/* timer inside window bar */
+.win-timer{
+  font-family:'Boogaloo',cursive;font-size:15px;letter-spacing:.06em;
+  color:#7070a0;transition:color .3s;margin-right:4px;min-width:52px;text-align:right;
+}
+.win-timer.active{color:#c0c0f0;}
+.win-timer.paused{color:#505070;}
 #city{display:block;width:480px;height:160px;image-rendering:pixelated;}
 
+/* ── button ── */
 .btn-stage{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;margin-top:-8px;}
 .ring{position:absolute;border-radius:50%;border:2.5px solid transparent;pointer-events:none;opacity:0;transition:border-color .4s,opacity .4s;}
 #r1{inset:-14px;}
@@ -48,9 +51,9 @@ body{
 
 @keyframes rp {0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
 @keyframes rp2{0%,100%{opacity:.18;transform:scale(1)}50%{opacity:.5;transform:scale(1.12)}}
-@keyframes bs {0%,100%{transform:scale(1)}50%{transform:scale(1.042)}}
-@keyframes bm {0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-@keyframes bf {0%,100%{transform:scale(1)}40%{transform:scale(1.10)}55%{transform:scale(1.13)}}
+@keyframes bs{0%,100%{transform:scale(1)}50%{transform:scale(1.042)}}
+@keyframes bm{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes bf{0%,100%{transform:scale(1)}40%{transform:scale(1.10)}55%{transform:scale(1.13)}}
 
 .ps #r1{animation:rp  2.5s ease-in-out infinite;opacity:.55;}
 .ps #r2{animation:rp2 2.5s ease-in-out infinite .7s;opacity:.18;}
@@ -73,11 +76,18 @@ body{
 }
 #btn:hover{transform:scale(1.035)!important;}
 #btn:active{transform:scale(.93)!important;}
+#btn.locked{cursor:not-allowed;filter:grayscale(.7);}
+#btn.locked:hover{transform:none!important;}
+#btn.locked:active{transform:none!important;}
 
-.controls{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:10px;width:320px;}
+/* ── controls panel ── */
+.controls{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:11px;width:480px;padding:0 2px;}
+
 .ctrl-row{display:flex;justify-content:space-between;align-items:center;width:100%;}
 .lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#505060;}
-.vibe{font-size:13px;font-weight:900;transition:color .3s;}
+.val-badge{font-size:13px;font-weight:900;transition:color .3s;}
+
+/* shared slider styles */
 input[type=range]{
   -webkit-appearance:none;appearance:none;
   width:100%;height:5px;border-radius:3px;
@@ -92,30 +102,56 @@ input[type=range]::-webkit-slider-thumb{
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
 .ticks{display:flex;justify-content:space-between;width:100%;}
 .ticks span{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#333344;}
-.pause-row{
-  display:flex;align-items:center;gap:12px;width:100%;margin-top:4px;
+
+/* ── two-col settings row ── */
+.settings-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;
 }
-.gauge-wrap{flex:1;display:flex;flex-direction:column;gap:6px;}
-.gauge-top{display:flex;justify-content:space-between;align-items:baseline;}
-.gauge-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#505060;}
-.gauge-count{font-size:14px;font-weight:900;transition:color .4s;color:#444458;}
-.gauge-track{width:100%;height:7px;background:#1a1a24;border-radius:4px;overflow:hidden;}
-.gauge-fill{height:100%;width:0%;border-radius:4px;transition:width .5s ease,background .5s ease;background:#eeeef4;}
-.reset-btn{
-  background:none;border:1px solid #2a2a38;border-radius:8px;
-  color:#505060;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;cursor:pointer;
-  white-space:nowrap;transition:border-color .2s,color .2s,background .2s;
+.setting-block{display:flex;flex-direction:column;gap:6px;}
+.setting-top{display:flex;justify-content:space-between;align-items:baseline;}
+
+/* color swatches */
+.swatch-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.swatch{
+  width:20px;height:20px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:transform .15s,border-color .15s;
+  flex-shrink:0;
 }
-.reset-btn:hover{border-color:#444;color:#e0e0e8;background:#1a1a24;}
-.hint{margin-top:14px;font-size:11px;color:#404050;letter-spacing:.1em;text-transform:uppercase;font-weight:700;text-align:center;}
-#btn.locked{cursor:not-allowed;filter:grayscale(.7);}
-#btn.locked:hover{transform:none!important;}
-#btn.locked:active{transform:none!important;}
+.swatch:hover{transform:scale(1.2);}
+.swatch.active{border-color:#fff;}
+
+/* ── pause + timer row ── */
+.bottom-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;
+}
+.card{
+  background:#13131e;border:1px solid #22223a;border-radius:10px;
+  padding:10px 14px;display:flex;flex-direction:column;gap:7px;
+}
+.card-top{display:flex;justify-content:space-between;align-items:baseline;}
+.card-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#505060;}
+.card-val{font-size:18px;font-weight:900;transition:color .4s;color:#444458;font-family:'Boogaloo',cursive;letter-spacing:.05em;}
+.gauge-track{width:100%;height:6px;background:#1a1a26;border-radius:3px;overflow:hidden;}
+.gauge-fill{height:100%;width:0%;border-radius:3px;transition:width .5s ease,background .5s ease;background:#eeeef4;}
+.card-btn{
+  align-self:flex-end;
+  background:none;border:1px solid #2a2a3a;border-radius:6px;
+  color:#505060;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;cursor:pointer;
+  white-space:nowrap;transition:border-color .2s,color .2s,background .2s;margin-top:2px;
+}
+.card-btn:hover{border-color:#444;color:#e0e0e8;background:#1a1a26;}
+
+/* timer display */
+.timer-val{font-size:22px;font-weight:900;font-family:'Boogaloo',cursive;letter-spacing:.08em;color:#444458;transition:color .4s;}
+.timer-val.active{color:#c0d0ff;}
+.timer-val.paused{color:#505070;}
+
+/* hint + max msg */
+.hint{margin-top:10px;font-size:11px;color:#404050;letter-spacing:.1em;text-transform:uppercase;font-weight:700;text-align:center;}
 .max-msg{
-  margin-top:10px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
-  color:#e24b4a;text-align:center;
-  animation:flash-msg 1s ease-in-out 3;
+  margin-top:8px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
+  color:#e24b4a;text-align:center;display:none;
 }
 @keyframes flash-msg{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
@@ -123,42 +159,114 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
 <body>
 <canvas id="stars"></canvas>
 <div class="scene">
+
+  <!-- city window -->
   <div class="city-window" id="city-window">
     <div class="window-bar">
       <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
       <span class="win-title">Builder View</span>
+      <span class="win-timer" id="win-timer">0:00</span>
     </div>
     <canvas id="city" width="480" height="160"></canvas>
   </div>
+
+  <!-- button -->
   <div class="btn-stage" id="stage">
     <div class="ring" id="r1"></div>
     <div class="ring" id="r2"></div>
     <button id="btn">START</button>
   </div>
+
+  <!-- controls -->
   <div class="controls">
-    <div class="ctrl-row">
-      <span class="lbl">Motivation Intensity</span>
-      <span class="vibe" id="vibe">Gentle nudge</span>
-    </div>
-    <input type="range" id="slider" min="1" max="5" step="1" value="1">
-    <div class="ticks">
-      <span>Soft</span><span>Mild</span><span>Medium</span><span>Fired</span><span>CHAOS</span>
-    </div>
-  </div>
-  <div class="pause-row">
-    <div class="gauge-wrap">
-      <div class="gauge-top">
-        <span class="gauge-lbl">Pauses today</span>
-        <span class="gauge-count" id="pause-count">0</span>
+
+    <!-- intensity slider -->
+    <div style="width:100%;display:flex;flex-direction:column;gap:6px;">
+      <div class="ctrl-row">
+        <span class="lbl">Motivation Intensity</span>
+        <span class="val-badge" id="vibe">Gentle nudge</span>
       </div>
-      <div class="gauge-track">
-        <div class="gauge-fill" id="gauge-fill"></div>
+      <input type="range" id="slider-intensity" min="1" max="5" step="1" value="1">
+      <div class="ticks">
+        <span>Soft</span><span>Mild</span><span>Medium</span><span>Fired</span><span>CHAOS</span>
       </div>
     </div>
-    <button class="reset-btn" id="reset-btn">Reset</button>
+
+    <!-- pause counter + timer cards — NOW FIRST -->
+    <div class="bottom-row">
+      <!-- pauses -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-lbl">Pauses</span>
+          <span class="card-val" id="pause-count">0 / 2</span>
+        </div>
+        <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
+        <button class="card-btn" id="reset-pauses">Reset pauses</button>
+      </div>
+      <!-- timer -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-lbl">Focus time</span>
+        </div>
+        <div class="timer-val" id="timer-val">0:00</div>
+        <button class="card-btn" id="reset-timer">Reset timer</button>
+      </div>
+    </div>
+
+    <!-- settings divider -->
+    <div style="width:100%;display:flex;align-items:center;gap:10px;margin-top:4px;">
+      <div style="flex:1;height:1px;background:#22223a;"></div>
+      <span style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#303045;">Settings</span>
+      <div style="flex:1;height:1px;background:#22223a;"></div>
+    </div>
+
+    <!-- settings: pause limit + bg color — NOW BELOW -->
+    <div class="settings-row">
+      <!-- pause limit -->
+      <div class="setting-block">
+        <div class="setting-top">
+          <span class="lbl">Max pauses</span>
+          <span class="val-badge" id="max-pause-val" style="color:#888">2</span>
+        </div>
+        <input type="range" id="slider-maxpause" min="1" max="10" step="1" value="2" style="background:#1e1e28;">
+      </div>
+      <!-- bg color -->
+      <div class="setting-block">
+        <span class="lbl" style="margin-bottom:6px;">App background</span>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Dark</span>
+            <div class="swatch-row" id="swatch-row">
+              <div class="swatch active" data-color="#0c0c10" title="Void" style="background:#0c0c10;outline:1px solid #444;"></div>
+              <div class="swatch" data-color="#0a0f1a" title="Midnight" style="background:#0a0f1a;outline:1px solid #2a3a5a;"></div>
+              <div class="swatch" data-color="#100a1a" title="Nebula" style="background:#100a1a;outline:1px solid #3a2a4a;"></div>
+              <div class="swatch" data-color="#0a1a0e" title="Forest" style="background:#0a1a0e;outline:1px solid #1a3a22;"></div>
+              <div class="swatch" data-color="#1a0a08" title="Ember" style="background:#1a0a08;outline:1px solid #3a1a14;"></div>
+              <div class="swatch" data-color="#001616" title="Deep teal" style="background:#001616;outline:1px solid #003a3a;"></div>
+              <div class="swatch" data-color="#141414" title="Charcoal" style="background:#141414;outline:1px solid #383838;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Light</span>
+            <div class="swatch-row" id="swatch-row-light">
+              <div class="swatch" data-color="#f5f5f0" title="Cream" style="background:#f5f5f0;outline:1px solid #ccc;"></div>
+              <div class="swatch" data-color="#eef2f8" title="Frost" style="background:#eef2f8;outline:1px solid #bbc;"></div>
+              <div class="swatch" data-color="#f0eef8" title="Lavender" style="background:#f0eef8;outline:1px solid #c8c0e0;"></div>
+              <div class="swatch" data-color="#eef5ee" title="Mint" style="background:#eef5ee;outline:1px solid #b0d0b0;"></div>
+              <div class="swatch" data-color="#fdf0e8" title="Peach" style="background:#fdf0e8;outline:1px solid #ddc0a0;"></div>
+              <div class="swatch" data-color="#e8f5f5" title="Sky" style="background:#e8f5f5;outline:1px solid #a0c8c8;"></div>
+              <div class="swatch" data-color="#f8f8f8" title="Paper" style="background:#f8f8f8;outline:1px solid #ccc;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
+
   <p class="hint" id="hint">click to start &nbsp;·&nbsp; double-click to pause</p>
-  <p class="max-msg" id="max-msg" style="display:none"></p>
+  <p class="max-msg" id="max-msg"></p>
+
 </div>
 
 <script>
@@ -173,27 +281,39 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
   }
 })();
 
-// ── state ──
+// ── app state ──
 const COLORS=['#e24b4a','#d85a30','#ba7517','#5a9620','#1a9e72','#1660a8','#7a70de','#cc4e80','#2e8a5a','#0a447e','#8b3fc0','#a8602a'];
 const VIBES=['Gentle nudge','Getting real','Fired up','Full send','CHAOS MODE'];
-let running=false, colorIdx=0, intensity=1, clickTimer=null, pauseCount=0;
-const MAX_PAUSES=5;
 
-const btn=document.getElementById('btn');
-const stage=document.getElementById('stage');
-const r1=document.getElementById('r1');
-const r2=document.getElementById('r2');
-const slider=document.getElementById('slider');
-const vibeEl=document.getElementById('vibe');
-const hint=document.getElementById('hint');
-const maxMsg=document.getElementById('max-msg');
-const cityEl=document.getElementById('city');
-const cityWindow=document.getElementById('city-window');
-const pauseCountEl=document.getElementById('pause-count');
-const gaugeFill=document.getElementById('gauge-fill');
-const resetBtn=document.getElementById('reset-btn');
+let running=false, colorIdx=0, intensity=1, clickTimer=null;
+let pauseCount=0, maxPauses=2;
+let cityBg='#13132a'; // city canvas stays fixed navy
 
-function col(){return COLORS[colorIdx%COLORS.length];}
+// timer state
+let timerSec=0, timerInterval=null;
+
+const btn          = document.getElementById('btn');
+const stage        = document.getElementById('stage');
+const r1           = document.getElementById('r1');
+const r2           = document.getElementById('r2');
+const sliderInt    = document.getElementById('slider-intensity');
+const sliderMax    = document.getElementById('slider-maxpause');
+const vibeEl       = document.getElementById('vibe');
+const hint         = document.getElementById('hint');
+const maxMsg       = document.getElementById('max-msg');
+const cityEl       = document.getElementById('city');
+const cityWindow   = document.getElementById('city-window');
+const pauseCountEl = document.getElementById('pause-count');
+const gaugeFill    = document.getElementById('gauge-fill');
+const resetPauses  = document.getElementById('reset-pauses');
+const resetTimer   = document.getElementById('reset-timer');
+const timerVal     = document.getElementById('timer-val');
+const winTimer     = document.getElementById('win-timer');
+const swatchRow    = document.getElementById('swatch-row');
+const maxPauseVal  = document.getElementById('max-pause-val');
+
+// ── color helpers ──
+function col(){ return COLORS[colorIdx % COLORS.length]; }
 
 function applyColor(c){
   btn.style.background=c;
@@ -202,12 +322,13 @@ function applyColor(c){
   r2.style.borderColor=c+'55';
   vibeEl.style.color=c;
   const pct=((intensity-1)/4*100).toFixed(0);
-  slider.style.background=`linear-gradient(to right,${c} 0%,${c} ${pct}%,#1e1e28 ${pct}%,#1e1e28 100%)`;
+  sliderInt.style.background=`linear-gradient(to right,${c} 0%,${c} ${pct}%,#1e1e28 ${pct}%,#1e1e28 100%)`;
   let st=document.getElementById('_th');
   if(!st){st=document.createElement('style');st.id='_th';document.head.appendChild(st);}
   st.textContent=`input[type=range]::-webkit-slider-thumb{background:${c}!important;}`;
 }
 
+// ── pulse ──
 function setPulse(){
   stage.className='btn-stage';
   if(!running) return;
@@ -216,8 +337,67 @@ function setPulse(){
   else stage.classList.add('pf');
 }
 
+// ── timer ──
+function fmtTime(s){
+  const m=Math.floor(s/60), ss=s%60;
+  return `${m}:${ss.toString().padStart(2,'0')}`;
+}
+function startTimer(){
+  if(timerInterval) return;
+  timerInterval=setInterval(()=>{
+    timerSec++;
+    const f=fmtTime(timerSec);
+    timerVal.textContent=f;
+    winTimer.textContent=f;
+  },1000);
+  timerVal.className='timer-val active';
+  winTimer.className='win-timer active';
+}
+function pauseTimer(){
+  clearInterval(timerInterval); timerInterval=null;
+  timerVal.className='timer-val paused';
+  winTimer.className='win-timer paused';
+}
+function resetTimerFn(){
+  pauseTimer();
+  timerSec=0;
+  timerVal.textContent='0:00';
+  winTimer.textContent='0:00';
+  timerVal.className='timer-val';
+  winTimer.className='win-timer';
+}
+
+// ── gauge ──
+function updateGauge(){
+  const t=Math.min(pauseCount/maxPauses,1);
+  gaugeFill.style.width=(t*100)+'%';
+  pauseCountEl.textContent=`${pauseCount} / ${maxPauses}`;
+  let r,g,b;
+  if(t<.5){const s=t*2;r=Math.round(238+s*(210-238));g=Math.round(238+s*(90-238));b=Math.round(238+s*(50-238));}
+  else{const s=(t-.5)*2;r=Math.round(210+s*(60-210));g=Math.round(90+s*(10-90));b=Math.round(50+s*(10-50));}
+  const c=`rgb(${r},${g},${b})`;
+  gaugeFill.style.background=c;
+  pauseCountEl.style.color=t<.05?'#444458':c;
+
+  if(pauseCount>=maxPauses){
+    // lock
+    btn.classList.add('locked');
+    btn.style.background='#3a3a4a';
+    btn.style.boxShadow='0 6px 38px rgba(0,0,0,.3)';
+    btn.textContent='LOCKED';
+    stage.className='btn-stage';
+    hint.textContent='';
+    maxMsg.textContent='max pauses reached — reset to continue';
+    maxMsg.style.display='block';
+    maxMsg.style.animation='none';
+    maxMsg.offsetHeight;
+    maxMsg.style.animation='flash-msg 1s ease-in-out 3';
+  }
+}
+
+// ── main actions ──
 function goRunning(){
-  if(pauseCount>=MAX_PAUSES) return;
+  if(pauseCount>=maxPauses) return;
   running=true;
   colorIdx++;
   applyColor(col());
@@ -226,76 +406,29 @@ function goRunning(){
   hint.textContent='click to change color · double-click to pause';
   cityWindow.classList.add('on');
   startCity();
+  startTimer();
   setTimeout(()=>{ if(running) btn.textContent='GO!'; },700);
-}
-
-function updateGauge(){
-  const t=Math.min(pauseCount/MAX_PAUSES,1);
-  gaugeFill.style.width=(t*100)+'%';
-  pauseCountEl.textContent=pauseCount;
-  let r,g,b;
-  if(t<.5){const s=t*2; r=Math.round(238+s*(210-238)); g=Math.round(238+s*(90-238)); b=Math.round(238+s*(50-238));}
-  else{const s=(t-.5)*2; r=Math.round(210+s*(60-210)); g=Math.round(90+s*(10-90)); b=Math.round(50+s*(10-50));}
-  const c=`rgb(${r},${g},${b})`;
-  gaugeFill.style.background=c;
-  pauseCountEl.style.color=t<.05?'#444458':c;
-  if(pauseCount>=MAX_PAUSES){
-    btn.classList.add('locked');
-    btn.textContent='LOCKED';
-    btn.style.background='#3a3a4a';
-    btn.style.boxShadow='0 6px 38px rgba(0,0,0,.3)';
-    hint.textContent='';
-    maxMsg.textContent='max pauses hit — reset to continue';
-    maxMsg.style.display='block';
-    // re-trigger flash animation
-    maxMsg.style.animation='none';
-    maxMsg.offsetHeight;
-    maxMsg.style.animation='flash-msg 1s ease-in-out 3';
-  }
 }
 
 function goPause(){
   running=false;
-  pauseCount=Math.min(pauseCount+1,MAX_PAUSES);
+  pauseCount=Math.min(pauseCount+1,maxPauses);
   updateGauge();
   stopCity();
+  pauseTimer();
   stage.className='btn-stage';
   cityWindow.classList.remove('on');
-  if(pauseCount>=MAX_PAUSES) return; // locked state handled by updateGauge
+  if(pauseCount>=maxPauses) return;
   btn.style.background='#e24b4a';
   btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
   r1.style.borderColor='#e24b4abb';
   r2.style.borderColor='#e24b4a44';
   btn.textContent='PAUSE';
   hint.textContent='paused · click to go again';
-  setTimeout(()=>{ if(!running&&pauseCount<MAX_PAUSES) btn.textContent='START'; },1300);
+  setTimeout(()=>{ if(!running&&pauseCount<maxPauses) btn.textContent='START'; },1300);
 }
 
-// single vs double click — first click starts 300ms timer
-// second click within 300ms cancels timer and triggers double-click action
-btn.addEventListener('click',()=>{
-  if(clickTimer!==null){
-    clearTimeout(clickTimer);
-    clickTimer=null;
-    goPause();
-  } else {
-    clickTimer=setTimeout(()=>{
-      clickTimer=null;
-      goRunning();
-    },300);
-  }
-});
-
-slider.addEventListener('input',()=>{
-  intensity=parseInt(slider.value);
-  vibeEl.textContent=VIBES[intensity-1];
-  applyColor(running?col():'#e24b4a');
-  if(running) setPulse();
-});
-
-resetBtn.addEventListener('click',()=>{
-  pauseCount=0;
-  updateGauge();
+function unlockBtn(){
   btn.classList.remove('locked');
   btn.textContent='START';
   btn.style.background='#e24b4a';
@@ -304,10 +437,66 @@ resetBtn.addEventListener('click',()=>{
   r2.style.borderColor='#e24b4a44';
   maxMsg.style.display='none';
   hint.textContent='click to start · double-click to pause';
+}
+
+// ── click handler ──
+btn.addEventListener('click',()=>{
+  if(btn.classList.contains('locked')) return;
+  if(clickTimer!==null){
+    clearTimeout(clickTimer); clickTimer=null;
+    goPause();
+  } else {
+    clickTimer=setTimeout(()=>{ clickTimer=null; goRunning(); },300);
+  }
 });
 
+// ── intensity slider ──
+sliderInt.addEventListener('input',()=>{
+  intensity=parseInt(sliderInt.value);
+  vibeEl.textContent=VIBES[intensity-1];
+  applyColor(running?col():'#e24b4a');
+  if(running) setPulse();
+});
+
+// ── max pause slider ──
+sliderMax.addEventListener('input',()=>{
+  maxPauses=parseInt(sliderMax.value);
+  maxPauseVal.textContent=maxPauses;
+  // style the slider track
+  const pct=((maxPauses-1)/9*100).toFixed(0);
+  sliderMax.style.background=`linear-gradient(to right,#6060a0 0%,#6060a0 ${pct}%,#1e1e28 ${pct}%,#1e1e28 100%)`;
+  updateGauge();
+  // if we were locked and new max is higher than count, unlock
+  if(pauseCount<maxPauses && btn.classList.contains('locked')) unlockBtn();
+});
+
+// ── swatches — change app background (dark + light rows) ──
+const allSwatches = document.querySelectorAll('.swatch');
+allSwatches.forEach(s=>{
+  s.addEventListener('click',()=>{
+    allSwatches.forEach(x=>x.classList.remove('active'));
+    s.classList.add('active');
+    document.body.style.background=s.dataset.color;
+    // also tint the stars canvas bg so it doesn't clash on light mode
+    document.getElementById('stars').style.opacity=
+      s.dataset.color.startsWith('#f')||s.dataset.color.startsWith('#e') ? '0.15' : '1';
+  });
+});
+
+// ── reset buttons ──
+resetPauses.addEventListener('click',()=>{
+  pauseCount=0;
+  updateGauge();
+  if(btn.classList.contains('locked')) unlockBtn();
+});
+
+resetTimer.addEventListener('click',()=>{ resetTimerFn(); });
+
+// ── init ──
 applyColor('#e24b4a');
 updateGauge();
+// init max pause slider track
+sliderMax.style.background='linear-gradient(to right,#6060a0 0%,#6060a0 11%,#1e1e28 11%,#1e1e28 100%)';
 
 // ── ISO CITY ──
 const cv=cityEl, cx=cv.getContext('2d');
@@ -329,155 +518,91 @@ const BPAL=[
 ];
 
 const GRID_D=4;
-let worldX=0;
-let columns=[];
-let rafId=null;
-let prevT=null;
-
-// Build speeds per intensity — very slow at level 1
+let worldX=0, columns=[], rafId=null, prevT=null;
 const SCROLL_SPEEDS=[.002,.005,.009,.016,.027];
 const BUILD_RATES  =[.004,.009,.018,.030,.052];
 
 function makeColumn(gx){
   const buildings=[];
   for(let y=0;y<GRID_D;y++){
-    if(Math.random()<.62){
-      buildings.push({
-        gy:y, h:1+Math.floor(Math.random()*6),
-        built:0, pal:BPAL[Math.floor(Math.random()*BPAL.length)]
-      });
-    }
+    if(Math.random()<.62)
+      buildings.push({gy:y,h:1+Math.floor(Math.random()*6),built:0,pal:BPAL[Math.floor(Math.random()*BPAL.length)]});
   }
-  return {gx, buildings};
+  return {gx,buildings};
 }
 
 function ensureColumns(){
-  // pre-fill right side
   const need=Math.floor(worldX)+26;
   while(true){
-    const rgt=columns.length>0 ? columns[columns.length-1].gx : Math.floor(worldX)-1;
-    if(rgt<need) columns.push(makeColumn(rgt+1));
-    else break;
+    const rgt=columns.length>0?columns[columns.length-1].gx:Math.floor(worldX)-1;
+    if(rgt<need) columns.push(makeColumn(rgt+1)); else break;
   }
-  // prune far left
-  while(columns.length>0 && columns[0].gx < Math.floor(worldX)-4){
-    columns.shift();
-  }
+  while(columns.length>0&&columns[0].gx<Math.floor(worldX)-4) columns.shift();
 }
 
 function drawBlock(gx,gy,gz,pal,alpha){
-  const sx=isoX(gx-worldX,gy);
-  const sy=isoY(gx-worldX,gy,gz);
+  const sx=isoX(gx-worldX,gy), sy=isoY(gx-worldX,gy,gz);
   if(sx<-TW*2||sx>CW+TW*2) return;
   cx.globalAlpha=alpha;
-  // top face
-  cx.beginPath();
-  cx.moveTo(sx,sy); cx.lineTo(sx+TW/2,sy+TH/2);
-  cx.lineTo(sx+TW,sy); cx.lineTo(sx+TW/2,sy-TH/2);
-  cx.closePath(); cx.fillStyle=pal.top; cx.fill();
-  // left face
-  cx.beginPath();
-  cx.moveTo(sx,sy); cx.lineTo(sx,sy+TH);
-  cx.lineTo(sx+TW/2,sy+TH+TH/2); cx.lineTo(sx+TW/2,sy+TH/2);
-  cx.closePath(); cx.fillStyle=pal.lft; cx.fill();
-  // right face
-  cx.beginPath();
-  cx.moveTo(sx+TW,sy); cx.lineTo(sx+TW,sy+TH);
-  cx.lineTo(sx+TW/2,sy+TH+TH/2); cx.lineTo(sx+TW/2,sy+TH/2);
-  cx.closePath(); cx.fillStyle=pal.rgt; cx.fill();
-  // window
-  if(gz>0 && Math.random()<.06){
-    cx.fillStyle='rgba(255,240,130,.75)';
-    cx.fillRect(sx+TW/2-3,sy-3,3,3);
-  }
-  cx.strokeStyle='rgba(0,0,0,.18)'; cx.lineWidth=.4;
-  cx.beginPath();
-  cx.moveTo(sx,sy); cx.lineTo(sx+TW/2,sy-TH/2); cx.lineTo(sx+TW,sy);
-  cx.lineTo(sx+TW/2,sy+TH/2); cx.closePath(); cx.stroke();
+  cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(sx+TW/2,sy+TH/2);cx.lineTo(sx+TW,sy);cx.lineTo(sx+TW/2,sy-TH/2);cx.closePath();cx.fillStyle=pal.top;cx.fill();
+  cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(sx,sy+TH);cx.lineTo(sx+TW/2,sy+TH+TH/2);cx.lineTo(sx+TW/2,sy+TH/2);cx.closePath();cx.fillStyle=pal.lft;cx.fill();
+  cx.beginPath();cx.moveTo(sx+TW,sy);cx.lineTo(sx+TW,sy+TH);cx.lineTo(sx+TW/2,sy+TH+TH/2);cx.lineTo(sx+TW/2,sy+TH/2);cx.closePath();cx.fillStyle=pal.rgt;cx.fill();
+  if(gz>0&&Math.random()<.06){cx.fillStyle='rgba(255,240,130,.75)';cx.fillRect(sx+TW/2-3,sy-3,3,3);}
+  cx.strokeStyle='rgba(0,0,0,.18)';cx.lineWidth=.4;
+  cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(sx+TW/2,sy-TH/2);cx.lineTo(sx+TW,sy);cx.lineTo(sx+TW/2,sy+TH/2);cx.closePath();cx.stroke();
   cx.globalAlpha=1;
 }
 
 function drawBuilder(gx,gy,topZ,t){
-  const sx=isoX(gx-worldX,gy);
-  const sy=isoY(gx-worldX,gy,topZ);
+  const sx=isoX(gx-worldX,gy), sy=isoY(gx-worldX,gy,topZ);
   if(sx<-30||sx>CW+30) return;
   const bob=Math.sin(t*.003+gy*1.3)*1.8;
   const px=sx-3, py=sy-16+bob;
-  cx.fillStyle='#f0c040'; cx.fillRect(px,py,7,3);       // hat
-  cx.fillStyle='#f5c9a0'; cx.fillRect(px+1,py+3,5,4);   // head
-  cx.fillStyle='#3a6ee0'; cx.fillRect(px,py+7,7,5);      // body
-  cx.fillStyle='#22223a'; cx.fillRect(px,py+12,3,4);     // legs
-                           cx.fillRect(px+4,py+12,3,4);
-  cx.fillStyle='#cccccc';                                  // tool
+  cx.fillStyle='#f0c040';cx.fillRect(px,py,7,3);
+  cx.fillStyle='#f5c9a0';cx.fillRect(px+1,py+3,5,4);
+  cx.fillStyle='#3a6ee0';cx.fillRect(px,py+7,7,5);
+  cx.fillStyle='#22223a';cx.fillRect(px,py+12,3,4);cx.fillRect(px+4,py+12,3,4);
+  cx.fillStyle='#cccccc';
   if(Math.sin(t*.007+gx)>0) cx.fillRect(px+8,py+3,2,6);
-  else                        cx.fillRect(px+8,py+7,2,6);
+  else cx.fillRect(px+8,py+7,2,6);
 }
 
 function cityFrame(t){
   if(prevT===null) prevT=t;
-  const dt=Math.min(t-prevT,60);
-  prevT=t;
-
-  const spd=SCROLL_SPEEDS[intensity-1];
-  const brt=BUILD_RATES[intensity-1];
-
-  worldX+=spd*(dt/16);
+  const dt=Math.min(t-prevT,60); prevT=t;
+  worldX+=SCROLL_SPEEDS[intensity-1]*(dt/16);
   ensureColumns();
-
   cx.clearRect(0,0,CW,CH);
-  cx.fillStyle='#13132a'; cx.fillRect(0,0,CW,CH);
-
-  // ground
+  cx.fillStyle=cityBg; cx.fillRect(0,0,CW,CH);
+  // ground tiles
   for(let xi=Math.floor(worldX)-1;xi<Math.floor(worldX)+25;xi++){
     for(let yi=0;yi<GRID_D;yi++){
-      const sx=isoX(xi-worldX,yi), sy=isoY(xi-worldX,yi,0);
-      cx.beginPath();
-      cx.moveTo(sx,sy); cx.lineTo(sx+TW/2,sy+TH/2);
-      cx.lineTo(sx+TW,sy); cx.lineTo(sx+TW/2,sy-TH/2);
-      cx.closePath();
-      cx.fillStyle=(xi+yi)%2===0?'#1e1e3a':'#191932'; cx.fill();
-      cx.strokeStyle='rgba(120,120,200,.07)'; cx.lineWidth=.4; cx.stroke();
+      const sx=isoX(xi-worldX,yi),sy=isoY(xi-worldX,yi,0);
+      cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(sx+TW/2,sy+TH/2);cx.lineTo(sx+TW,sy);cx.lineTo(sx+TW/2,sy-TH/2);cx.closePath();
+      // slightly lighter than bg for the tiles
+      cx.fillStyle=(xi+yi)%2===0?'rgba(255,255,255,.07)':'rgba(255,255,255,.04)';cx.fill();
+      cx.strokeStyle='rgba(255,255,255,.04)';cx.lineWidth=.4;cx.stroke();
     }
   }
-
-  // collect + painter-sort
   const all=[];
-  for(const col of columns)
-    for(const b of col.buildings)
-      all.push({gx:col.gx, b});
+  for(const col of columns) for(const b of col.buildings) all.push({gx:col.gx,b});
   all.sort((a,b2)=>(a.gx+a.b.gy)-(b2.gx+b2.b.gy));
-
-  // draw buildings
   for(const {gx,b} of all){
-    if(b.built<b.h) b.built=Math.min(b.built+brt*(dt/16), b.h);
+    if(b.built<b.h) b.built=Math.min(b.built+BUILD_RATES[intensity-1]*(dt/16),b.h);
     const layers=Math.floor(b.built);
     for(let z=0;z<layers;z++) drawBlock(gx,b.gy,z,b.pal,1);
     const frac=b.built-layers;
     if(frac>.04&&layers<b.h) drawBlock(gx,b.gy,layers,b.pal,frac);
   }
-
-  // draw builders on top
   for(const {gx,b} of all){
     if(b.built>=.9) drawBuilder(gx,b.gy,Math.floor(b.built),t);
   }
-
-  // always re-request — running flag checked to decide whether to stop AFTER draw
-  if(running){
-    rafId=requestAnimationFrame(cityFrame);
-  }
+  if(running) rafId=requestAnimationFrame(cityFrame);
 }
 
-function startCity(){
-  prevT=null;
-  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
-  rafId=requestAnimationFrame(cityFrame);
-}
+function startCity(){ prevT=null; if(rafId){cancelAnimationFrame(rafId);rafId=null;} rafId=requestAnimationFrame(cityFrame); }
+function stopCity(){ if(rafId){cancelAnimationFrame(rafId);rafId=null;} }
 
-function stopCity(){
-  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
-}
-
-// pre-populate columns so city is ready instantly
 ensureColumns();
 </script>
 </body>
