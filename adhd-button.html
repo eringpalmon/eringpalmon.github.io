@@ -15,7 +15,7 @@ body{
   overflow-y:auto;overflow-x:hidden;
   font-family:'Nunito',sans-serif;color:#e0e0e8;
   padding:24px 16px 40px;
-  transition:background-color .4s;
+  transition:background .4s;
 }
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
 .scene{
@@ -204,7 +204,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
       <span class="win-title">Builder View</span>
       <span class="win-timer" id="win-timer">0:00</span>
     </div>
-    <div id="city-lottie" style="width:480px; height:160px;"></div>
+    <canvas id="city" width="480" height="160"></canvas>
   </div>
 
   <!-- button -->
@@ -667,16 +667,6 @@ function resizeCity(){
 window.addEventListener('resize',resizeCity);
 setTimeout(resizeCity,50);
 ensureColumns();
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-<script>
-  const animation = lottie.loadAnimation({
-    container: document.getElementById('city-lottie'),
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'building-lottie-file.json'
-  });
 </script>
 </body>
 </html>
