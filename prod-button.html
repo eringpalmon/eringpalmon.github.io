@@ -7,194 +7,111 @@
 <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#0c0c10;
-  min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:flex-start;
-  overflow-y:auto;overflow-x:hidden;
-  font-family:'Nunito',sans-serif;color:#e0e0e8;
-  padding:24px 16px 40px;
-  transition:background .4s;
-}
+body{background:#0c0c10;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;overflow-x:hidden;font-family:'Nunito',sans-serif;color:#e0e0e8;padding:24px 16px 40px;transition:background .4s;}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
-.scene{
-  position:relative;z-index:2;
-  display:flex;flex-direction:column;align-items:center;gap:0;
-  width:100%;max-width:480px;
-}
-
-/* ── tower window ── */
-.city-window{
-  width:100%;border-radius:10px 10px 0 0;overflow:hidden;
-  border:2px solid #2e2e42;border-bottom:none;
-  opacity:0;transition:opacity 0.8s ease;
-}
+.scene{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:480px;}
+.city-window{width:100%;border-radius:10px 10px 0 0;overflow:hidden;border:2px solid #2e2e42;border-bottom:none;opacity:0;transition:opacity 0.8s ease;}
 .city-window.on{opacity:1;}
-.window-bar{
-  background:#22223a;padding:6px 12px;
-  display:flex;align-items:center;gap:7px;
-  border-bottom:1px solid #2e2e42;
-}
+.window-bar{background:#22223a;padding:6px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid #2e2e42;}
 .dot{width:10px;height:10px;border-radius:50%;}
 .dot-r{background:#e24b4a;}.dot-y{background:#f0c040;}.dot-g{background:#3a9e5a;}
-.win-title{
-  flex:1;text-align:center;font-size:10px;font-weight:700;
-  letter-spacing:.14em;text-transform:uppercase;color:#404060;
-  margin-right:34px;
-}
-.win-timer{
-  font-family:'Boogaloo',cursive;font-size:15px;letter-spacing:.06em;
-  color:#7070a0;transition:color .3s;margin-right:4px;min-width:52px;text-align:right;
-}
-.win-timer.active{color:#c0c0f0;}
-.win-timer.paused{color:#505070;}
-
-#tower-canvas{display:block;width:100%;height:200px;image-rendering:pixelated;}
-
-/* ── button ── */
+.win-title{flex:1;text-align:center;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#404060;}
+.win-timer{font-family:'Boogaloo',cursive;font-size:15px;letter-spacing:.06em;color:#7070a0;transition:color .3s;min-width:52px;text-align:right;margin-left:6px;}
+.win-timer.active{color:#c0c0f0;}.win-timer.paused{color:#505070;}
+.scene-nav{display:flex;align-items:center;gap:4px;}
+.scene-arrow{background:none;border:1px solid #333348;border-radius:5px;color:#505068;font-size:14px;line-height:1;padding:2px 8px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;font-family:'Boogaloo',cursive;}
+.scene-arrow:hover{border-color:#6060a0;color:#c0c0ff;background:#1a1a2e;}
+.scene-dots{display:flex;align-items:center;gap:4px;padding:0 2px;}
+.scene-dot{width:5px;height:5px;border-radius:50%;background:#333348;transition:background .2s;}
+.scene-dot.active{background:#8080c0;}
+#anim-canvas{display:block;width:100%;height:200px;image-rendering:pixelated;}
 .btn-stage{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;margin-top:-8px;}
 .ring{position:absolute;border-radius:50%;border:2.5px solid transparent;pointer-events:none;opacity:0;transition:border-color .4s,opacity .4s;}
-#r1{inset:-14px;}
-#r2{inset:-28px;border-width:1.5px;}
-
-@keyframes rp {0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+#r1{inset:-14px;}#r2{inset:-28px;border-width:1.5px;}
+@keyframes rp{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
 @keyframes rp2{0%,100%{opacity:.18;transform:scale(1)}50%{opacity:.5;transform:scale(1.12)}}
 @keyframes bs{0%,100%{transform:scale(1)}50%{transform:scale(1.042)}}
 @keyframes bm{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes bf{0%,100%{transform:scale(1)}40%{transform:scale(1.10)}55%{transform:scale(1.13)}}
-
-.ps #r1{animation:rp  2.5s ease-in-out infinite;opacity:.55;}
+.ps #r1{animation:rp 2.5s ease-in-out infinite;opacity:.55;}
 .ps #r2{animation:rp2 2.5s ease-in-out infinite .7s;opacity:.18;}
 .ps #btn{animation:bs 2.5s ease-in-out infinite;}
-.pm #r1{animation:rp  1.4s ease-in-out infinite;opacity:.65;}
+.pm #r1{animation:rp 1.4s ease-in-out infinite;opacity:.65;}
 .pm #r2{animation:rp2 1.4s ease-in-out infinite .35s;opacity:.28;}
 .pm #btn{animation:bm 1.4s ease-in-out infinite;}
-.pf #r1{animation:rp  .68s ease-in-out infinite;opacity:.85;}
+.pf #r1{animation:rp .68s ease-in-out infinite;opacity:.85;}
 .pf #r2{animation:rp2 .68s ease-in-out infinite .17s;opacity:.4;}
 .pf #btn{animation:bf .68s ease-in-out infinite;}
-
-#btn{
-  width:190px;height:190px;border-radius:50%;border:none;cursor:pointer;
-  font-family:'Boogaloo',cursive;font-size:2.4rem;letter-spacing:.07em;
-  color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);
-  background:#e24b4a;z-index:3;
-  transition:background .4s,box-shadow .4s,transform .1s;
-  outline:none;user-select:none;-webkit-tap-highlight-color:transparent;
-  box-shadow:0 6px 38px rgba(226,75,74,.5);
-}
-#btn:hover{transform:scale(1.035)!important;}
-#btn:active{transform:scale(.93)!important;}
+#btn{width:190px;height:190px;border-radius:50%;border:none;cursor:pointer;font-family:'Boogaloo',cursive;font-size:2.4rem;letter-spacing:.07em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);background:#e24b4a;z-index:3;transition:background .4s,box-shadow .4s,transform .1s;outline:none;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:0 6px 38px rgba(226,75,74,.5);}
+#btn:hover{transform:scale(1.035)!important;}#btn:active{transform:scale(.93)!important;}
 #btn.locked{cursor:not-allowed;filter:grayscale(.7);}
-#btn.locked:hover{transform:none!important;}
-#btn.locked:active{transform:none!important;}
-
-/* ── controls panel ── */
+#btn.locked:hover{transform:none!important;}#btn.locked:active{transform:none!important;}
 .controls{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;}
 .ctrl-row{display:flex;justify-content:space-between;align-items:center;width:100%;}
 .lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#505060;}
 .val-badge{font-size:13px;font-weight:900;transition:color .3s;}
-
-input[type=range]{
-  -webkit-appearance:none;appearance:none;
-  width:100%;height:5px;border-radius:3px;
-  background:#1e1e28;outline:none;cursor:pointer;transition:background .3s;
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;
-  width:20px;height:20px;border-radius:50%;
-  background:#e24b4a;border:3px solid #0c0c10;
-  cursor:pointer;transition:background .3s,transform .15s;
-}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;background:#1e1e28;outline:none;cursor:pointer;transition:background .3s;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#e24b4a;border:3px solid #0c0c10;cursor:pointer;transition:background .3s,transform .15s;}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
 .ticks{display:flex;justify-content:space-between;width:100%;}
 .ticks span{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#333344;}
-
-.settings-toggle{
-  width:100%;display:flex;align-items:center;gap:10px;cursor:pointer;
-  background:none;border:none;padding:4px 0;user-select:none;
-}
+.settings-toggle{width:100%;display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:none;padding:4px 0;user-select:none;}
 .settings-toggle:hover .toggle-line{background:#383850;}
 .toggle-line{flex:1;height:1px;background:#22223a;transition:background .2s;}
-.toggle-label{
-  display:flex;align-items:center;gap:6px;
-  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:#404055;transition:color .2s,border-color .2s;white-space:nowrap;
-  border:1.5px solid #2a2a3e;border-radius:6px;padding:5px 12px;
-}
+.toggle-label{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#404055;transition:color .2s,border-color .2s;white-space:nowrap;border:1.5px solid #2a2a3e;border-radius:6px;padding:5px 12px;}
 .settings-toggle:hover .toggle-label{color:#606080;border-color:#44445a;}
 .toggle-arrow{font-size:10px;transition:transform .3s ease;display:inline-block;line-height:1;}
 .toggle-arrow.open{transform:rotate(180deg);}
-.settings-body{
-  width:100%;overflow:hidden;max-height:0;
-  transition:max-height .35s ease, opacity .3s ease;opacity:0;
-}
+.settings-body{width:100%;overflow:hidden;max-height:0;transition:max-height .35s ease,opacity .3s ease;opacity:0;}
 .settings-body.open{max-height:400px;opacity:1;}
-
 .settings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
 .setting-block{display:flex;flex-direction:column;gap:6px;}
 .setting-top{display:flex;justify-content:space-between;align-items:baseline;}
-
 .swatch-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
-.swatch{
-  width:20px;height:20px;border-radius:50%;cursor:pointer;
-  border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;
-}
-.swatch:hover{transform:scale(1.2);}
-.swatch.active{border-color:#fff;}
-
+.swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;}
+.swatch:hover{transform:scale(1.2);}.swatch.active{border-color:#fff;}
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
-.card{
-  background:#13131e;border:1px solid #22223a;border-radius:10px;
-  padding:10px 14px;display:flex;flex-direction:column;gap:7px;
-}
+.card{background:#13131e;border:1px solid #22223a;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:7px;}
 .card-top{display:flex;justify-content:space-between;align-items:baseline;}
 .card-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#505060;}
 .card-val{font-size:18px;font-weight:900;transition:color .4s;color:#444458;font-family:'Boogaloo',cursive;letter-spacing:.05em;}
 .gauge-track{width:100%;height:6px;background:#1a1a26;border-radius:3px;overflow:hidden;}
-.gauge-fill{height:100%;width:0%;border-radius:3px;transition:width .5s ease,background .5s ease;background:#eeeef4;}
-.card-btn{
-  align-self:flex-end;background:none;border:1px solid #2a2a3a;border-radius:6px;
-  color:#505060;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;cursor:pointer;
-  white-space:nowrap;transition:border-color .2s,color .2s,background .2s;margin-top:2px;
-}
+.gauge-fill{height:100%;width:0%;border-radius:3px;transition:width .5s ease,background .5s ease;}
+.card-btn{align-self:flex-end;background:none;border:1px solid #2a2a3a;border-radius:6px;color:#505060;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s,background .2s;margin-top:2px;}
 .card-btn:hover{border-color:#444;color:#e0e0e8;background:#1a1a26;}
-
 .timer-val{font-size:22px;font-weight:900;font-family:'Boogaloo',cursive;letter-spacing:.08em;color:#444458;transition:color .4s;}
-.timer-val.active{color:#c0d0ff;}
-.timer-val.paused{color:#505070;}
-
+.timer-val.active{color:#c0d0ff;}.timer-val.paused{color:#505070;}
 .hint{margin-top:10px;font-size:11px;color:#404050;letter-spacing:.1em;text-transform:uppercase;font-weight:700;text-align:center;}
-.max-msg{
-  margin-top:8px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
-  color:#e24b4a;text-align:center;display:none;
-}
+.max-msg{margin-top:8px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#e24b4a;text-align:center;display:none;}
 @keyframes flash-msg{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
 <div class="scene">
-
-  <!-- tower window -->
   <div class="city-window" id="city-window">
     <div class="window-bar">
       <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
-      <span class="win-title">Tower View</span>
+      <span class="win-title" id="win-title">Tower View</span>
+      <div class="scene-nav">
+        <button class="scene-arrow" id="scene-prev">‹</button>
+        <div class="scene-dots" id="scene-dots">
+          <div class="scene-dot active"></div>
+          <div class="scene-dot"></div>
+        </div>
+        <button class="scene-arrow" id="scene-next">›</button>
+      </div>
       <span class="win-timer" id="win-timer">0:00</span>
     </div>
-    <canvas id="tower-canvas" width="480" height="200"></canvas>
+    <canvas id="anim-canvas" width="480" height="200"></canvas>
   </div>
 
-  <!-- button -->
   <div class="btn-stage" id="stage">
     <div class="ring" id="r1"></div>
     <div class="ring" id="r2"></div>
     <button id="btn">START</button>
   </div>
 
-  <!-- controls -->
   <div class="controls">
     <div style="width:100%;display:flex;flex-direction:column;gap:6px;">
       <div class="ctrl-row">
@@ -202,17 +119,11 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
         <span class="val-badge" id="vibe">Gentle nudge</span>
       </div>
       <input type="range" id="slider-intensity" min="1" max="5" step="1" value="1">
-      <div class="ticks">
-        <span>Soft</span><span>Mild</span><span>Medium</span><span>Fired</span><span>CHAOS</span>
-      </div>
+      <div class="ticks"><span>Soft</span><span>Mild</span><span>Medium</span><span>Fired</span><span>CHAOS</span></div>
     </div>
-
     <div class="bottom-row">
       <div class="card">
-        <div class="card-top">
-          <span class="card-lbl">Pauses</span>
-          <span class="card-val" id="pause-count">0 / 2</span>
-        </div>
+        <div class="card-top"><span class="card-lbl">Pauses</span><span class="card-val" id="pause-count">0 / 2</span></div>
         <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
         <button class="card-btn" id="reset-pauses">Reset pauses</button>
       </div>
@@ -222,24 +133,16 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
         <button class="card-btn" id="reset-timer">Reset timer</button>
       </div>
     </div>
-
     <button class="settings-toggle" id="settings-toggle" aria-expanded="false">
       <div class="toggle-line"></div>
-      <span class="toggle-label">
-        <span>Settings</span>
-        <span class="toggle-arrow" id="toggle-arrow">▾</span>
-      </span>
+      <span class="toggle-label"><span>Settings</span><span class="toggle-arrow" id="toggle-arrow">▾</span></span>
       <div class="toggle-line"></div>
     </button>
-
     <div class="settings-body" id="settings-body">
       <div style="display:flex;flex-direction:column;gap:11px;padding-top:4px;">
         <div class="settings-row">
           <div class="setting-block">
-            <div class="setting-top">
-              <span class="lbl">Max pauses</span>
-              <span class="val-badge" id="max-pause-val" style="color:#888">2</span>
-            </div>
+            <div class="setting-top"><span class="lbl">Max pauses</span><span class="val-badge" id="max-pause-val" style="color:#888">2</span></div>
             <input type="range" id="slider-maxpause" min="1" max="10" step="1" value="2" style="background:#1e1e28;">
           </div>
           <div class="setting-block">
@@ -247,7 +150,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
             <div style="display:flex;flex-direction:column;gap:6px;">
               <div style="display:flex;align-items:center;gap:5px;">
                 <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Dark</span>
-                <div class="swatch-row" id="swatch-row">
+                <div class="swatch-row">
                   <div class="swatch active" data-color="#0c0c10" style="background:#0c0c10;outline:1px solid #444;"></div>
                   <div class="swatch" data-color="#0a0f1a" style="background:#0a0f1a;outline:1px solid #2a3a5a;"></div>
                   <div class="swatch" data-color="#100a1a" style="background:#100a1a;outline:1px solid #3a2a4a;"></div>
@@ -259,7 +162,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
               </div>
               <div style="display:flex;align-items:center;gap:5px;">
                 <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#404055;width:32px;">Light</span>
-                <div class="swatch-row" id="swatch-row-light">
+                <div class="swatch-row">
                   <div class="swatch" data-color="#f5f5f0" style="background:#f5f5f0;outline:1px solid #ccc;"></div>
                   <div class="swatch" data-color="#eef2f8" style="background:#eef2f8;outline:1px solid #bbc;"></div>
                   <div class="swatch" data-color="#f0eef8" style="background:#f0eef8;outline:1px solid #c8c0e0;"></div>
@@ -275,7 +178,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
       </div>
     </div>
   </div>
-
   <p class="hint" id="hint">click to start &nbsp;·&nbsp; double-click to pause</p>
   <p class="max-msg" id="max-msg"></p>
 </div>
@@ -292,43 +194,43 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
   }
 })();
 
-// ── app state ──
+// ── constants ──
 const COLORS=['#e24b4a','#d85a30','#ba7517','#5a9620','#1a9e72','#1660a8','#7a70de','#cc4e80','#2e8a5a','#0a447e','#8b3fc0','#a8602a'];
 const VIBES=['Gentle nudge','Getting real','Fired up','Full send','CHAOS MODE'];
+const SCENE_NAMES=['Tower View','Office View'];
 
-let running=false, paused=false, colorIdx=0, intensity=1, clickTimer=null;
+// ── state ──
+let running=false, colorIdx=0, intensity=1, clickTimer=null;
 let pauseCount=0, maxPauses=2;
-
-// timer
 let timerSec=0, timerInterval=null;
+let currentScene=0;
+let animPaused=true;
+let animPrevT=null, animRaf=null;
 
-const btn          = document.getElementById('btn');
-const stage        = document.getElementById('stage');
-const r1           = document.getElementById('r1');
-const r2           = document.getElementById('r2');
-const sliderInt    = document.getElementById('slider-intensity');
-const sliderMax    = document.getElementById('slider-maxpause');
-const vibeEl       = document.getElementById('vibe');
-const hint         = document.getElementById('hint');
-const maxMsg       = document.getElementById('max-msg');
-const cityWindow   = document.getElementById('city-window');
-const pauseCountEl = document.getElementById('pause-count');
-const gaugeFill    = document.getElementById('gauge-fill');
-const resetPauses  = document.getElementById('reset-pauses');
-const resetTimer   = document.getElementById('reset-timer');
-const timerVal     = document.getElementById('timer-val');
-const winTimer     = document.getElementById('win-timer');
-const maxPauseVal  = document.getElementById('max-pause-val');
+// ── elements ──
+const btn=document.getElementById('btn');
+const stage=document.getElementById('stage');
+const r1=document.getElementById('r1'),r2=document.getElementById('r2');
+const sliderInt=document.getElementById('slider-intensity');
+const sliderMax=document.getElementById('slider-maxpause');
+const vibeEl=document.getElementById('vibe');
+const hint=document.getElementById('hint');
+const maxMsg=document.getElementById('max-msg');
+const cityWindow=document.getElementById('city-window');
+const pauseCountEl=document.getElementById('pause-count');
+const gaugeFill=document.getElementById('gauge-fill');
+const timerVal=document.getElementById('timer-val');
+const winTimer=document.getElementById('win-timer');
+const winTitle=document.getElementById('win-title');
+const maxPauseVal=document.getElementById('max-pause-val');
+const animCanvas=document.getElementById('anim-canvas');
+const ac=animCanvas.getContext('2d');
 
-// ── color helpers ──
-function col(){ return COLORS[colorIdx % COLORS.length]; }
+function col(){return COLORS[colorIdx%COLORS.length];}
 
 function applyColor(c){
-  btn.style.background=c;
-  btn.style.boxShadow=`0 6px 38px ${c}77`;
-  r1.style.borderColor=c+'bb';
-  r2.style.borderColor=c+'55';
-  vibeEl.style.color=c;
+  btn.style.background=c;btn.style.boxShadow=`0 6px 38px ${c}77`;
+  r1.style.borderColor=c+'bb';r2.style.borderColor=c+'55';vibeEl.style.color=c;
   const pct=((intensity-1)/4*100).toFixed(0);
   sliderInt.style.background=`linear-gradient(to right,${c} 0%,${c} ${pct}%,#1e1e28 ${pct}%,#1e1e28 100%)`;
   let st=document.getElementById('_th');
@@ -337,586 +239,707 @@ function applyColor(c){
 }
 
 function setPulse(){
-  stage.className='btn-stage';
-  if(!running) return;
-  if(intensity<=2) stage.classList.add('ps');
-  else if(intensity<=4) stage.classList.add('pm');
+  stage.className='btn-stage';if(!running)return;
+  if(intensity<=2)stage.classList.add('ps');
+  else if(intensity<=4)stage.classList.add('pm');
   else stage.classList.add('pf');
 }
 
-// ── timer ──
-function fmtTime(s){
-  const m=Math.floor(s/60), ss=s%60;
-  return `${m}:${ss.toString().padStart(2,'0')}`;
-}
+function fmtTime(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;}
+
 function startTimer(){
-  if(timerInterval) return;
-  timerInterval=setInterval(()=>{
-    timerSec++;
-    const f=fmtTime(timerSec);
-    timerVal.textContent=f;
-    winTimer.textContent=f;
-  },1000);
-  timerVal.className='timer-val active';
-  winTimer.className='win-timer active';
+  if(timerInterval)return;
+  timerInterval=setInterval(()=>{timerSec++;const f=fmtTime(timerSec);timerVal.textContent=f;winTimer.textContent=f;},1000);
+  timerVal.className='timer-val active';winTimer.className='win-timer active';
 }
 function pauseTimer(){
-  clearInterval(timerInterval); timerInterval=null;
-  timerVal.className='timer-val paused';
-  winTimer.className='win-timer paused';
+  clearInterval(timerInterval);timerInterval=null;
+  timerVal.className='timer-val paused';winTimer.className='win-timer paused';
 }
 function resetTimerFn(){
-  pauseTimer();
-  timerSec=0;
-  timerVal.textContent='0:00';
-  winTimer.textContent='0:00';
-  timerVal.className='timer-val';
-  winTimer.className='win-timer';
+  pauseTimer();timerSec=0;timerVal.textContent='0:00';winTimer.textContent='0:00';
+  timerVal.className='timer-val';winTimer.className='win-timer';
 }
 
-// ── gauge ──
 function updateGauge(){
   const t=Math.min(pauseCount/maxPauses,1);
-  gaugeFill.style.width=(t*100)+'%';
-  pauseCountEl.textContent=`${pauseCount} / ${maxPauses}`;
+  gaugeFill.style.width=(t*100)+'%';pauseCountEl.textContent=`${pauseCount} / ${maxPauses}`;
   let r,g,b;
   if(t<.5){const s=t*2;r=Math.round(238+s*(210-238));g=Math.round(238+s*(90-238));b=Math.round(238+s*(50-238));}
   else{const s=(t-.5)*2;r=Math.round(210+s*(60-210));g=Math.round(90+s*(10-90));b=Math.round(50+s*(10-50));}
   const c=`rgb(${r},${g},${b})`;
-  gaugeFill.style.background=c;
-  pauseCountEl.style.color=t<.05?'#444458':c;
-
+  gaugeFill.style.background=c;pauseCountEl.style.color=t<.05?'#444458':c;
   if(pauseCount>=maxPauses){
-    btn.classList.add('locked');
-    btn.style.background='#3a3a4a';
-    btn.style.boxShadow='0 6px 38px rgba(0,0,0,.3)';
-    btn.textContent='LOCKED';
-    stage.className='btn-stage';
-    hint.textContent='';
-    maxMsg.textContent='max pauses reached — reset to continue';
-    maxMsg.style.display='block';
-    maxMsg.style.animation='none';
-    maxMsg.offsetHeight;
-    maxMsg.style.animation='flash-msg 1s ease-in-out 3';
+    btn.classList.add('locked');btn.style.background='#3a3a4a';btn.style.boxShadow='0 6px 38px rgba(0,0,0,.3)';
+    btn.textContent='LOCKED';stage.className='btn-stage';hint.textContent='';
+    maxMsg.textContent='max pauses reached — reset to continue';maxMsg.style.display='block';
+    maxMsg.style.animation='none';void maxMsg.offsetHeight;maxMsg.style.animation='flash-msg 1s ease-in-out 3';
   }
-}
-
-// ── main actions ──
-function goRunning(){
-  if(pauseCount>=maxPauses) return;
-  running=true; paused=false;
-  colorIdx++;
-  applyColor(col());
-  setPulse();
-  btn.textContent='STARTING';
-  hint.textContent='click to change color · double-click to pause';
-  cityWindow.classList.add('on');
-  towerState.paused=false;
-  startTower();
-  startTimer();
-  setTimeout(()=>{ if(running) btn.textContent='GO!'; },700);
-}
-
-function goPause(){
-  running=false; paused=true;
-  pauseCount=Math.min(pauseCount+1,maxPauses);
-  updateGauge();
-  towerState.paused=true;
-  pauseTimer();
-  stage.className='btn-stage';
-  if(pauseCount>=maxPauses){ stopTower(); cityWindow.classList.remove('on'); return; }
-  btn.style.background='#e24b4a';
-  btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
-  r1.style.borderColor='#e24b4abb';
-  r2.style.borderColor='#e24b4a44';
-  btn.textContent='PAUSE';
-  hint.textContent='paused · click to go again';
-  setTimeout(()=>{ if(!running&&pauseCount<maxPauses) btn.textContent='START'; },1300);
 }
 
 function unlockBtn(){
-  btn.classList.remove('locked');
-  btn.textContent='START';
-  btn.style.background='#e24b4a';
+  btn.classList.remove('locked');btn.textContent='START';btn.style.background='#e24b4a';
   btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
-  r1.style.borderColor='#e24b4abb';
-  r2.style.borderColor='#e24b4a44';
-  maxMsg.style.display='none';
-  hint.textContent='click to start · double-click to pause';
+  r1.style.borderColor='#e24b4abb';r2.style.borderColor='#e24b4a44';
+  maxMsg.style.display='none';hint.textContent='click to start · double-click to pause';
+}
+
+function goRunning(){
+  if(pauseCount>=maxPauses)return;
+  running=true;colorIdx++;applyColor(col());setPulse();
+  btn.textContent='STARTING';hint.textContent='click to change color · double-click to pause';
+  cityWindow.classList.add('on');animPaused=false;startTimer();
+  setTimeout(()=>{if(running)btn.textContent='GO!';},700);
+}
+
+function goPause(){
+  running=false;pauseCount=Math.min(pauseCount+1,maxPauses);updateGauge();
+  animPaused=true;pauseTimer();stage.className='btn-stage';
+  if(pauseCount>=maxPauses){cityWindow.classList.remove('on');return;}
+  btn.style.background='#e24b4a';btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
+  r1.style.borderColor='#e24b4abb';r2.style.borderColor='#e24b4a44';
+  btn.textContent='PAUSE';hint.textContent='paused · click to go again';
+  setTimeout(()=>{if(!running&&pauseCount<maxPauses)btn.textContent='START';},1300);
 }
 
 btn.addEventListener('click',()=>{
-  if(btn.classList.contains('locked')) return;
-  if(clickTimer!==null){
-    clearTimeout(clickTimer); clickTimer=null;
-    goPause();
-  } else {
-    clickTimer=setTimeout(()=>{ clickTimer=null; goRunning(); },300);
-  }
+  if(btn.classList.contains('locked'))return;
+  if(clickTimer!==null){clearTimeout(clickTimer);clickTimer=null;goPause();}
+  else{clickTimer=setTimeout(()=>{clickTimer=null;goRunning();},300);}
 });
 
 sliderInt.addEventListener('input',()=>{
-  intensity=parseInt(sliderInt.value);
-  vibeEl.textContent=VIBES[intensity-1];
-  applyColor(running?col():'#e24b4a');
-  if(running) setPulse();
+  intensity=parseInt(sliderInt.value);vibeEl.textContent=VIBES[intensity-1];
+  applyColor(running?col():'#e24b4a');if(running)setPulse();
 });
 
 sliderMax.addEventListener('input',()=>{
-  maxPauses=parseInt(sliderMax.value);
-  maxPauseVal.textContent=maxPauses;
+  maxPauses=parseInt(sliderMax.value);maxPauseVal.textContent=maxPauses;
   const pct=((maxPauses-1)/9*100).toFixed(0);
   sliderMax.style.background=`linear-gradient(to right,#6060a0 0%,#6060a0 ${pct}%,#1e1e28 ${pct}%,#1e1e28 100%)`;
-  updateGauge();
-  if(pauseCount<maxPauses && btn.classList.contains('locked')) unlockBtn();
+  updateGauge();if(pauseCount<maxPauses&&btn.classList.contains('locked'))unlockBtn();
 });
 
-const settingsToggle=document.getElementById('settings-toggle');
-const settingsBody=document.getElementById('settings-body');
-const toggleArrow=document.getElementById('toggle-arrow');
-settingsToggle.addEventListener('click',()=>{
-  const open=settingsBody.classList.toggle('open');
-  toggleArrow.classList.toggle('open',open);
-  settingsToggle.setAttribute('aria-expanded',open);
+document.getElementById('settings-toggle').addEventListener('click',()=>{
+  const open=document.getElementById('settings-body').classList.toggle('open');
+  document.getElementById('toggle-arrow').classList.toggle('open',open);
+  document.getElementById('settings-toggle').setAttribute('aria-expanded',open);
 });
 
-const allSwatches=document.querySelectorAll('.swatch');
-allSwatches.forEach(s=>{
+document.querySelectorAll('.swatch').forEach(s=>{
   s.addEventListener('click',()=>{
-    allSwatches.forEach(x=>x.classList.remove('active'));
-    s.classList.add('active');
-    document.body.style.background=s.dataset.color;
+    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+    s.classList.add('active');document.body.style.background=s.dataset.color;
     document.getElementById('stars').style.opacity=
-      s.dataset.color.startsWith('#f')||s.dataset.color.startsWith('#e') ? '0.15' : '1';
+      (s.dataset.color.startsWith('#f')||s.dataset.color.startsWith('#e'))?'0.15':'1';
   });
 });
 
-resetPauses.addEventListener('click',()=>{
-  resetTower();
-  pauseCount=0; updateGauge();
-  if(btn.classList.contains('locked')) unlockBtn();
-});
-resetTimer.addEventListener('click',()=>{
-  resetTimerFn();
-  // also reset the tower scene
-  running=false; paused=false;
-  stage.className='btn-stage';
-  cityWindow.classList.remove('on');
-  resetTower();
-  towerState.paused=true;
-  btn.classList.remove('locked');
-  btn.textContent='START';
-  btn.style.background='#e24b4a';
-  btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
-  r1.style.borderColor='#e24b4abb';
-  r2.style.borderColor='#e24b4a44';
-  maxMsg.style.display='none';
-  hint.textContent='click to start · double-click to pause';
+document.getElementById('reset-pauses').addEventListener('click',()=>{
+  pauseCount=0;updateGauge();if(btn.classList.contains('locked'))unlockBtn();
 });
 
+document.getElementById('reset-timer').addEventListener('click',()=>{
+  resetTimerFn();running=false;animPaused=true;stage.className='btn-stage';
+  cityWindow.classList.remove('on');
+  // reset tower
+  towerState.floors=[];towerState.currentFloor=0;towerState.buildProgress=0;towerState.scrollOffset=0;
+  initTowerWorkers();
+  btn.classList.remove('locked');btn.textContent='START';btn.style.background='#e24b4a';
+  btn.style.boxShadow='0 6px 38px rgba(226,75,74,.5)';
+  r1.style.borderColor='#e24b4abb';r2.style.borderColor='#e24b4a44';
+  maxMsg.style.display='none';hint.textContent='click to start · double-click to pause';
+});
+
+// ── scene nav ──
+function updateSceneUI(){
+  winTitle.textContent=SCENE_NAMES[currentScene];
+  document.querySelectorAll('.scene-dot').forEach((d,i)=>d.classList.toggle('active',i===currentScene));
+}
+document.getElementById('scene-prev').addEventListener('click',()=>{currentScene=(currentScene+SCENE_NAMES.length-1)%SCENE_NAMES.length;updateSceneUI();});
+document.getElementById('scene-next').addEventListener('click',()=>{currentScene=(currentScene+1)%SCENE_NAMES.length;updateSceneUI();});
+
+// ── init ──
 applyColor('#e24b4a');
 updateGauge();
 sliderMax.style.background='linear-gradient(to right,#6060a0 0%,#6060a0 11%,#1e1e28 11%,#1e1e28 100%)';
 
-// ══════════════════════════════════════════════════
-// ── TOWER ANIMATION ──
-// ══════════════════════════════════════════════════
-const towerCanvas = document.getElementById('tower-canvas');
-const tc = towerCanvas.getContext('2d');
-
-// Floor build time in seconds per intensity level
-// intensity 1=60s, 2=30s, 3=15s, 4=8s, 5=4s
-const FLOOR_TIMES = [60, 30, 15, 8, 4];
-
-// Worker walk speed px/frame (60fps) per intensity
-const WORKER_SPEEDS = [0.4, 0.9, 1.8, 3.0, 5.0];
-
-// How many workers per intensity
-const WORKER_COUNTS = [1, 1, 2, 2, 3];
-
-// Build color palette for a floor derived from the current button color
-function hexToRgb(hex){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return [r,g,b];
-}
-function rgbToHex(r,g,b){
-  return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
-}
-function makeFloorPal(floorIdx){
-  const [r,g,b] = hexToRgb(col());
-  // alternate slight hue shifts per floor for variety
-  const shift = (floorIdx % 3) * 15 - 15;
-  const wall = rgbToHex(r*0.55+shift, g*0.55+shift, b*0.55+shift);
-  const roof = rgbToHex(r*0.40, g*0.40, b*0.40);
-  const frame = rgbToHex(r*0.28, g*0.28, b*0.28);
-  // window: lighter tint of accent
-  const win = rgbToHex(r*0.6+100, g*0.6+100, b*0.6+100);
-  return {wall, window:win, frame, roof};
+// ═══════════════════════════════════════════════
+// ── COLOR HELPERS ──
+// ═══════════════════════════════════════════════
+function hexToRgb(hex){return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');}
+function makeFloorPal(i){
+  const[r,g,b]=hexToRgb(col()),sh=(i%3)*18-18;
+  return{wall:rgbToHex(r*.55+sh,g*.55+sh,b*.55+sh),roof:rgbToHex(r*.38,g*.38,b*.38),frame:rgbToHex(r*.25,g*.25,b*.25),window:rgbToHex(r*.5+110,g*.5+110,b*.5+110)};
 }
 
-// Floor visual params
-const FLOOR_H = 18; // px height of each floor
-const FLOOR_W_RATIO = 0.65; // floor width as ratio of canvas
-const GROUND_H = 24;
+// ═══════════════════════════════════════════════
+// ── SCENE 0: TOWER ──
+// ═══════════════════════════════════════════════
+const FLOOR_TIMES=[60,30,15,8,4];
+const T_SPEEDS=[0.4,0.9,1.8,3.0,5.0];
+const T_COUNTS=[1,1,2,2,3];
+const FLOOR_H=18,FLOOR_W=0.65,GROUND_H=24;
 
-// Building color palettes per floor (cycles)
-const FLOOR_PALETTES = [
-  {wall:'#3a5a8a', window:'#8ec4e8', frame:'#2a3a5a', roof:'#2a4a7a'},
-  {wall:'#5a3a8a', window:'#c8a8e8', frame:'#3a2a5a', roof:'#4a2a7a'},
-  {wall:'#3a8a5a', window:'#8ae8b0', frame:'#2a5a3a', roof:'#2a6a4a'},
-  {wall:'#8a6a3a', window:'#e8c87a', frame:'#5a4a2a', roof:'#6a5a2a'},
-  {wall:'#8a3a3a', window:'#e89090', frame:'#5a2a2a', roof:'#6a2a2a'},
-  {wall:'#3a7a8a', window:'#80d8e8', frame:'#2a4a5a', roof:'#2a5a6a'},
-];
+const towerState={floors:[],currentFloor:0,buildProgress:0,scrollOffset:0,workers:[]};
 
-// Tower state
-const towerState = {
-  floors: [],          // completed floors
-  currentFloor: 0,     // floor index being built (0=ground floor)
-  buildProgress: 0,    // 0..1 progress on current floor
-  paused: false,
-  rafId: null,
-  prevT: null,
-  scrollOffset: 0,     // how many px to shift down (camera follows top)
-  workers: [],
-  coffeeBreak: false,
-};
-
-function initWorkers(){
-  const n = WORKER_COUNTS[intensity-1];
-  towerState.workers = [];
-  const CW = towerCanvas.width;
-  const floorW = Math.floor(CW * FLOOR_W_RATIO);
-  const startX = Math.floor((CW - floorW)/2);
+function initTowerWorkers(){
+  const n=T_COUNTS[intensity-1];towerState.workers=[];
+  const CW=animCanvas.width,fw=Math.floor(CW*FLOOR_W),sx=Math.floor((CW-fw)/2);
   for(let i=0;i<n;i++){
     towerState.workers.push({
-      x: startX + Math.random()*floorW,
-      dir: Math.random()<0.5?1:-1,
-      frame: 0,
-      frameTimer: 0,
-      color: ['#f5c9a0','#d4a070','#c08858'][i%3],
-      shirtColor: ['#3a6ee0','#e06030','#30a060'][i%3],
-      hammerPhase: Math.random()*Math.PI*2,
-      // for coffee break
-      coffeeSeatX: 0,
-      coffeeSeatSet: false,
+      x:sx+Math.random()*fw,dir:Math.random()<.5?1:-1,
+      skin:['#f5c9a0','#d4a070','#c08858'][i%3],
+      shirt:['#3a6ee0','#e06030','#30a060'][i%3],
+      phase:Math.random()*Math.PI*2,
+      seatX:0,seatSet:false
     });
   }
 }
 
-function resetTower(){
-  towerState.floors = [];
-  towerState.currentFloor = 0;
-  towerState.buildProgress = 0;
-  towerState.scrollOffset = 0;
-  towerState.coffeeBreak = false;
-  initWorkers();
-}
+function drawTowerFrame(dt,t){
+  const CW=animCanvas.width,CH=animCanvas.height;
+  const gY=CH-GROUND_H,fw=Math.floor(CW*FLOOR_W),fx=Math.floor((CW-fw)/2);
 
-
-function drawFloor(x, y, w, h, pal, pct){
-  const visW = Math.floor(w * pct);
-  if(visW<=0) return;
-  // wall body
-  tc.fillStyle = pal.wall;
-  tc.fillRect(x, y, visW, h);
-  // windows (2 per floor if wide enough, drawn as they reveal)
-  const winW = 6, winH = 8;
-  const winY = y + (h - winH)/2;
-  const positions = [x + w*0.25 - winW/2, x + w*0.65 - winW/2];
-  for(const wx of positions){
-    if(wx + winW <= x + visW){
-      tc.fillStyle = pal.frame;
-      tc.fillRect(wx-1, winY-1, winW+2, winH+2);
-      tc.fillStyle = pal.window;
-      tc.fillRect(wx, winY, winW, winH);
-      // window cross
-      tc.fillStyle = pal.frame;
-      tc.fillRect(wx + winW/2-0.5, winY, 1, winH);
-      tc.fillRect(wx, winY + winH/2-0.5, winW, 1);
-      // lit window glow (small chance)
-      if((x+y+wx)%7===0){
-        tc.fillStyle='rgba(255,240,120,0.4)';
-        tc.fillRect(wx+1, winY+1, winW-2, winH/2-1);
-      }
-    }
-  }
-  // top edge highlight
-  tc.fillStyle = pal.roof;
-  tc.fillRect(x, y, visW, 2);
-  // left shadow
-  tc.fillStyle = 'rgba(0,0,0,0.2)';
-  tc.fillRect(x, y, 2, h);
-}
-
-function drawGround(CW, CH){
-  const y = CH - GROUND_H;
-  // ground platform
-  tc.fillStyle = '#22223a';
-  tc.fillRect(0, y, CW, GROUND_H);
-  // ground top edge
-  tc.fillStyle = '#33334a';
-  tc.fillRect(0, y, CW, 2);
-  // subtle grid lines
-  tc.strokeStyle = 'rgba(255,255,255,0.04)';
-  tc.lineWidth = 1;
-  for(let gx=0;gx<CW;gx+=16){
-    tc.beginPath();tc.moveTo(gx,y);tc.lineTo(gx,CH);tc.stroke();
-  }
-}
-
-function drawSky(CW, CH){
-  // gradient sky
-  const grad = tc.createLinearGradient(0,0,0,CH);
-  grad.addColorStop(0,'#0c0c18');
-  grad.addColorStop(1,'#13132a');
-  tc.fillStyle = grad;
-  tc.fillRect(0,0,CW,CH);
-
-  // stars (static, seeded by position)
-  tc.fillStyle = 'rgba(255,255,255,0.5)';
-  for(let i=0;i<40;i++){
-    const sx = ((i*137+23)%CW);
-    const sy = ((i*91+17)%(CH*0.7));
-    const sr = i%5===0?1.2:0.6;
-    tc.beginPath();tc.arc(sx,sy,sr,0,Math.PI*2);tc.fill();
-  }
-}
-
-// Pixel worker: draws a small pixel-art person
-function drawWorker(w, canvasX, y, t, coffeeBreak){
-  const S = 2; // pixel scale
-  const px = Math.round(canvasX);
-  const py = Math.round(y);
-  const dir = w.dir;
-  const speed = WORKER_SPEEDS[intensity-1];
-  const walkFrame = coffeeBreak ? 0 : Math.floor(t * speed * 0.04) % 4;
-
-  // shadow
-  tc.fillStyle = 'rgba(0,0,0,0.3)';
-  tc.fillRect(px-5, py+16*S-2, 10, 2);
-
-  // body
-  // legs (animate walk)
-  const legOffsets = coffeeBreak
-    ? [[0,0],[0,0]]
-    : [[0,2,1,4],[1,0,2,2],[0,2,1,4],[2,0,1,2]][walkFrame] !== undefined
-      ? [[[-1*dir,0],[1*dir,2]],[[1*dir,0],[-1*dir,2]],[[-1*dir,0],[1*dir,4]],[[1*dir,0],[-1*dir,4]]][walkFrame]
-      : [[-1,0],[1,2]];
-
-  if(coffeeBreak){
-    // sitting: legs forward
-    tc.fillStyle = '#1a1a2e';
-    tc.fillRect(px-3*S, py+8*S, 2*S, 3*S); // left leg horiz
-    tc.fillRect(px+1*S, py+8*S, 2*S, 3*S); // right leg horiz
-    tc.fillRect(px-3*S, py+11*S, 2*S, 2*S); // feet
-    tc.fillRect(px+1*S, py+11*S, 2*S, 2*S);
-  } else {
-    const lo = legOffsets[0], lo2 = legOffsets[1];
-    tc.fillStyle = '#1a1a2e';
-    tc.fillRect(px + lo[0]*S, py+8*S, 2*S, 5*S+lo[1]);
-    tc.fillRect(px + lo2[0]*S, py+8*S, 2*S, 5*S+lo2[1]);
-    // shoes
-    tc.fillStyle = '#111';
-    tc.fillRect(px + lo[0]*S - S, py+12*S+lo[1], 3*S, S);
-    tc.fillRect(px + lo2[0]*S - S, py+12*S+lo2[1], 3*S, S);
-  }
-
-  // torso
-  tc.fillStyle = w.shirtColor;
-  tc.fillRect(px-2*S, py+4*S, 4*S, 5*S);
-
-  // helmet / hard hat
-  tc.fillStyle = '#f0c040';
-  tc.fillRect(px-3*S, py+1*S, 6*S, 2*S);
-  tc.fillRect(px-2*S, py-S, 4*S, 2*S);
-
-  // head
-  tc.fillStyle = w.color;
-  tc.fillRect(px-2*S, py+1*S, 4*S, 3*S);
-
-  // eyes
-  tc.fillStyle = '#222';
-  if(dir>=0){
-    tc.fillRect(px+S, py+2*S, S, S);
-  } else {
-    tc.fillRect(px-2*S, py+2*S, S, S);
-  }
-
-  // arm + hammer (only when not on coffee break)
-  if(!coffeeBreak){
-    const hamAng = Math.sin(t * speed * 0.12 + w.hammerPhase);
-    const hamX = dir>0 ? px+2*S : px-3*S;
-    const hamY = py+4*S + Math.round(hamAng*2*S);
-    // arm
-    tc.fillStyle = w.color;
-    tc.fillRect(hamX, hamY, S, 3*S);
-    // hammer head
-    tc.fillStyle = '#aaa';
-    tc.fillRect(hamX - S*(dir>0?0:1), hamY - S, S*2, S);
-    tc.fillRect(hamX - S*(dir>0?0:1), hamY - 2*S, S*2, S);
-  } else {
-    // coffee cup in hand
-    const cupX = dir>=0 ? px+2*S : px-4*S;
-    const cupY = py+4*S;
-    // arm holding cup
-    tc.fillStyle = w.color;
-    tc.fillRect(cupX, cupY, S, 2*S);
-    // cup
-    tc.fillStyle = '#ffffff';
-    tc.fillRect(cupX-S, cupY+2*S, 3*S, 3*S);
-    tc.fillStyle = '#6a3a10';
-    tc.fillRect(cupX-S+1, cupY+2*S+1, 3*S-2, S);
-    // steam
-    tc.fillStyle = 'rgba(255,255,255,0.4)';
-    const steamOff = Math.sin(t*0.003+w.hammerPhase)*S;
-    tc.fillRect(cupX+steamOff, cupY-S, 1, S);
-    tc.fillRect(cupX+S+steamOff, cupY-2*S, 1, S);
-  }
-}
-
-function towerFrame(ts){
-  if(towerState.prevT===null) towerState.prevT=ts;
-  const dt = Math.min(ts - towerState.prevT, 80);
-  towerState.prevT = ts;
-
-  const CW = towerCanvas.width;
-  const CH = towerCanvas.height;
-  const groundY = CH - GROUND_H;
-  const floorW = Math.floor(CW * FLOOR_W_RATIO);
-  const floorX = Math.floor((CW - floorW)/2);
-
-  // advance build progress
-  if(!towerState.paused){
-    const floorTimeSec = FLOOR_TIMES[intensity-1];
-    const progressPerMs = 1 / (floorTimeSec * 1000);
-    towerState.buildProgress += progressPerMs * dt;
-
-    if(towerState.buildProgress >= 1){
-      towerState.buildProgress = 0;
-      towerState.floors.push({});
-      towerState.currentFloor++;
-      // each time a floor completes, workers get new positions
-      initWorkers();
+  if(!animPaused){
+    towerState.buildProgress+=dt/(FLOOR_TIMES[intensity-1]*1000);
+    if(towerState.buildProgress>=1){
+      towerState.buildProgress=0;towerState.floors.push({});towerState.currentFloor++;initTowerWorkers();
     }
   }
 
-  // Camera: keep the active floor (the one being built) centred vertically in the canvas.
-  // The active floor's top surface is at: vGroundY - activeLevelTop
-  // where activeLevelTop = (floors.length + buildProgress) * FLOOR_H (measured upward from vGroundY).
-  // We want that surface to sit at CH/2 on screen:
-  //   vGroundY - activeLevelTop = CH/2
-  //   groundY + scrollOffset - activeLevelTop = CH/2
-  //   scrollOffset = CH/2 - groundY + activeLevelTop
-  const activeLevelTop = (towerState.floors.length + towerState.buildProgress) * FLOOR_H;
-  const targetOffset = activeLevelTop - (CH / 2 - GROUND_H);
-  // Only start scrolling once the tower is tall enough to need it
-  const clampedTarget = Math.max(0, targetOffset);
-  towerState.scrollOffset += (clampedTarget - towerState.scrollOffset) * 0.06;
-  const vGroundY = groundY + towerState.scrollOffset;
+  // camera: keep active floor surface centred
+  const alt=(towerState.floors.length+towerState.buildProgress)*FLOOR_H;
+  const target=Math.max(0,alt-(CH/2-GROUND_H));
+  towerState.scrollOffset+=(target-towerState.scrollOffset)*.06;
+  const vGY=gY+towerState.scrollOffset;
 
-  // draw
-  drawSky(CW, CH);
+  // sky
+  const sky=ac.createLinearGradient(0,0,0,CH);sky.addColorStop(0,'#0c0c18');sky.addColorStop(1,'#13132a');
+  ac.fillStyle=sky;ac.fillRect(0,0,CW,CH);
+  ac.fillStyle='rgba(255,255,255,0.5)';
+  for(let i=0;i<40;i++){ac.beginPath();ac.arc((i*137+23)%CW,(i*91+17)%(CH*.7),i%5===0?1.2:.6,0,Math.PI*2);ac.fill();}
 
-  // draw completed floors (stacked upward from vGroundY)
+  // completed floors
   for(let i=0;i<towerState.floors.length;i++){
-    const pal = makeFloorPal(i);
-    const fy = vGroundY - (i+1)*FLOOR_H;
-    if(fy > CH || fy + FLOOR_H < 0) continue;
-    drawFloor(floorX, fy, floorW, FLOOR_H, pal, 1);
-  }
-
-  // draw current floor being built
-  if(towerState.buildProgress > 0){
-    const pal = makeFloorPal(towerState.floors.length);
-    const fy = vGroundY - (towerState.floors.length+1)*FLOOR_H;
-    drawFloor(floorX, fy, floorW, FLOOR_H, pal, towerState.buildProgress);
-  }
-
-  // draw ground
-  drawGround(CW, CH);
-
-  // Surface Y: top of the current active floor (completed floors + partial progress), measured downward on screen
-  const surfaceY = vGroundY - (towerState.floors.length * FLOOR_H) - (towerState.buildProgress * FLOOR_H);
-
-  // draw scaffold (vertical lines on sides of building)
-  if(towerState.floors.length > 0 || towerState.buildProgress > 0){
-    tc.strokeStyle = 'rgba(120,100,60,0.4)';
-    tc.lineWidth = 1.5;
-    tc.setLineDash([4,4]);
-    tc.beginPath();tc.moveTo(floorX, Math.min(vGroundY, CH));tc.lineTo(floorX, surfaceY - 10);tc.stroke();
-    tc.beginPath();tc.moveTo(floorX+floorW, Math.min(vGroundY, CH));tc.lineTo(floorX+floorW, surfaceY - 10);tc.stroke();
-    tc.setLineDash([]);
-  }
-  // Sprite: py is top of worker. Feet are at py + 13*S (S=2), so shift up so feet = surfaceY
-  const workerY = surfaceY - 13 * 2;
-  const coffeeBreak = towerState.paused;
-  const speed = WORKER_SPEEDS[intensity-1];
-
-  for(const w of towerState.workers){
-    if(!coffeeBreak){
-      // move worker
-      w.x += w.dir * speed * (dt/16);
-      if(w.x > floorX + floorW - 6) { w.x = floorX + floorW - 6; w.dir = -1; }
-      if(w.x < floorX + 6) { w.x = floorX + 6; w.dir = 1; }
-    } else {
-      // coffee break: drift to their seat
-      if(!w.coffeeSeatSet){
-        w.coffeeSeatX = floorX + floorW * (0.2 + Math.random()*0.6);
-        w.coffeeSeatSet = true;
-      }
-      w.x += (w.coffeeSeatX - w.x) * 0.08;
-      w.dir = w.coffeeSeatX > w.x ? 1 : -1;
+    const fy=vGY-(i+1)*FLOOR_H;if(fy>CH||fy+FLOOR_H<0)continue;
+    const p=makeFloorPal(i),vW=fw;
+    ac.fillStyle=p.wall;ac.fillRect(fx,fy,vW,FLOOR_H);
+    for(const wx of[fx+fw*.25-3,fx+fw*.65-3]){
+      ac.fillStyle=p.frame;ac.fillRect(wx-1,fy+(FLOOR_H-8)/2-1,8,10);
+      ac.fillStyle=p.window;ac.fillRect(wx,fy+(FLOOR_H-8)/2,6,8);
+      ac.fillStyle=p.frame;ac.fillRect(wx+3,fy+(FLOOR_H-8)/2,1,8);ac.fillRect(wx,fy+(FLOOR_H-8)/2+4,6,1);
     }
-    drawWorker(w, w.x, workerY, ts, coffeeBreak);
+    ac.fillStyle=p.roof;ac.fillRect(fx,fy,vW,2);
+    ac.fillStyle='rgba(0,0,0,0.18)';ac.fillRect(fx,fy,2,FLOOR_H);
   }
 
-  // floor progress bar (thin strip at the current build surface)
-  if(!towerState.paused && towerState.buildProgress > 0){
-    const barY = surfaceY - 3;
-    tc.fillStyle = 'rgba(0,0,0,0.4)';
-    tc.fillRect(floorX, barY, floorW, 3);
-    tc.fillStyle = col();
-    tc.fillRect(floorX, barY, Math.floor(floorW * towerState.buildProgress), 3);
+  // current building floor
+  if(towerState.buildProgress>0){
+    const fy=vGY-(towerState.floors.length+1)*FLOOR_H;
+    const p=makeFloorPal(towerState.floors.length);
+    const vW=Math.floor(fw*towerState.buildProgress);
+    ac.fillStyle=p.wall;ac.fillRect(fx,fy,vW,FLOOR_H);
+    for(const wx of[fx+fw*.25-3,fx+fw*.65-3]){
+      if(wx+6<=fx+vW){
+        ac.fillStyle=p.frame;ac.fillRect(wx-1,fy+(FLOOR_H-8)/2-1,8,10);
+        ac.fillStyle=p.window;ac.fillRect(wx,fy+(FLOOR_H-8)/2,6,8);
+        ac.fillStyle=p.frame;ac.fillRect(wx+3,fy+(FLOOR_H-8)/2,1,8);ac.fillRect(wx,fy+(FLOOR_H-8)/2+4,6,1);
+      }
+    }
+    ac.fillStyle=p.roof;ac.fillRect(fx,fy,vW,2);
+    ac.fillStyle='rgba(0,0,0,0.18)';ac.fillRect(fx,fy,2,FLOOR_H);
   }
 
-  // paused indicator
-  if(towerState.paused && (towerState.floors.length > 0 || towerState.buildProgress > 0)){
-    tc.fillStyle = 'rgba(255,255,255,0.06)';
-    tc.fillRect(0, 0, CW, CH);
-    tc.font = 'bold 9px monospace';
-    tc.fillStyle = 'rgba(255,255,255,0.25)';
-    tc.letterSpacing = '3px';
-    tc.textAlign = 'center';
-    tc.fillText('COFFEE BREAK', CW/2, 18);
-    tc.letterSpacing = '0px';
+  // ground
+  ac.fillStyle='#22223a';ac.fillRect(0,gY,CW,GROUND_H);
+  ac.fillStyle='#33334a';ac.fillRect(0,gY,CW,2);
+
+  // surface & scaffold
+  const surfY=vGY-(towerState.floors.length*FLOOR_H)-(towerState.buildProgress*FLOOR_H);
+  if(towerState.floors.length>0||towerState.buildProgress>0){
+    ac.strokeStyle='rgba(120,100,60,0.35)';ac.lineWidth=1.5;ac.setLineDash([4,4]);
+    ac.beginPath();ac.moveTo(fx,Math.min(vGY,CH));ac.lineTo(fx,surfY-8);ac.stroke();
+    ac.beginPath();ac.moveTo(fx+fw,Math.min(vGY,CH));ac.lineTo(fx+fw,surfY-8);ac.stroke();
+    ac.setLineDash([]);
   }
 
-  towerState.rafId = requestAnimationFrame(towerFrame);
+  // progress bar
+  if(!animPaused&&towerState.buildProgress>0){
+    ac.fillStyle='rgba(0,0,0,0.4)';ac.fillRect(fx,surfY-3,fw,3);
+    ac.fillStyle=col();ac.fillRect(fx,surfY-3,Math.floor(fw*towerState.buildProgress),3);
+  }
+
+  // workers
+  const workerY=surfY-26; // feet at surfY
+  const spd=T_SPEEDS[intensity-1];
+  const coffee=animPaused;
+  for(const w of towerState.workers){
+    if(!coffee){
+      w.x+=w.dir*spd*(dt/16);
+      if(w.x>fx+fw-6){w.x=fx+fw-6;w.dir=-1;}
+      if(w.x<fx+6){w.x=fx+6;w.dir=1;}
+    } else {
+      if(!w.seatSet){w.seatX=fx+fw*(.2+Math.random()*.6);w.seatSet=true;}
+      w.x+=(w.seatX-w.x)*.08;w.dir=w.seatX>w.x?1:-1;
+    }
+    const S=2,px=Math.round(w.x),py=Math.round(workerY),d=w.dir;
+    ac.fillStyle='rgba(0,0,0,0.25)';ac.fillRect(px-5,py+30,10,2);
+    if(coffee){
+      ac.fillStyle='#1a1a2e';ac.fillRect(px-3*S,py+8*S,2*S,3*S);ac.fillRect(px+S,py+8*S,2*S,3*S);
+      ac.fillRect(px-3*S,py+11*S,2*S,2*S);ac.fillRect(px+S,py+11*S,2*S,2*S);
+    } else {
+      const wf=Math.floor(t*spd*.04)%4;
+      const legs=[[[-d,0],[d,2]],[[d,0],[-d,2]],[[-d,0],[d,4]],[[d,0],[-d,4]]][wf];
+      ac.fillStyle='#1a1a2e';
+      ac.fillRect(px+legs[0][0]*S,py+8*S,2*S,5*S+legs[0][1]);
+      ac.fillRect(px+legs[1][0]*S,py+8*S,2*S,5*S+legs[1][1]);
+      ac.fillStyle='#111';
+      ac.fillRect(px+legs[0][0]*S-S,py+12*S+legs[0][1],3*S,S);
+      ac.fillRect(px+legs[1][0]*S-S,py+12*S+legs[1][1],3*S,S);
+    }
+    ac.fillStyle=w.shirt;ac.fillRect(px-2*S,py+4*S,4*S,5*S);
+    ac.fillStyle='#f0c040';ac.fillRect(px-3*S,py+S,6*S,2*S);ac.fillRect(px-2*S,py-S,4*S,2*S);
+    ac.fillStyle=w.skin;ac.fillRect(px-2*S,py+S,4*S,3*S);
+    ac.fillStyle='#222';ac.fillRect(d>=0?px+S:px-2*S,py+2*S,S,S);
+    if(!coffee){
+      const ha=Math.sin(t*spd*.12+w.phase);
+      const hx=d>0?px+2*S:px-3*S,hy=py+4*S+Math.round(ha*2*S);
+      ac.fillStyle=w.skin;ac.fillRect(hx,hy,S,3*S);
+      ac.fillStyle='#aaa';ac.fillRect(hx-S*(d>0?0:1),hy-S,S*2,S);ac.fillRect(hx-S*(d>0?0:1),hy-2*S,S*2,S);
+    } else {
+      const cx2=d>=0?px+2*S:px-4*S,cy=py+4*S;
+      ac.fillStyle=w.skin;ac.fillRect(cx2,cy,S,2*S);
+      ac.fillStyle='#fff';ac.fillRect(cx2-S,cy+2*S,3*S,3*S);
+      ac.fillStyle='#6a3a10';ac.fillRect(cx2-S+1,cy+2*S+1,3*S-2,S);
+      ac.fillStyle='rgba(255,255,255,0.4)';
+      const so=Math.sin(t*.003+w.phase)*S;
+      ac.fillRect(cx2+so,cy-S,1,S);ac.fillRect(cx2+S+so,cy-2*S,1,S);
+    }
+  }
+
+  if(animPaused&&(towerState.floors.length>0||towerState.buildProgress>0)){
+    ac.fillStyle='rgba(0,0,0,0.25)';ac.fillRect(0,0,CW,CH);
+    ac.font='bold 9px monospace';ac.fillStyle='rgba(255,255,255,0.3)';ac.textAlign='center';ac.fillText('COFFEE BREAK',CW/2,16);
+  }
 }
 
-function startTower(){
-  if(towerState.rafId){ cancelAnimationFrame(towerState.rafId); towerState.rafId=null; }
-  towerState.prevT = null;
-  if(towerState.workers.length===0) initWorkers();
-  towerState.rafId = requestAnimationFrame(towerFrame);
+// ═══════════════════════════════════════════════
+// ── SCENE 1: ISOMETRIC OFFICE ──
+// Ported from the reference canvas (900×620) and
+// scaled to fit the 200px-tall animCanvas.
+// ═══════════════════════════════════════════════
+
+// Office palette (mirrors reference C object)
+const OC = {
+  f0:'#f5ead0',f1:'#eddfc0',fL:'#ddd0b0',
+  bf0:'#eceaf8',bf1:'#e2e0f0',
+  pf0:'#d0eedd',pf1:'#c4e4d0',
+  wF:'#5bbccc',wS:'#3a9aaa',wT:'#7ad4e4',
+  glassF:'rgba(140,200,240,0.28)',
+  glassS:'rgba(80,140,200,0.35)',
+  glassStroke:'rgba(160,210,255,0.7)',
+  pWF:'#55bb88',pWS:'#3a9966',pWT:'#77ddaa',
+  dT:'#4a90c8',dS:'#2a6a9a',dF:'#1a4a72',
+  bT:'#9060b8',bS:'#6a3a90',bF:'#4a1a68',
+  cR:'#e05050',cRd:'#b03030',
+  cG:'#d4a020',cGd:'#a07810',
+  cL:'#333344',
+  mon:'#111118',
+  scr:['#00ee80','#0088ee','#ffaa00','#ff44aa','#44eeff'],
+  pr:'#889aaa',prD:'#556677',prT:'#aabccc',
+  fr:'#88a8b8',frD:'#557080',
+  kt:'#dd9944',ktT:'#bb7722',
+  mg:['#ee4444','#4488ee','#44bb66','#ee9922','#9944ee'],
+  co:'#7733bb',coD:'#5511aa',coA:'#6622aa',
+  pl:'#44aa44',plD:'#227722',pp:'#cc7744',
+  sk:['#f5c070','#e8a855','#d49040','#f0c888','#c47a38'],
+  sh:['#3355ee','#ee3333','#33bb44','#ee8833','#9933ee','#33bbcc'],
+  pn:['#223344','#334422','#443322','#222244'],
+  hr:['#221100','#110500','#001122','#ddaa00','#441100','#888888'],
+  dl:'#44dd44',
+  ctr:'#c8a878',ctrD:'#a07850',ctrT:'#e0c090',
+};
+
+// Reference canvas size the office was designed for
+const O_W=700, O_H=320;
+// Reference tile dimensions
+const O_TW=38, O_TH=19;
+// Reference grid origin
+const O_OX=O_W/2, O_OY=72;
+
+// Office Worker class
+const OFFICE_DESKS=[
+  {tx:2,ty:1},{tx:2,ty:3},{tx:2,ty:5},{tx:2,ty:7},
+  {tx:5,ty:1},{tx:5,ty:3},{tx:5,ty:5},{tx:5,ty:7},
+  {tx:8,ty:2},{tx:8,ty:4},{tx:8,ty:6},
+];
+const BOSS_DESKS=[{tx:11.5,ty:1,id:20},{tx:11.5,ty:4,id:21}];
+const O_PR={tx:9.5,ty:6.5};
+const PANTRY_SPOTS=[
+  {tx:1.8,ty:11.2},{tx:3.2,ty:11.6},{tx:4.6,ty:11.3},
+  {tx:1.5,ty:12.8},{tx:3.0,ty:13.2},{tx:4.4,ty:12.9},
+  {tx:5.5,ty:12.0},{tx:2.8,ty:14.0},{tx:4.0,ty:14.3},
+  {tx:1.2,ty:14.3},{tx:5.8,ty:13.5},
+];
+const O_WALKERS=[2,7];
+let officeMode='work'; // 'work' | 'break'
+
+class OfficeWorker {
+  constructor(id,di){
+    this.id=id;this.di=di;
+    const d=OFFICE_DESKS[di];
+    this.hx=d.tx+0.45;this.hy=d.ty+0.3;
+    this.x=this.hx;this.y=this.hy;
+    this.state='sitting';this.timer=40+id*28;
+    this.carry=false;this.path=[];this.pi=0;this.pw=0;
+    this.atBreak=false;
+    this.isWalker=O_WALKERS.includes(id);
+    const sp=PANTRY_SPOTS[id%PANTRY_SPOTS.length];
+    this.bx=sp.tx;this.byy=sp.ty;
+  }
+  mkP(tx,ty){
+    const s=[];let cx=this.x,cy=this.y;
+    for(let i=0;i<80;i++){
+      const dx=tx-cx,dy=ty-cy;
+      if(Math.abs(dx)<.08&&Math.abs(dy)<.08)break;
+      if(Math.abs(dx)>Math.abs(dy))cx+=Math.sign(dx)*.11;
+      else cy+=Math.sign(dy)*.11;
+      s.push({x:cx,y:cy});
+    }
+    s.push({x:tx,y:ty});return s;
+  }
+  step(){
+    if(this.pi<this.path.length){this.x=this.path[this.pi].x;this.y=this.path[this.pi].y;this.pi++;return false;}
+    return true;
+  }
+  update(){
+    if(officeMode==='break'){
+      if(!this.atBreak){this.x=this.bx;this.y=this.byy;this.state='onBreak';this.atBreak=true;this.carry=false;}
+      return;
+    }
+    if(officeMode==='work'&&this.atBreak){
+      this.atBreak=false;this.x=this.hx;this.y=this.hy;
+      this.state='sitting';this.timer=60+this.id*15;this.carry=false;return;
+    }
+    if(!this.isWalker)return;
+    this.timer--;
+    if(this.state==='sitting'&&this.timer<=0){this.state='toP';this.path=this.mkP(O_PR.tx-1.2,O_PR.ty-.4);this.pi=0;}
+    if(this.state==='toP'){if(this.step()){this.state='printing';this.pw=38+this.id*7;}}
+    if(this.state==='printing'){this.pw--;if(this.pw<=0){this.carry=true;this.state='fromP';this.path=this.mkP(this.hx,this.hy);this.pi=0;}}
+    if(this.state==='fromP'){if(this.step()){this.state='sitting';this.timer=90+Math.floor(Math.random()*70);this.carry=false;}}
+  }
 }
 
-function stopTower(){
-  if(towerState.rafId){ cancelAnimationFrame(towerState.rafId); towerState.rafId=null; }
+const officeWorkers=OFFICE_DESKS.map((_,i)=>new OfficeWorker(i,i));
+let officeFr=0;
+
+// Dollar particles for the office scene
+const officeDollars=[];
+function spawnOfficeDollar(ox,oy,scaleX){
+  const cx=ox+(Math.random()*8-4)*O_TW/2*scaleX;
+  officeDollars.push({x:cx,y:oy-5,vy:-(1+Math.random()*1.4),vx:(Math.random()-.5)*.9,alpha:.65+Math.random()*.2,size:8+Math.random()*5,rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.07});
+}
+function updateOfficeDollars(){
+  for(let i=officeDollars.length-1;i>=0;i--){
+    const d=officeDollars[i];
+    d.x+=d.vx;d.y+=d.vy;d.vy+=.035;d.rot+=d.vr;d.alpha-=.014;
+    if(d.alpha<=0)officeDollars.splice(i,1);
+  }
 }
 
-function resizeTower(){
-  const w = Math.round(towerCanvas.getBoundingClientRect().width);
-  if(w>0 && towerCanvas.width!==w){ towerCanvas.width=w; }
-}
-window.addEventListener('resize', resizeTower);
-setTimeout(resizeTower, 50);
+// ── Office draw helpers (all use ac context, scaled) ──
+function oIx(tx,ty){return O_OX+(tx-ty)*O_TW/2;}
+function oIy(tx,ty){return O_OY+(tx+ty)*O_TH/2;}
 
-// init render loop always so we can see the idle canvas
-resetTower();
-towerState.paused = true;
-startTower();
+function oInB(tx,ty){return tx>=10&&ty<7;}
+function oInP(tx,ty){return ty>=10&&tx<=7;}
+
+function oTile(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.fillStyle=oInB(tx,ty)?((tx+ty)%2===0?OC.bf0:OC.bf1):oInP(tx,ty)?((tx+ty)%2===0?OC.pf0:OC.pf1):((tx+ty)%2===0?OC.f0:OC.f1);
+  ac.beginPath();ac.moveTo(x,y);ac.lineTo(x+O_TW/2,y+O_TH/2);ac.lineTo(x,y+O_TH);ac.lineTo(x-O_TW/2,y+O_TH/2);ac.closePath();ac.fill();
+  ac.strokeStyle=oInP(tx,ty)?'#b8dcc8':oInB(tx,ty)?'#d0ccee':OC.fL;ac.lineWidth=0.4;ac.stroke();
+}
+
+function oSolidWall(tx,ty,h,fc,sc,tc){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.fillStyle=sc;ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x-O_TW/2,y+O_TH/2-h);ac.lineTo(x-O_TW/2,y+O_TH/2);ac.lineTo(x,y+O_TH);ac.closePath();ac.fill();
+  ac.fillStyle=fc;ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x+O_TW/2,y+O_TH/2-h);ac.lineTo(x+O_TW/2,y+O_TH/2);ac.lineTo(x,y+O_TH);ac.closePath();ac.fill();
+  ac.fillStyle=tc;ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x+O_TW/2,y+O_TH/2-h);ac.lineTo(x,y+O_TH-h);ac.lineTo(x-O_TW/2,y+O_TH/2-h);ac.closePath();ac.fill();
+  ac.strokeStyle='rgba(0,0,0,0.1)';ac.lineWidth=0.5;ac.stroke();
+}
+
+function oGlassWall(tx,ty,h){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.save();
+  ac.fillStyle=OC.glassS;
+  ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x-O_TW/2,y+O_TH/2-h);ac.lineTo(x-O_TW/2,y+O_TH/2);ac.lineTo(x,y);ac.closePath();ac.fill();
+  ac.strokeStyle=OC.glassStroke;ac.lineWidth=0.8;ac.stroke();
+  ac.strokeStyle='rgba(200,230,255,0.4)';ac.lineWidth=0.5;
+  ac.beginPath();ac.moveTo(x-O_TW/4,y-h+O_TH/4);ac.lineTo(x-O_TW/4,y+O_TH/4);ac.stroke();
+  ac.restore();
+}
+
+function oGlassWallBottom(tx,ty,h){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.save();
+  ac.fillStyle=OC.glassF;
+  ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x+O_TW/2,y+O_TH/2-h);ac.lineTo(x+O_TW/2,y+O_TH/2);ac.lineTo(x,y);ac.closePath();ac.fill();
+  ac.strokeStyle=OC.glassStroke;ac.lineWidth=0.8;ac.stroke();
+  ac.strokeStyle='rgba(200,230,255,0.4)';ac.lineWidth=0.5;
+  ac.beginPath();ac.moveTo(x+O_TW/4,y-h+O_TH/4);ac.lineTo(x+O_TW/4,y+O_TH/4);ac.stroke();
+  ac.restore();
+}
+
+function oDesk(tx,ty,boss){
+  const x=oIx(tx,ty),y=oIy(tx,ty),dh=17;
+  const[tc,sc,fc]=boss?[OC.bT,OC.bS,OC.bF]:[OC.dT,OC.dS,OC.dF];
+  ac.fillStyle=sc;ac.beginPath();ac.moveTo(x,y-dh);ac.lineTo(x-O_TW/2,y+O_TH/2-dh);ac.lineTo(x-O_TW/2,y+O_TH/2);ac.lineTo(x,y+dh);ac.closePath();ac.fill();
+  ac.fillStyle=fc;ac.beginPath();ac.moveTo(x,y-dh);ac.lineTo(x+O_TW/2,y+O_TH/2-dh);ac.lineTo(x+O_TW/2,y+O_TH/2);ac.lineTo(x,y);ac.closePath();ac.fill();
+  ac.fillStyle=tc;ac.beginPath();ac.moveTo(x,y-dh);ac.lineTo(x+O_TW/2,y+O_TH/2-dh);ac.lineTo(x,y+O_TH-dh);ac.lineTo(x-O_TW/2,y+O_TH/2-dh);ac.closePath();ac.fill();
+  ac.strokeStyle=boss?'#cc99ff':'#66bbee';ac.lineWidth=0.5;ac.stroke();
+  const mx=x+4,my=y-dh-15;
+  ac.fillStyle=OC.mon;ac.fillRect(mx-7,my,14,11);
+  ac.fillStyle=OC.scr[Math.floor(tx*3+ty)%OC.scr.length];ac.fillRect(mx-6,my+1,12,8);
+  ac.fillStyle='#333';ac.fillRect(mx-1,my+11,2,4);ac.fillStyle='#555';ac.fillRect(mx-4,my+15,8,1);
+  ac.fillStyle='#334466';ac.fillRect(x-9,y-dh+2,10,7);
+  ac.fillStyle='#223355';ac.fillRect(x-8,y-dh+3,8,5);
+  for(let i=0;i<3;i++){ac.fillStyle='#aabbcc';ac.fillRect(x-7,y-dh+3.5+i*1.5,5,0.7);}
+}
+
+function oChair(cx,cy,boss){
+  const[seat,sd,bk]=boss?[OC.cG,OC.cGd,'#c09018']:[OC.cR,OC.cRd,'#cc4040'];
+  ac.fillStyle=sd;ac.beginPath();ac.moveTo(cx-8,cy);ac.lineTo(cx-4,cy+2);ac.lineTo(cx-4,cy+8);ac.lineTo(cx-8,cy+6);ac.closePath();ac.fill();
+  ac.fillStyle=seat;ac.fillRect(cx-8,cy-2,16,7);
+  ac.fillStyle=bk;ac.fillRect(cx-8,cy,16,12);
+  ac.strokeStyle='rgba(0,0,0,0.2)';ac.lineWidth=0.5;ac.stroke();
+}
+
+function oPrinter(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty),ph=16,s=0.8;
+  ac.fillStyle=OC.prD;ac.beginPath();ac.moveTo(x,y-ph);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-ph);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s);ac.lineTo(x,y+ph);ac.closePath();ac.fill();
+  ac.fillStyle=OC.pr;ac.beginPath();ac.moveTo(x,y-ph);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-ph);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s);ac.lineTo(x,y+ph);ac.closePath();ac.fill();
+  ac.fillStyle=OC.prT;ac.beginPath();ac.moveTo(x,y-ph);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-ph);ac.lineTo(x,y+O_TH*s-ph);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-ph);ac.closePath();ac.fill();
+  ac.fillStyle='#00ff44';ac.fillRect(x+2,y-ph+3,6,2);
+  ac.fillStyle='#fff';ac.fillRect(x-6,y-ph-5,12,5);
+}
+
+function oFridge(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty),fh=26,s=0.65;
+  ac.fillStyle=OC.frD;ac.beginPath();ac.moveTo(x,y-fh);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-fh);ac.lineTo(x-O_TW/2*s,y+O_TH);ac.lineTo(x,y+fh);ac.closePath();ac.fill();
+  ac.fillStyle=OC.fr;ac.beginPath();ac.moveTo(x,y-fh);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-fh);ac.lineTo(x+O_TW/2*s,y+O_TH);ac.lineTo(x,y+fh);ac.closePath();ac.fill();
+  ac.fillStyle='#aac8d8';ac.beginPath();ac.moveTo(x,y-fh);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-fh);ac.lineTo(x,y+O_TH*s-fh);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-fh);ac.closePath();ac.fill();
+  ac.fillStyle='#667788';ac.fillRect(x+2,y-fh/2,3,4);
+  ac.strokeStyle='rgba(0,0,0,0.12)';ac.lineWidth=0.5;ac.stroke();
+}
+
+function oPlant(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.fillStyle=OC.pp;ac.beginPath();ac.moveTo(x-6,y-12);ac.lineTo(x+6,y-12);ac.lineTo(x+4,y);ac.lineTo(x-4,y);ac.closePath();ac.fill();
+  ac.fillStyle=OC.plD;ac.fillRect(x-1,y-20,2,9);
+  ac.fillStyle=OC.pl;
+  ac.beginPath();ac.arc(x,y-22,8,0,Math.PI*2);ac.fill();
+  ac.beginPath();ac.arc(x-7,y-18,6,0,Math.PI*2);ac.fill();
+  ac.beginPath();ac.arc(x+6,y-19,6,0,Math.PI*2);ac.fill();
+}
+
+function oCouch(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty);
+  ac.fillStyle=OC.coD;ac.beginPath();ac.moveTo(x-O_TW*.5,y);ac.lineTo(x+O_TW*.5,y);ac.lineTo(x+O_TW*.5,y+8);ac.lineTo(x-O_TW*.5,y+8);ac.closePath();ac.fill();
+  ac.fillStyle=OC.co;ac.beginPath();ac.moveTo(x-O_TW*.5,y-14);ac.lineTo(x+O_TW*.5,y-14);ac.lineTo(x+O_TW*.5,y);ac.lineTo(x-O_TW*.5,y);ac.closePath();ac.fill();
+  ac.fillStyle=OC.coA;ac.fillRect(x-O_TW*.5-6,y-18,6,26);ac.fillRect(x+O_TW*.5,y-18,6,26);
+  ac.strokeStyle='rgba(0,0,0,0.15)';ac.lineWidth=0.5;ac.stroke();
+}
+
+function oCoffeeTable(tx,ty){
+  const x=oIx(tx,ty),y=oIy(tx,ty),h=7,s=0.55;
+  ac.fillStyle='#664422';ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-h);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s);ac.lineTo(x,y);ac.closePath();ac.fill();
+  ac.fillStyle='#885533';ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-h);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s);ac.lineTo(x,y);ac.closePath();ac.fill();
+  ac.fillStyle='#aa7744';ac.beginPath();ac.moveTo(x,y-h);ac.lineTo(x+O_TW/2*s,y+O_TH/2*s-h);ac.lineTo(x,y+O_TH*s-h);ac.lineTo(x-O_TW/2*s,y+O_TH/2*s-h);ac.closePath();ac.fill();
+}
+
+function oPerson(px,py,fr2,id,carry,sitting,onCouch){
+  const x=oIx(px,py),y=oIy(px,py);
+  const lp=fr2%8,bob=(!sitting)?Math.abs(lp-4)*.45:0,by=y-bob;
+  const sc=OC.sh[id%OC.sh.length],hc=OC.hr[id%OC.hr.length],sk=OC.sk[id%OC.sk.length],pt=OC.pn[id%OC.pn.length];
+  if(!sitting){
+    ac.fillStyle=pt;
+    const lo=lp<4?[-2,2]:[2,-2];
+    ac.fillRect(x-3+lo[0],by+10,3,7);ac.fillRect(x+0+lo[1],by+10,3,7);
+    ac.fillStyle='#222233';
+    const ao=lp<4?[1,-1]:[-1,1];
+    ac.fillRect(x-6+ao[0],by+5,2,6);ac.fillRect(x+4+ao[1],by+5,2,6);
+    ac.fillStyle=sc;ac.fillRect(x-5,by+3,10,8);
+    ac.fillStyle=sk;ac.beginPath();ac.arc(x,by+1,4,0,Math.PI*2);ac.fill();
+    ac.fillStyle=hc;ac.fillRect(x-4,by-3,8,4);
+    if(carry){
+      ac.fillStyle='#fff';ac.fillRect(x+4,by+3,7,6);
+      ac.fillStyle='#6699dd';ac.fillRect(x+5,by+4,5,1);ac.fillRect(x+5,by+6,5,1);
+    }
+  } else if(onCouch){
+    ac.fillStyle=pt;ac.fillRect(x-5,by+9,4,5);ac.fillRect(x+1,by+9,4,5);
+    ac.fillStyle='#222233';ac.fillRect(x-9,by+4,2,6);ac.fillRect(x+6,by+4,2,6);
+    ac.fillStyle=sc;ac.fillRect(x-5,by+3,10,7);
+    const mc=OC.mg[(id+1)%OC.mg.length];
+    ac.fillStyle=mc;ac.fillRect(x+7,by,5,5);
+    ac.fillStyle='#fff';ac.fillRect(x+8,by,3,1.5);
+    ac.fillStyle=sk;ac.beginPath();ac.arc(x,by+1,4,0,Math.PI*2);ac.fill();
+    ac.fillStyle=hc;ac.fillRect(x-4,by-3,8,4);
+  } else {
+    ac.fillStyle=pt;ac.fillRect(x-11,by+9,3,5);ac.fillRect(x-8,by+9,3,5);
+    ac.fillStyle='#222233';ac.fillRect(x-14,by+4,2,6);ac.fillRect(x-4,by+4,2,6);
+    ac.fillStyle=sc;ac.fillRect(x-12,by+3,9,7);
+    ac.fillStyle=sk;ac.beginPath();ac.arc(x-7,by+1,4,0,Math.PI*2);ac.fill();
+    ac.fillStyle=hc;ac.fillRect(x-11,by-3,8,4);
+  }
+}
+
+const OFFICE_LOOP=500;
+
+// Walk speed multipliers per intensity level
+// officeFr increments by this per render frame (affects leg animation + path stepping)
+const OFFICE_WALK_SPEEDS = [0.5, 1.0, 1.8, 3.0, 5.0];
+let officeFrAcc = 0; // fractional accumulator so sub-integer speeds work smoothly
+
+function drawOfficeFrame(dt,t){
+  const CW=animCanvas.width, CH=animCanvas.height;
+
+  // sync officeMode with animPaused
+  officeMode = animPaused ? 'break' : 'work';
+
+  // Advance officeFr by intensity-scaled amount; call update() once per whole tick
+  const walkSpd = OFFICE_WALK_SPEEDS[intensity - 1];
+  officeFrAcc += walkSpd;
+  const ticks = Math.floor(officeFrAcc);
+  officeFrAcc -= ticks;
+  for(let k = 0; k < ticks; k++) officeWorkers.forEach(w => w.update());
+
+  // Scale + translate: use the version from the attached doc (Math.min, centered)
+  const scaleX=CW/O_W, scaleY=CH/O_H;
+  const scale=Math.min(scaleX,scaleY);
+
+  ac.save();
+  ac.scale(scale,scale);
+  ac.translate((CW/scale-O_W)/2, 0);
+
+  const lf=officeFr%OFFICE_LOOP;
+
+  // background
+  // ac.fillStyle='#f0e8d0';ac.fillRect(0,0,O_W,O_H);
+
+  // 1 — floor
+  for(let tx=0;tx<16;tx++)for(let ty=0;ty<16;ty++)oTile(tx,ty);
+
+  // 2 — outer solid walls
+  for(let tx=0;tx<16;tx++)oSolidWall(tx,0,26,OC.wF,OC.wS,OC.wT);
+  for(let ty=1;ty<16;ty++)oSolidWall(0,ty,26,OC.wF,OC.wS,OC.wT);
+  for(let tx=0;tx<8;tx++)oSolidWall(tx,10,22,OC.pWF,OC.pWS,OC.pWT);
+
+  // 3 — boss room contents (behind glass)
+  const bossItems=[];
+  BOSS_DESKS.forEach((b,i)=>{
+    bossItems.push({s:b.tx+b.ty,      type:'bd',tx:b.tx,ty:b.ty,bid:b.id,idx:i});
+    bossItems.push({s:b.tx+b.ty+0.01, type:'bw',tx:b.tx+0.45,ty:b.ty+0.3,id:b.id,idx:i});
+  });
+  bossItems.sort((a,b)=>a.s-b.s);
+  bossItems.forEach(item=>{
+    if(item.type==='bd'){
+      oDesk(item.tx,item.ty,true);
+    } else {
+      const cx=oIx(item.tx,item.ty),cy=oIy(item.tx,item.ty)+10;
+      oPerson(item.tx,item.ty-0.5,0,item.id,false,true,false);
+      oChair(cx+4,cy-5,true);
+    }
+  });
+
+  // 4 — glass walls over boss room
+  for(let ty=0;ty<7;ty++)oGlassWall(10,ty,26);
+  for(let tx=10;tx<16;tx++)oGlassWallBottom(tx,7,24);
+
+  // 5 — pantry furniture
+  oFridge(0.3,9.8);
+  oCouch(2,11.7);
+  oCouch(3,14.5);
+  oCoffeeTable(3.8,12.5);
+  oPlant(1.2,13.5);
+
+  // 6 — office desks, printer, workers sorted by iso depth
+  const items=[];
+  OFFICE_DESKS.forEach((d,i)=>items.push({s:d.tx+d.ty,type:'desk',tx:d.tx,ty:d.ty,idx:i}));
+  items.push({s:O_PR.tx+O_PR.ty,type:'printer',tx:O_PR.tx,ty:O_PR.ty});
+  officeWorkers.forEach((w,i)=>{
+    const moving=w.state==='toP'||w.state==='fromP';
+    const onCouch=w.state==='onBreak';
+    const sitting=!moving;
+    const needChair=sitting&&!onCouch;
+    items.push({s:w.x+w.y,type:'worker',w,i,moving,sitting,onCouch,needChair});
+  });
+  items.sort((a,b)=>a.s-b.s);
+
+  items.forEach(item=>{
+    if(item.type==='desk'){
+      oDesk(item.tx,item.ty,false);
+    } else if(item.type==='printer'){
+      oPrinter(item.tx,item.ty);
+    } else {
+      const w=item.w;
+      const wx=oIx(w.x,w.y),wy=oIy(w.x,w.y);
+      oPerson(w.x,w.y-1,item.moving?officeFr:0,item.i,w.carry,item.sitting,item.onCouch);
+      if(item.needChair)oChair(wx+10,wy,false);
+    }
+  });
+
+  // scanline overlay
+  ac.save();ac.globalAlpha=0.045;ac.fillStyle='#fff';
+  for(let i=0;i<O_H;i+=3)ac.fillRect(0,i,O_W,1);
+  ac.restore();
+
+  // dollar particles (work mode, near end of loop)
+  if(officeMode==='work'&&lf>OFFICE_LOOP-100){
+    if(officeFr%5===0){
+      const cx=O_OX+(Math.random()*8-4)*O_TW/2;
+      officeDollars.push({x:cx,y:O_OY-5,vy:-(1+Math.random()*1.4),vx:(Math.random()-.5)*.9,alpha:.65+Math.random()*.2,size:8+Math.random()*5,rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.07});
+    }
+  }
+  updateOfficeDollars();
+  officeDollars.forEach(d=>{
+    ac.save();ac.globalAlpha=d.alpha;ac.translate(d.x,d.y);ac.rotate(d.rot);
+    ac.fillStyle=OC.dl;ac.font=`bold ${d.size|0}px monospace`;ac.textAlign='center';ac.textBaseline='middle';
+    ac.fillText('$',0,0);ac.restore();
+  });
+
+  ac.restore(); // undo scale/translate
+
+  officeFr += ticks; // keep officeFr in sync with how many ticks actually ran
+}
+
+// ═══════════════════════════════════════════════
+// ── MAIN LOOP ──
+// ═══════════════════════════════════════════════
+function animLoop(ts){
+  if(animPrevT===null)animPrevT=ts;
+  const dt=Math.min(ts-animPrevT,80);
+  animPrevT=ts;
+
+  ac.clearRect(0,0,animCanvas.width,animCanvas.height);
+
+  if(currentScene===0) drawTowerFrame(dt,ts);
+  else drawOfficeFrame(dt,ts);
+
+  animRaf=requestAnimationFrame(animLoop);
+}
+
+function resizeCanvas(){
+  const w=Math.round(animCanvas.getBoundingClientRect().width);
+  if(w>0&&animCanvas.width!==w){animCanvas.width=w;}
+}
+window.addEventListener('resize',resizeCanvas);
+setTimeout(resizeCanvas,50);
+
+initTowerWorkers();
+animRaf=requestAnimationFrame(animLoop);
 </script>
 </body>
 </html>
