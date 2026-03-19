@@ -492,6 +492,7 @@ allSwatches.forEach(s=>{
 });
 
 resetPauses.addEventListener('click',()=>{
+  resetTower();
   pauseCount=0; updateGauge();
   if(btn.classList.contains('locked')) unlockBtn();
 });
