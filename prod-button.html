@@ -194,20 +194,17 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
   }
 })();
 
-// ── constants ──
 const COLORS=['#e24b4a','#d85a30','#ba7517','#5a9620','#1a9e72','#1660a8','#7a70de','#cc4e80','#2e8a5a','#0a447e','#8b3fc0','#a8602a'];
 const VIBES=['Gentle nudge','Getting real','Fired up','Full send','CHAOS MODE'];
 const SCENE_NAMES=['Tower View','Office View'];
 
-// ── state ──
-let running=false, colorIdx=0, intensity=1, clickTimer=null;
-let pauseCount=0, maxPauses=2;
-let timerSec=0, timerInterval=null;
+let running=false,colorIdx=0,intensity=1,clickTimer=null;
+let pauseCount=0,maxPauses=2;
+let timerSec=0,timerInterval=null;
 let currentScene=0;
 let animPaused=true;
-let animPrevT=null, animRaf=null;
+let animPrevT=null,animRaf=null;
 
-// ── elements ──
 const btn=document.getElementById('btn');
 const stage=document.getElementById('stage');
 const r1=document.getElementById('r1'),r2=document.getElementById('r2');
@@ -342,7 +339,6 @@ document.getElementById('reset-pauses').addEventListener('click',()=>{
 document.getElementById('reset-timer').addEventListener('click',()=>{
   resetTimerFn();running=false;animPaused=true;stage.className='btn-stage';
   cityWindow.classList.remove('on');
-  // reset tower
   towerState.floors=[];towerState.currentFloor=0;towerState.buildProgress=0;towerState.scrollOffset=0;
   initTowerWorkers();
   btn.classList.remove('locked');btn.textContent='START';btn.style.background='#e24b4a';
@@ -351,7 +347,6 @@ document.getElementById('reset-timer').addEventListener('click',()=>{
   maxMsg.style.display='none';hint.textContent='click to start · double-click to pause';
 });
 
-// ── scene nav ──
 function updateSceneUI(){
   winTitle.textContent=SCENE_NAMES[currentScene];
   document.querySelectorAll('.scene-dot').forEach((d,i)=>d.classList.toggle('active',i===currentScene));
@@ -359,14 +354,11 @@ function updateSceneUI(){
 document.getElementById('scene-prev').addEventListener('click',()=>{currentScene=(currentScene+SCENE_NAMES.length-1)%SCENE_NAMES.length;updateSceneUI();});
 document.getElementById('scene-next').addEventListener('click',()=>{currentScene=(currentScene+1)%SCENE_NAMES.length;updateSceneUI();});
 
-// ── init ──
 applyColor('#e24b4a');
 updateGauge();
 sliderMax.style.background='linear-gradient(to right,#6060a0 0%,#6060a0 11%,#1e1e28 11%,#1e1e28 100%)';
 
-// ═══════════════════════════════════════════════
 // ── COLOR HELPERS ──
-// ═══════════════════════════════════════════════
 function hexToRgb(hex){return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];}
 function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');}
 function makeFloorPal(i){
@@ -374,9 +366,26 @@ function makeFloorPal(i){
   return{wall:rgbToHex(r*.55+sh,g*.55+sh,b*.55+sh),roof:rgbToHex(r*.38,g*.38,b*.38),frame:rgbToHex(r*.25,g*.25,b*.25),window:rgbToHex(r*.5+110,g*.5+110,b*.5+110)};
 }
 
-// ═══════════════════════════════════════════════
+// ── Derive office wall colors from button color ──
+// Returns {face, side, top} derived from the current col()
+function makeWallColors(){
+  const[r,g,b]=hexToRgb(col());
+  // Face: saturated mid-tone of the hue
+  const face=rgbToHex(r*.45+30,g*.45+30,b*.45+30);
+  // Side: darker
+  const side=rgbToHex(r*.32+15,g*.32+15,b*.32+15);
+  // Top: lighter highlight
+  const top =rgbToHex(r*.55+60,g*.55+60,b*.55+60);
+  return{face,side,top};
+}
+
+// ── Coffee break dim: smooth animated alpha target ──
+// 0 = fully lit, 1 = fully dimmed
+let breakDimAlpha = 0;
+const BREAK_DIM_TARGET = 0.62;  // how dark it gets
+const BREAK_DIM_SPEED  = 0.025; // how fast it fades in/out per frame
+
 // ── SCENE 0: TOWER ──
-// ═══════════════════════════════════════════════
 const FLOOR_TIMES=[60,30,15,8,4];
 const T_SPEEDS=[0.4,0.9,1.8,3.0,5.0];
 const T_COUNTS=[1,1,2,2,3];
@@ -409,19 +418,16 @@ function drawTowerFrame(dt,t){
     }
   }
 
-  // camera: keep active floor surface centred
   const alt=(towerState.floors.length+towerState.buildProgress)*FLOOR_H;
   const target=Math.max(0,alt-(CH/2-GROUND_H));
   towerState.scrollOffset+=(target-towerState.scrollOffset)*.06;
   const vGY=gY+towerState.scrollOffset;
 
-  // sky
   const sky=ac.createLinearGradient(0,0,0,CH);sky.addColorStop(0,'#0c0c18');sky.addColorStop(1,'#13132a');
   ac.fillStyle=sky;ac.fillRect(0,0,CW,CH);
   ac.fillStyle='rgba(255,255,255,0.5)';
   for(let i=0;i<40;i++){ac.beginPath();ac.arc((i*137+23)%CW,(i*91+17)%(CH*.7),i%5===0?1.2:.6,0,Math.PI*2);ac.fill();}
 
-  // completed floors
   for(let i=0;i<towerState.floors.length;i++){
     const fy=vGY-(i+1)*FLOOR_H;if(fy>CH||fy+FLOOR_H<0)continue;
     const p=makeFloorPal(i),vW=fw;
@@ -435,7 +441,6 @@ function drawTowerFrame(dt,t){
     ac.fillStyle='rgba(0,0,0,0.18)';ac.fillRect(fx,fy,2,FLOOR_H);
   }
 
-  // current building floor
   if(towerState.buildProgress>0){
     const fy=vGY-(towerState.floors.length+1)*FLOOR_H;
     const p=makeFloorPal(towerState.floors.length);
@@ -452,11 +457,9 @@ function drawTowerFrame(dt,t){
     ac.fillStyle='rgba(0,0,0,0.18)';ac.fillRect(fx,fy,2,FLOOR_H);
   }
 
-  // ground
   ac.fillStyle='#22223a';ac.fillRect(0,gY,CW,GROUND_H);
   ac.fillStyle='#33334a';ac.fillRect(0,gY,CW,2);
 
-  // surface & scaffold
   const surfY=vGY-(towerState.floors.length*FLOOR_H)-(towerState.buildProgress*FLOOR_H);
   if(towerState.floors.length>0||towerState.buildProgress>0){
     ac.strokeStyle='rgba(120,100,60,0.35)';ac.lineWidth=1.5;ac.setLineDash([4,4]);
@@ -465,14 +468,12 @@ function drawTowerFrame(dt,t){
     ac.setLineDash([]);
   }
 
-  // progress bar
   if(!animPaused&&towerState.buildProgress>0){
     ac.fillStyle='rgba(0,0,0,0.4)';ac.fillRect(fx,surfY-3,fw,3);
     ac.fillStyle=col();ac.fillRect(fx,surfY-3,Math.floor(fw*towerState.buildProgress),3);
   }
 
-  // workers
-  const workerY=surfY-26; // feet at surfY
+  const workerY=surfY-26;
   const spd=T_SPEEDS[intensity-1];
   const coffee=animPaused;
   for(const w of towerState.workers){
@@ -525,18 +526,13 @@ function drawTowerFrame(dt,t){
   }
 }
 
-// ═══════════════════════════════════════════════
 // ── SCENE 1: ISOMETRIC OFFICE ──
-// Ported from the reference canvas (900×620) and
-// scaled to fit the 200px-tall animCanvas.
-// ═══════════════════════════════════════════════
 
-// Office palette (mirrors reference C object)
 const OC = {
   f0:'#f5ead0',f1:'#eddfc0',fL:'#ddd0b0',
   bf0:'#eceaf8',bf1:'#e2e0f0',
   pf0:'#d0eedd',pf1:'#c4e4d0',
-  wF:'#5bbccc',wS:'#3a9aaa',wT:'#7ad4e4',
+  // wF/wS/wT are now computed dynamically from col() in makeWallColors()
   glassF:'rgba(140,200,240,0.28)',
   glassS:'rgba(80,140,200,0.35)',
   glassStroke:'rgba(160,210,255,0.7)',
@@ -559,17 +555,12 @@ const OC = {
   pn:['#223344','#334422','#443322','#222244'],
   hr:['#221100','#110500','#001122','#ddaa00','#441100','#888888'],
   dl:'#44dd44',
-  ctr:'#c8a878',ctrD:'#a07850',ctrT:'#e0c090',
 };
 
-// Reference canvas size the office was designed for
-const O_W=700, O_H=320;
-// Reference tile dimensions
-const O_TW=38, O_TH=19;
-// Reference grid origin
-const O_OX=O_W/2, O_OY=72;
+const O_W=700,O_H=320;
+const O_TW=38,O_TH=19;
+const O_OX=O_W/2,O_OY=72;
 
-// Office Worker class
 const OFFICE_DESKS=[
   {tx:2,ty:1},{tx:2,ty:3},{tx:2,ty:5},{tx:2,ty:7},
   {tx:5,ty:1},{tx:5,ty:3},{tx:5,ty:5},{tx:5,ty:7},
@@ -584,7 +575,7 @@ const PANTRY_SPOTS=[
   {tx:1.2,ty:14.3},{tx:5.8,ty:13.5},
 ];
 const O_WALKERS=[2,7];
-let officeMode='work'; // 'work' | 'break'
+let officeMode='work';
 
 class OfficeWorker {
   constructor(id,di){
@@ -635,12 +626,7 @@ class OfficeWorker {
 const officeWorkers=OFFICE_DESKS.map((_,i)=>new OfficeWorker(i,i));
 let officeFr=0;
 
-// Dollar particles for the office scene
 const officeDollars=[];
-function spawnOfficeDollar(ox,oy,scaleX){
-  const cx=ox+(Math.random()*8-4)*O_TW/2*scaleX;
-  officeDollars.push({x:cx,y:oy-5,vy:-(1+Math.random()*1.4),vx:(Math.random()-.5)*.9,alpha:.65+Math.random()*.2,size:8+Math.random()*5,rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.07});
-}
 function updateOfficeDollars(){
   for(let i=officeDollars.length-1;i>=0;i--){
     const d=officeDollars[i];
@@ -649,10 +635,8 @@ function updateOfficeDollars(){
   }
 }
 
-// ── Office draw helpers (all use ac context, scaled) ──
 function oIx(tx,ty){return O_OX+(tx-ty)*O_TW/2;}
 function oIy(tx,ty){return O_OY+(tx+ty)*O_TH/2;}
-
 function oInB(tx,ty){return tx>=10&&ty<7;}
 function oInP(tx,ty){return ty>=10&&tx<=7;}
 
@@ -693,7 +677,7 @@ function oGlassWallBottom(tx,ty,h){
   ac.restore();
 }
 
-function oDesk(tx,ty,boss){
+function oDesk(tx,ty,boss,dimmed){
   const x=oIx(tx,ty),y=oIy(tx,ty),dh=17;
   const[tc,sc,fc]=boss?[OC.bT,OC.bS,OC.bF]:[OC.dT,OC.dS,OC.dF];
   ac.fillStyle=sc;ac.beginPath();ac.moveTo(x,y-dh);ac.lineTo(x-O_TW/2,y+O_TH/2-dh);ac.lineTo(x-O_TW/2,y+O_TH/2);ac.lineTo(x,y+dh);ac.closePath();ac.fill();
@@ -702,7 +686,11 @@ function oDesk(tx,ty,boss){
   ac.strokeStyle=boss?'#cc99ff':'#66bbee';ac.lineWidth=0.5;ac.stroke();
   const mx=x+4,my=y-dh-15;
   ac.fillStyle=OC.mon;ac.fillRect(mx-7,my,14,11);
-  ac.fillStyle=OC.scr[Math.floor(tx*3+ty)%OC.scr.length];ac.fillRect(mx-6,my+1,12,8);
+  // Screen: dark/off during coffee break, normal color when working
+  const scrColor = dimmed ? '#111118' : OC.scr[Math.floor(tx*3+ty)%OC.scr.length];
+  ac.fillStyle=scrColor;ac.fillRect(mx-6,my+1,12,8);
+  // Tiny standby dot when dimmed
+  if(dimmed){ac.fillStyle='#442200';ac.fillRect(mx+3,my+3,2,2);}
   ac.fillStyle='#333';ac.fillRect(mx-1,my+11,2,4);ac.fillStyle='#555';ac.fillRect(mx-4,my+15,8,1);
   ac.fillStyle='#334466';ac.fillRect(x-9,y-dh+2,10,7);
   ac.fillStyle='#223355';ac.fillRect(x-8,y-dh+3,8,5);
@@ -797,44 +785,45 @@ function oPerson(px,py,fr2,id,carry,sitting,onCouch){
 }
 
 const OFFICE_LOOP=500;
-
-// Walk speed multipliers per intensity level
-// officeFr increments by this per render frame (affects leg animation + path stepping)
-const OFFICE_WALK_SPEEDS = [0.5, 1.0, 1.8, 3.0, 5.0];
-let officeFrAcc = 0; // fractional accumulator so sub-integer speeds work smoothly
+const OFFICE_WALK_SPEEDS=[0.5,1.0,1.8,3.0,5.0];
+let officeFrAcc=0;
 
 function drawOfficeFrame(dt,t){
-  const CW=animCanvas.width, CH=animCanvas.height;
+  const CW=animCanvas.width,CH=animCanvas.height;
 
-  // sync officeMode with animPaused
-  officeMode = animPaused ? 'break' : 'work';
+  officeMode=animPaused?'break':'work';
 
-  // Advance officeFr by intensity-scaled amount; call update() once per whole tick
-  const walkSpd = OFFICE_WALK_SPEEDS[intensity - 1];
-  officeFrAcc += walkSpd;
-  const ticks = Math.floor(officeFrAcc);
-  officeFrAcc -= ticks;
-  for(let k = 0; k < ticks; k++) officeWorkers.forEach(w => w.update());
+  // Animate breakDimAlpha smoothly
+  const dimTarget = animPaused ? BREAK_DIM_TARGET : 0;
+  breakDimAlpha += (dimTarget - breakDimAlpha) * BREAK_DIM_SPEED * 3;
+  if(Math.abs(breakDimAlpha - dimTarget) < 0.002) breakDimAlpha = dimTarget;
+  const isDimmed = breakDimAlpha > 0.05; // screens off above this threshold
 
-  // Scale + translate: use the version from the attached doc (Math.min, centered)
-  const scaleX=CW/O_W, scaleY=CH/O_H;
+  const walkSpd=OFFICE_WALK_SPEEDS[intensity-1];
+  officeFrAcc+=walkSpd;
+  const ticks=Math.floor(officeFrAcc);
+  officeFrAcc-=ticks;
+  for(let k=0;k<ticks;k++) officeWorkers.forEach(w=>w.update());
+
+  const scaleX=CW/O_W,scaleY=CH/O_H;
   const scale=Math.min(scaleX,scaleY);
 
   ac.save();
   ac.scale(scale,scale);
-  ac.translate((CW/scale-O_W)/2, 0);
+  ac.translate((CW/scale-O_W)/2,0);
 
   const lf=officeFr%OFFICE_LOOP;
 
-  // background
-  // ac.fillStyle='#f0e8d0';ac.fillRect(0,0,O_W,O_H);
+  // Derive wall colors from current button color
+  const wc = makeWallColors();
 
   // 1 — floor
   for(let tx=0;tx<16;tx++)for(let ty=0;ty<16;ty++)oTile(tx,ty);
 
-  // 2 — outer solid walls
-  for(let tx=0;tx<16;tx++)oSolidWall(tx,0,26,OC.wF,OC.wS,OC.wT);
-  for(let ty=1;ty<16;ty++)oSolidWall(0,ty,26,OC.wF,OC.wS,OC.wT);
+  // 2 — outer solid walls using dynamic color
+  for(let tx=0;tx<16;tx++)oSolidWall(tx,0,26,wc.face,wc.side,wc.top);
+  for(let ty=1;ty<16;ty++)oSolidWall(0,ty,26,wc.face,wc.side,wc.top);
+  // pantry walls keep their green
   for(let tx=0;tx<8;tx++)oSolidWall(tx,10,22,OC.pWF,OC.pWS,OC.pWT);
 
   // 3 — boss room contents (behind glass)
@@ -846,7 +835,7 @@ function drawOfficeFrame(dt,t){
   bossItems.sort((a,b)=>a.s-b.s);
   bossItems.forEach(item=>{
     if(item.type==='bd'){
-      oDesk(item.tx,item.ty,true);
+      oDesk(item.tx,item.ty,true,isDimmed);
     } else {
       const cx=oIx(item.tx,item.ty),cy=oIy(item.tx,item.ty)+10;
       oPerson(item.tx,item.ty-0.5,0,item.id,false,true,false);
@@ -865,7 +854,7 @@ function drawOfficeFrame(dt,t){
   oCoffeeTable(3.8,12.5);
   oPlant(1.2,13.5);
 
-  // 6 — office desks, printer, workers sorted by iso depth
+  // 6 — office desks, printer, workers
   const items=[];
   OFFICE_DESKS.forEach((d,i)=>items.push({s:d.tx+d.ty,type:'desk',tx:d.tx,ty:d.ty,idx:i}));
   items.push({s:O_PR.tx+O_PR.ty,type:'printer',tx:O_PR.tx,ty:O_PR.ty});
@@ -880,7 +869,7 @@ function drawOfficeFrame(dt,t){
 
   items.forEach(item=>{
     if(item.type==='desk'){
-      oDesk(item.tx,item.ty,false);
+      oDesk(item.tx,item.ty,false,isDimmed);
     } else if(item.type==='printer'){
       oPrinter(item.tx,item.ty);
     } else {
@@ -891,12 +880,12 @@ function drawOfficeFrame(dt,t){
     }
   });
 
-  // scanline overlay
+  // scanline
   ac.save();ac.globalAlpha=0.045;ac.fillStyle='#fff';
   for(let i=0;i<O_H;i+=3)ac.fillRect(0,i,O_W,1);
   ac.restore();
 
-  // dollar particles (work mode, near end of loop)
+  // dollar particles
   if(officeMode==='work'&&lf>OFFICE_LOOP-100){
     if(officeFr%5===0){
       const cx=O_OX+(Math.random()*8-4)*O_TW/2;
@@ -910,14 +899,45 @@ function drawOfficeFrame(dt,t){
     ac.fillText('$',0,0);ac.restore();
   });
 
+  // ── COFFEE BREAK AMBIANCE OVERLAY ──
+  // Smooth dark warm dimming layer
+  if(breakDimAlpha > 0.001){
+    ac.save();
+    // Main dim: cool-dark base
+    ac.globalAlpha = breakDimAlpha * 0.72;
+    ac.fillStyle = '#0a0818';
+    ac.fillRect(0, 0, O_W, O_H);
+
+    // Warm amber glow from pantry area (bottom-left)
+    ac.globalAlpha = breakDimAlpha * 0.38;
+    const ambientGlow = ac.createRadialGradient(
+      oIx(3, 12.5), oIy(3, 12.5), 0,
+      oIx(3, 12.5), oIy(3, 12.5), 180
+    );
+    ambientGlow.addColorStop(0, 'rgba(255, 160, 40, 0.9)');
+    ambientGlow.addColorStop(0.45, 'rgba(200, 100, 20, 0.4)');
+    ambientGlow.addColorStop(1,   'rgba(80,  30,  0,  0.0)');
+    ac.fillStyle = ambientGlow;
+    ac.fillRect(0, 0, O_W, O_H);
+
+    // Vignette: dark edges
+    ac.globalAlpha = breakDimAlpha * 0.5;
+    const vign = ac.createRadialGradient(O_W/2, O_H/2, O_H*0.15, O_W/2, O_H/2, O_W*0.75);
+    vign.addColorStop(0,   'rgba(0,0,0,0)');
+    vign.addColorStop(0.7, 'rgba(0,0,0,0.15)');
+    vign.addColorStop(1,   'rgba(0,0,0,0.55)');
+    ac.fillStyle = vign;
+    ac.fillRect(0, 0, O_W, O_H);
+
+    ac.restore();
+  }
+
   ac.restore(); // undo scale/translate
 
-  officeFr += ticks; // keep officeFr in sync with how many ticks actually ran
+  officeFr+=ticks;
 }
 
-// ═══════════════════════════════════════════════
 // ── MAIN LOOP ──
-// ═══════════════════════════════════════════════
 function animLoop(ts){
   if(animPrevT===null)animPrevT=ts;
   const dt=Math.min(ts-animPrevT,80);
