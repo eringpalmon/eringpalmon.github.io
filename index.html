@@ -1,11 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Game Hub</title>
-    <script type="module" src="/src/main.jsx"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<html>
+<head>
+  <title>Game Hub</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #fef9ef;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      width: 180px;
+      padding: 20px;
+      border: 3px solid #1a1008;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      text-decoration: none;
+      color: black;
+      box-shadow: 4px 4px 0 #1a1008;
+      transition: transform 0.1s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .emoji {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🎮 Game Hub</h1>
+
+  <div class="grid">
+    <a class="card" href="./prod-button/">
+      <div class="emoji">🟢</div>
+      Productivity Button
+    </a>
+
+    <a class="card" href="./comicrelay/">
+      <div class="emoji">💬</div>
+      Comic Game
+    </a>
+
+    <a class="card" href="./triangle/">
+      <div class="emoji">📐</div>
+      Triangle Game (WIP)
+    </a>
+  </div>
+</body>
 </html>
