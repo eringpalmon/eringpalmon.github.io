@@ -343,6 +343,7 @@ let hintUsed = false;
 let foundMax = false, foundMin = false;
 // Which target did the last hint apply to
 let hintTarget = null;
+let continuing = false;
 
 const canvas = document.getElementById('gc');
 const ctx = canvas.getContext('2d');
@@ -616,6 +617,7 @@ function updateSelHint() {
 function resetSel() { selected = []; updateBtn(); updateSelHint(); draw(); }
 
 function handleDotTap(dotIdx) {
+  this.continuing = true;
   const alreadyIdx = selected.indexOf(dotIdx);
   if (alreadyIdx !== -1) {
     selected.splice(alreadyIdx, 1);
@@ -676,17 +678,21 @@ function submitGuess() {
       foundMax = true;
       maxTriplet.forEach(i => { dots[i].answerMax = true; });
       if (guessType !== 'both') showToast('🟨 Largest triangle found!');
+      this.continuing = false;
     }
     if (guessType === 'min' || guessType === 'both') {
       foundMin = true;
       minTriplet.forEach(i => { dots[i].answerMin = true; });
       if (guessType !== 'both') showToast('🟦 Smallest triangle found!');
+      this.continuing = false;
     }
     if (guessType === 'both') showToast('✦ Both triangles found at once!');
+    this.continuing = false;
   } else {
     mistakes++;
     renderMistakes();
     if (!hintUsed) document.getElementById('btn-hint').classList.remove('hidden');
+    this.continuing = false;
   }
 
   selected = [];
@@ -907,16 +913,15 @@ function draw() {
     // Determine color from live detection for selected dots
     const dotSelColor = selColor;
 
-    // if (this.polyDots.length > 0 && isAnsMax) {
-    //   r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
-    //   stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
-    // }
-    // else if (this.polyDots.length > 0 && isAnsMin) {
-    //   r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
-    //   stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
-    // }
-    // else 
-    if (isAnsMax && isAnsMin) {
+    if (this.continuing && isAnsMax) {
+      r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
+      stroke = 'rgba(245,166,35,0.3)'; ringAlpha = 0.2; ringColor = '62,207,142';
+    }
+    else if (this.continuing && isAnsMin) {
+      r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
+      stroke = 'rgba(56,189,248,0.3)'; ringAlpha = 0.2; ringColor = '62,207,142';
+    }
+    else if (isAnsMax && isAnsMin) {
       r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
       stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
     } else if (isAnsMax) {
