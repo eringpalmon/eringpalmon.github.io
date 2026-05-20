@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolyDots</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0d14;--surface:#131621;--card:#181c2c;--border:rgba(130,110,255,0.2);
+  --purple:#7c5cf6;--purple-lo:rgba(124,92,246,0.13);--purple-hi:rgba(124,92,246,0.25);
+  --green:#3ecf8e;--green-lo:rgba(62,207,142,0.13);
+  --amber:#f5a623;--amber-lo:rgba(245,166,35,0.13);
+  --red:#f05252;--red-lo:rgba(240,82,82,0.13);
+  --blue:#38bdf8;--blue-lo:rgba(56,189,248,0.13);
+  --text:#e8eaf0;--muted:#5a6480;--soft:#8892aa;
+  --r:14px;
+}
+html.light{
+  --bg:#f0f2f8;--surface:#e4e8f4;--card:#dde3f0;--border:rgba(100,80,220,0.18);
+  --purple:#6246e5;--purple-lo:rgba(98,70,229,0.10);--purple-hi:rgba(98,70,229,0.18);
+  --green:#1da672;--green-lo:rgba(29,166,114,0.12);
+  --amber:#d4850a;--amber-lo:rgba(212,133,10,0.12);
+  --red:#c93030;--red-lo:rgba(201,48,48,0.12);
+  --blue:#0284c7;--blue-lo:rgba(2,132,199,0.12);
+  --text:#1a1d2e;--muted:#8891aa;--soft:#4a5270;
+}
+html{background:var(--bg);color:var(--text);font-family:'Georgia',serif;transition:background .3s,color .3s}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+.screen{position:relative;z-index:1;width:100%;max-width:420px;padding:0 16px 40px;display:flex;flex-direction:column;align-items:center}
+.hidden{display:none!important}
+
+/* HOME */
+#home{gap:0;padding-top:0}
+.home-hero{width:100%;display:flex;flex-direction:column;align-items:center;padding:40px 0 28px;gap:8px}
+.home-logo{font-size:52px;font-weight:900;letter-spacing:-3px;line-height:1;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:'Georgia',serif}
+.home-tag{font-size:13px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'Courier New',monospace}
+.home-tri-art{width:120px;height:104px;margin:8px 0}
+.home-cards{width:100%;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.mode-card{width:100%;border-radius:16px;border:1px solid var(--border);background:var(--card);padding:20px 22px;cursor:pointer;transition:border-color .2s,transform .15s,background .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:16px}
+.mode-card:active{transform:scale(.98)}
+.mode-card:hover{border-color:var(--purple);background:var(--purple-hi)}
+.mode-icon{font-size:28px;line-height:1;flex-shrink:0}
+.mode-info{flex:1}
+.mode-title{font-size:17px;font-weight:700;margin-bottom:3px;font-family:'Georgia',serif}
+.mode-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.mode-arrow{color:var(--muted);font-size:18px}
+.home-footer{margin-top:18px;display:flex;gap:16px;align-items:center}
+.home-link{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:'Courier New',monospace}
+
+/* SETTINGS */
+#settings{gap:0;padding-top:0}
+.back-bar{width:100%;display:flex;align-items:center;gap:10px;padding:18px 0 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.back-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:16px}
+.back-lbl{font-size:14px;font-weight:600;color:var(--soft)}
+.settings-title{font-size:22px;font-weight:800;width:100%;margin-bottom:16px;font-family:'Georgia',serif}
+.settings-section{width:100%;margin-bottom:18px}
+.settings-section-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'Courier New',monospace}
+.settings-row{width:100%;display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:6px}
+.settings-row-info{display:flex;flex-direction:column;gap:3px}
+.settings-row-label{font-size:14px;font-weight:600}
+.settings-row-sub{font-size:11px;color:var(--muted)}
+.toggle{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.1);border:none;cursor:pointer;position:relative;transition:background .25s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.toggle.on{background:var(--purple)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .25s}
+.toggle.on::after{transform:translateX(20px)}
+.how-to-play{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.htp-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.htp-step:last-child{margin-bottom:0}
+.htp-num{width:24px;height:24px;border-radius:50%;background:var(--purple-lo);border:1px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--purple);flex-shrink:0;font-family:'Courier New',monospace}
+.htp-text{font-size:13px;color:var(--soft);line-height:1.55}
+.htp-text b{color:var(--text)}
+.share-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.share-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--soft);font-family:'Courier New',monospace}
+
+/* GAME */
+#game{gap:0}
+.hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-back{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--surface);border:1px solid var(--border);font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hdr-title{font-size:19px;font-weight:800;letter-spacing:-.4px;font-family:'Georgia',serif}
+.hdr-sub{font-size:11px;color:var(--muted);margin-top:1px;font-family:'Courier New',monospace}
+.badge{font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;text-transform:uppercase;font-family:'Courier New',monospace}
+.b-easy{background:var(--green-lo);color:var(--green);border:1px solid rgba(62,207,142,.28)}
+.b-medium{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(245,166,35,.28)}
+.b-hard{background:var(--red-lo);color:var(--red);border:1px solid rgba(240,82,82,.28)}
+.b-random{background:var(--blue-lo);color:var(--blue);border:1px solid rgba(56,189,248,.28)}
+
+.goal-strip{width:100%;padding:4px 0 10px}
+.goal-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.goal-row:last-child{margin-bottom:0}
+.goal-label{font-size:12px;color:var(--soft);display:flex;align-items:center;gap:6px}
+.goal-label b{color:var(--text)}
+.goal-status{font-size:11px;font-weight:700;font-family:'Courier New',monospace}
+.goal-status.found{color:var(--green)}
+.goal-status.pending{color:var(--muted)}
+
+.mistakes-bar{width:100%;display:flex;align-items:center;gap:8px;padding:4px 0 8px}
+.mistakes-label{font-size:11px;color:var(--muted);font-family:'Courier New',monospace}
+.heart{font-size:16px;transition:transform .3s}
+.heart.lost{filter:grayscale(1);opacity:.35}
+
+.canvas-wrap{position:relative;border-radius:16px;border:1px solid var(--border);background:var(--card);overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#gc{display:block}
+
+/* auto-detect banner */
+.detect-banner{width:100%;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;text-align:center;margin-bottom:6px;font-family:'Courier New',monospace;transition:all .3s;opacity:0;pointer-events:none}
+.detect-banner.visible{opacity:1}
+.detect-banner.is-max{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(245,166,35,.35)}
+.detect-banner.is-min{background:var(--blue-lo);color:var(--blue);border:1px solid rgba(56,189,248,.35)}
+.detect-banner.is-both{background:var(--purple-lo);color:var(--purple);border:1px solid rgba(124,92,246,.35)}
+.detect-banner.is-wrong{background:var(--red-lo);color:var(--red);border:1px solid rgba(240,82,82,.35)}
+
+.sel-hint{font-size:11px;color:var(--muted);text-align:center;padding:5px 0 3px;min-height:20px;font-family:'Courier New',monospace}
+.sel-hint b{color:var(--soft)}
+
+.history{width:100%;display:flex;flex-direction:column;gap:5px;padding:8px 0}
+.g-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:8px 11px}
+.g-lbl{font-size:11px;font-weight:800;flex-shrink:0;font-family:'Courier New',monospace}
+.g-bar-bg{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.g-bar{height:5px;border-radius:3px;transition:width .6s ease}
+.g-area{font-size:11px;color:var(--muted);text-align:right;flex-shrink:0;font-family:'Courier New',monospace}
+
+.controls{width:100%;display:flex;gap:8px;padding:4px 0 8px}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:11px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:transform .1s,opacity .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;font-family:'Georgia',serif}
+.btn:active{transform:scale(.96)}
+.btn-primary{flex:1;background:var(--purple);color:#fff}
+.btn-primary:disabled{opacity:.32;cursor:not-allowed;transform:none}
+.btn-sec{background:var(--surface);color:var(--soft);border:1px solid rgba(255,255,255,.08);padding:12px 16px}
+.btn-hint{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(245,166,35,.28);padding:12px 14px}
+
+/* submit button color states */
+.btn-primary.mode-max{background:#c17300;color:#fff}
+.btn-primary.mode-min{background:#0070a0;color:#fff}
+.btn-primary.mode-both{background:var(--green);color:#fff}
+
+.result{width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 0 8px}
+.res-title{font-size:24px;font-weight:800;font-family:'Georgia',serif}
+.res-sub{font-size:13px;color:var(--muted);text-align:center}
+.res-areas{display:flex;gap:10px;margin:4px 0}
+.res-area-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+.res-area-label{font-size:10px;color:var(--muted);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:1px}
+.res-area-val{font-size:18px;font-weight:800;margin-top:2px;font-family:'Courier New',monospace}
+.share-emoji{font-size:18px;letter-spacing:4px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 14px;display:inline-block;font-family:'Courier New',monospace}
+.share-key{font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-family:'Courier New',monospace}
+.btn-share{display:flex;align-items:center;gap:7px;background:var(--purple);color:#fff;padding:12px 24px;border-radius:11px;border:none;cursor:pointer;font-size:14px;font-weight:700;margin-top:2px;-webkit-tap-highlight-color:transparent;font-family:'Georgia',serif}
+.btn-share:active{transform:scale(.97)}
+.btn-play-again{display:flex;align-items:center;gap:7px;background:var(--surface);color:var(--soft);border:1px solid var(--border);padding:10px 22px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:700;margin-top:4px;-webkit-tap-highlight-color:transparent;font-family:'Georgia',serif}
+
+#toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;color:var(--text);z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;font-family:'Courier New',monospace}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div id="toast"></div>
+
+<!-- HOME -->
+<div id="home" class="screen">
+  <div class="home-hero">
+    <div class="home-logo">PolyDots</div>
+    <div class="home-tag">The Polygon Puzzle</div>
+    <canvas id="home-art" class="home-tri-art" width="120" height="104"></canvas>
+  </div>
+  <div class="home-cards">
+    <div class="mode-card" onclick="startMode('daily')">
+      <div class="mode-icon">📅</div>
+      <div class="mode-info">
+        <div class="mode-title">Daily Challenge</div>
+        <div class="mode-desc">One puzzle per day · find both largest & smallest triangles</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card" onclick="startMode('random')">
+      <div class="mode-icon">🎲</div>
+      <div class="mode-info">
+        <div class="mode-title">Random Mode</div>
+        <div class="mode-desc">Fresh dots every game · practice freely · no limits</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+  </div>
+  <div class="home-footer">
+    <div class="home-link" onclick="showSettings()">⚙ Settings</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="screen hidden">
+  <div class="back-bar" onclick="showHome()">
+    <div class="back-btn">←</div>
+    <div class="back-lbl">Back</div>
+  </div>
+  <div class="settings-title">Settings</div>
+  <div class="settings-section">
+    <div class="settings-section-title">Appearance</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Light Mode</div>
+        <div class="settings-row-sub">Switch between dark and light theme</div>
+      </div>
+      <button class="toggle" id="toggle-light" onclick="toggleLight()"></button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">How to Play</div>
+    <div class="how-to-play">
+      <div class="htp-step">
+        <div class="htp-num">1</div>
+        <div class="htp-text">The goal of the puzzle is to find <b>both</b> the <b>largest</b> and <b>smallest</b> area of triangles in the dot grid.</div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-num">2</div>
+        <div class="htp-text"><b>Click or tap 3 dots</b> to form a triangle.</div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-num">3</div>
+        <div class="htp-text">Hit <b>Submit</b> when you're ready.</div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-num">4</div>
+        <div class="htp-text">You are allowed <b>3 mistakes</b> per game session. Guess wisely!</div>
+      </div>
+      <div class="htp-step">
+        <div class="htp-num">5</div>
+        <div class="htp-text">Share your result! The emoji key: 🟨 = largest found · 🟦 = smallest found · 🟥 = mistake</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen hidden">
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-back" onclick="confirmHome()">←</div>
+      <div>
+        <div class="hdr-title">PolyDots</div>
+        <div class="hdr-sub" id="hdr-sub">Loading…</div>
+      </div>
+    </div>
+    <div id="diff-badge" class="badge b-easy">Easy</div>
+  </div>
+
+  <div class="goal-strip" id="goal-strip"></div>
+
+  <div class="mistakes-bar" id="mistakes-bar">
+    <div class="mistakes-label">Mistakes:</div>
+    <span class="heart" id="h0">❤️</span>
+    <span class="heart" id="h1">❤️</span>
+    <span class="heart" id="h2">❤️</span>
+  </div>
+
+  <div class="canvas-wrap" id="canvas-wrap">
+    <canvas id="gc"></canvas>
+  </div>
+
+  <div class="detect-banner" id="detect-banner">–</div>
+  <div class="sel-hint" id="sel-hint">Click dots to select · tap a selected dot to deselect</div>
+
+  <div class="history" id="history"></div>
+
+  <div class="controls" id="controls">
+    <button class="btn btn-sec" onclick="resetSel()">↺</button>
+    <button class="btn btn-hint hidden" id="btn-hint" onclick="useHint()">💡 Hint</button>
+    <button class="btn btn-primary" id="btn-submit" onclick="submitGuess()" disabled>Submit (0/3)</button>
+  </div>
+
+  <div class="result hidden" id="result">
+    <div class="res-title" id="res-title"></div>
+    <div class="res-sub" id="res-sub"></div>
+    <div class="res-areas" id="res-areas"></div>
+    <div class="share-emoji" id="share-emoji"></div>
+    <div class="share-key">🟨 largest &nbsp; 🟦 smallest &nbsp; 🟥 mistake</div>
+    <button class="btn-share" onclick="shareResult()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share
+    </button>
+    <button class="btn-play-again" id="btn-again" onclick="playAgain()">↻ Play Again</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  PUZZLE DATA — all puzzles now always target BOTH
+// ══════════════════════════════════════════════════════════════
+const PUZZLES_365 = [
+  {"day":1,"difficulty":"easy","dots":[[0.462,0.839],[0.673,0.715],[0.259,0.697],[0.221,0.227],[0.812,0.312]]},
+  {"day":2,"difficulty":"easy","dots":[[0.514,0.294],[0.829,0.815],[0.23,0.663],[0.696,0.414],[0.541,0.874]]},
+  {"day":3,"difficulty":"medium","dots":[[0.567,0.509],[0.224,0.156],[0.634,0.123],[0.802,0.25],[0.392,0.712],[0.563,0.836],[0.2,0.852],[0.814,0.547]]},
+  {"day":4,"difficulty":"medium","dots":[[0.619,0.724],[0.38,0.257],[0.253,0.564],[0.432,0.733],[0.542,0.556],[0.174,0.393]]},
+  {"day":5,"difficulty":"hard","dots":[[0.672,0.179],[0.535,0.358],[0.248,0.309],[0.644,0.514],[0.473,0.754],[0.304,0.5],[0.841,0.365],[0.156,0.125],[0.265,0.836]]},
+  {"day":6,"difficulty":"medium","dots":[[0.724,0.394],[0.154,0.285],[0.276,0.464],[0.514,0.775],[0.174,0.782],[0.443,0.24],[0.818,0.581],[0.49,0.554]]},
+  {"day":7,"difficulty":"easy","dots":[[0.777,0.61],[0.623,0.495],[0.445,0.297],[0.554,0.796],[0.18,0.15]]},
+  {"day":8,"difficulty":"hard","dots":[[0.829,0.825],[0.242,0.66],[0.43,0.588],[0.735,0.308],[0.299,0.365],[0.595,0.817],[0.672,0.587],[0.139,0.139],[0.337,0.816],[0.47,0.175],[0.866,0.646],[0.479,0.394]]},
+  {"day":9,"difficulty":"medium","dots":[[0.122,0.28],[0.398,0.761],[0.69,0.315],[0.635,0.838],[0.235,0.586],[0.51,0.456],[0.848,0.589],[0.828,0.191]]},
+  {"day":10,"difficulty":"easy","dots":[[0.174,0.495],[0.554,0.862],[0.804,0.774],[0.556,0.332],[0.322,0.265]]},
+  {"day":11,"difficulty":"hard","dots":[[0.226,0.71],[0.709,0.202],[0.611,0.867],[0.847,0.343],[0.819,0.785],[0.415,0.599],[0.492,0.329],[0.131,0.398],[0.35,0.136],[0.78,0.575],[0.403,0.843]]},
+  {"day":12,"difficulty":"medium","dots":[[0.279,0.165],[0.865,0.303],[0.377,0.355],[0.757,0.141],[0.64,0.362],[0.506,0.605],[0.863,0.645],[0.237,0.735]]},
+  {"day":13,"difficulty":"medium","dots":[[0.331,0.381],[0.668,0.367],[0.736,0.876],[0.798,0.162],[0.461,0.7],[0.475,0.202]]},
+  {"day":14,"difficulty":"hard","dots":[[0.384,0.596],[0.793,0.386],[0.198,0.378],[0.368,0.827],[0.838,0.183],[0.687,0.617],[0.364,0.217],[0.181,0.123],[0.868,0.713],[0.617,0.129]]},
+  {"day":15,"difficulty":"easy","dots":[[0.436,0.811],[0.572,0.605],[0.489,0.39],[0.759,0.777],[0.14,0.22]]},
+  {"day":16,"difficulty":"easy","dots":[[0.489,0.266],[0.728,0.706],[0.407,0.572],[0.779,0.401],[0.159,0.225]]},
+  {"day":17,"difficulty":"easy","dots":[[0.541,0.481],[0.123,0.807],[0.31,0.413],[0.782,0.678],[0.62,0.12]]},
+  {"day":18,"difficulty":"medium","dots":[[0.594,0.696],[0.279,0.148],[0.782,0.758],[0.6,0.425],[0.414,0.628],[0.324,0.866],[0.127,0.368],[0.81,0.265]]},
+  {"day":19,"difficulty":"medium","dots":[[0.646,0.152],[0.435,0.249],[0.589,0.851],[0.131,0.436],[0.805,0.578],[0.379,0.648]]},
+  {"day":20,"difficulty":"hard","dots":[[0.699,0.367],[0.396,0.184],[0.421,0.448],[0.726,0.78],[0.469,0.654],[0.626,0.173],[0.206,0.374],[0.267,0.651],[0.779,0.547],[0.461,0.86],[0.879,0.334],[0.141,0.829]]},
+  {"day":21,"difficulty":"medium","dots":[[0.751,0.582],[0.203,0.277],[0.547,0.358],[0.56,0.66],[0.266,0.714],[0.42,0.162],[0.726,0.128],[0.463,0.818]]},
+  {"day":22,"difficulty":"easy","dots":[[0.804,0.797],[0.142,0.551],[0.77,0.37],[0.46,0.429],[0.367,0.695]]},
+  {"day":23,"difficulty":"hard","dots":[[0.856,0.252],[0.297,0.652],[0.578,0.463],[0.188,0.272],[0.74,0.672],[0.386,0.328],[0.663,0.286],[0.123,0.542],[0.124,0.744],[0.508,0.635],[0.814,0.492]]},
+  {"day":24,"difficulty":"medium","dots":[[0.148,0.468],[0.453,0.752],[0.385,0.556],[0.823,0.494],[0.483,0.33],[0.831,0.678],[0.292,0.28],[0.654,0.132]]},
+  {"day":25,"difficulty":"easy","dots":[[0.201,0.683],[0.609,0.853],[0.354,0.506],[0.874,0.28],[0.1,0.1]]},
+  {"day":26,"difficulty":"hard","dots":[[0.253,0.138],[0.764,0.194],[0.759,0.742],[0.644,0.518],[0.506,0.23],[0.41,0.524],[0.252,0.691],[0.403,0.837],[0.834,0.473],[0.334,0.315]]},
+  {"day":27,"difficulty":"medium","dots":[[0.306,0.353],[0.566,0.835],[0.175,0.529],[0.137,0.181],[0.606,0.455],[0.231,0.861],[0.342,0.697],[0.499,0.144]]},
+  {"day":28,"difficulty":"medium","dots":[[0.358,0.568],[0.373,0.168],[0.647,0.476],[0.68,0.846],[0.171,0.546],[0.14,0.731]]},
+  {"day":29,"difficulty":"hard","dots":[[0.411,0.783],[0.471,0.496],[0.181,0.261],[0.756,0.553],[0.16,0.841],[0.633,0.776],[0.83,0.207],[0.189,0.534],[0.406,0.279]]},
+  {"day":30,"difficulty":"easy","dots":[[0.463,0.239],[0.627,0.597],[0.748,0.354],[0.286,0.564],[0.552,0.792]]}
+];
+
+// ══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const MAX_MISTAKES = 3;
+const DOT_R = 14;
+const HIT_R = 26;
+const TOLERANCE = 1.5;
+
+// ══════════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ══════════════════════════════════════════════════════════════
+let GW, GH;
+let gameMode = 'daily';
+let puzzle, dayIndex;
+let dots = [];
+let selected = [];
+let guesses = [];
+let maxArea = 0, minArea = 0;
+let maxTriplet = [], minTriplet = [];
+let gameOver = false;
+let mistakes = 0;
+let hintUsed = false;
+let foundMax = false, foundMin = false;
+// Which target did the last hint apply to
+let hintTarget = null;
+
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+
+// ══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showScreen(id) {
+  ['home','settings','game'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+  window.scrollTo(0,0);
+}
+function showHome() { showScreen('home'); }
+function showSettings() { showScreen('settings'); }
+function confirmHome() {
+  if (!gameOver && guesses.length > 0) {
+    if (!confirm('Leave this game? Progress will be lost.')) return;
+  }
+  showHome();
+}
+function startMode(mode) { gameMode = mode; showScreen('game'); init(); }
+function playAgain() { gameMode === 'random' ? init() : showHome(); }
+
+// ══════════════════════════════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════════════════════════════
+let lightMode = false;
+function toggleLight() {
+  lightMode = !lightMode;
+  document.documentElement.classList.toggle('light', lightMode);
+  document.getElementById('toggle-light').classList.toggle('on', lightMode);
+  drawBg();
+  if (!document.getElementById('game').classList.contains('hidden')) draw();
+  drawHomeArt();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GEOMETRY
+// ══════════════════════════════════════════════════════════════
+function calcArea(p0, p1, p2) {
+  let area = 0;
+  const pts = [p0, p1, p2];
+  for (let i = 0; i < 3; i++) {
+    const j = (i + 1) % 3;
+    area += pts[i].x * pts[j].y;
+    area -= pts[j].x * pts[i].y;
+  }
+  return Math.abs(area / 2);
+}
+
+function calcAllAreas(ds) {
+  let maxA = 0, minA = Infinity, maxT = [], minT = [];
+  for (let i = 0; i < ds.length; i++)
+    for (let j = i+1; j < ds.length; j++)
+      for (let k = j+1; k < ds.length; k++) {
+        const a = calcArea(ds[i], ds[j], ds[k]);
+        if (a > maxA) { maxA = a; maxT = [i,j,k]; }
+        if (a < minA) { minA = a; minT = [i,j,k]; }
+      }
+  return { maxA, minA, maxT, minT };
+}
+
+function hasUniqueExtremes(ds) {
+  const { maxA, minA } = calcAllAreas(ds);
+  let maxCount = 0, minCount = 0;
+  for (let i = 0; i < ds.length; i++)
+    for (let j = i+1; j < ds.length; j++)
+      for (let k = j+1; k < ds.length; k++) {
+        const a = calcArea(ds[i], ds[j], ds[k]);
+        if (Math.abs(a - maxA) <= TOLERANCE) maxCount++;
+        if (Math.abs(a - minA) <= TOLERANCE) minCount++;
+      }
+  const separated = (maxA - minA) / maxA > 0.06;
+  return maxCount === 1 && minCount === 1 && separated;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LIVE DETECTION — what would the current 3 selected dots be?
+// ══════════════════════════════════════════════════════════════
+function detectSelection(sel) {
+  if (sel.length !== 3) return null;
+  const a = calcArea(dots[sel[0]], dots[sel[1]], dots[sel[2]]);
+  const isMax = Math.abs(a - maxArea) <= TOLERANCE;
+  const isMin = Math.abs(a - minArea) <= TOLERANCE;
+  if (isMax && isMin) return 'both';
+  if (isMax) return 'max';
+  if (isMin) return 'min';
+  return 'wrong';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RANDOM PUZZLE GENERATION
+// ══════════════════════════════════════════════════════════════
+function generateRandomPuzzle() {
+  const difficulties = ['easy','medium','hard'];
+  const dotCounts = { easy:[4,5], medium:[6,7,8], hard:[9,10,11,12] };
+  const diff = difficulties[Math.floor(Math.random()*3)];
+  const dc = dotCounts[diff];
+  const count = dc[Math.floor(Math.random()*dc.length)];
+  const MARGIN = 0.10;
+  let dotArr, attempts = 0;
+  do {
+    dotArr = Array.from({length: count}, () => [
+      MARGIN + Math.random()*(1 - 2*MARGIN),
+      MARGIN + Math.random()*(1 - 2*MARGIN)
+    ]);
+    attempts++;
+    if (attempts > 200) break;
+  } while (!hasUniqueExtremes(dotArr.map(([x,y],i) => ({id:i, x:x*1000, y:y*1000}))));
+  return { day: 0, difficulty: diff, dots: dotArr };
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+function init() {
+  const vw = Math.min(window.innerWidth - 32, 368);
+  GW = vw; GH = Math.round(vw * 1.15);
+  canvas.width = GW; canvas.height = GH;
+  canvas.style.width = GW + 'px'; canvas.style.height = GH + 'px';
+  bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+  drawBg();
+
+  if (gameMode === 'daily') {
+    const epoch = Date.UTC(2025, 0, 1);
+    const now = new Date();
+    const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    dayIndex = Math.floor((today - epoch) / 86400000);
+    puzzle = PUZZLES_365[((dayIndex % PUZZLES_365.length) + PUZZLES_365.length) % PUZZLES_365.length];
+  } else {
+    puzzle = generateRandomPuzzle();
+    dayIndex = -1;
+  }
+
+  const badge = document.getElementById('diff-badge');
+  if (gameMode === 'random') {
+    badge.textContent = 'Random'; badge.className = 'badge b-random';
+    document.getElementById('hdr-sub').textContent = `Random · ${puzzle.difficulty}`;
+  } else {
+    const now = new Date();
+    const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const dateStr = new Date(today).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' });
+    document.getElementById('hdr-sub').textContent = `Daily #${dayIndex + 1} · ${dateStr}`;
+    badge.textContent = puzzle.difficulty; badge.className = 'badge b-' + puzzle.difficulty;
+  }
+
+  dots = puzzle.dots.map(([xp, yp], i) => ({
+    id: i, x: xp * GW, y: yp * GH,
+    hint: false, hintTarget: null, answerMax: false, answerMin: false
+  }));
+
+  const { maxA, minA, maxT, minT } = calcAllAreas(dots);
+  maxArea = maxA; minArea = minA;
+  maxTriplet = maxT; minTriplet = minT;
+
+  selected = []; guesses = [];
+  gameOver = false; mistakes = 0;
+  hintUsed = false; hintTarget = null;
+  foundMax = false; foundMin = false;
+
+  renderGoalStrip();
+  renderMistakes();
+  renderHistory();
+  updateBtn();
+  updateSelHint();
+  updateDetectBanner();
+
+  document.getElementById('controls').classList.remove('hidden');
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('btn-hint').classList.add('hidden');
+  document.getElementById('btn-again').classList.toggle('hidden', gameMode === 'daily');
+  draw();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GOAL STRIP
+// ══════════════════════════════════════════════════════════════
+function renderGoalStrip() {
+  const el = document.getElementById('goal-strip');
+  el.innerHTML = `
+    <div class="goal-row">
+      <div class="goal-label">🟨 Find the <b>Largest</b> triangle</div>
+      <div class="goal-status ${foundMax?'found':'pending'}" id="gs-max">${foundMax?'✓ Found':'–'}</div>
+    </div>
+    <div class="goal-row">
+      <div class="goal-label">🟦 Find the <b>Smallest</b> triangle</div>
+      <div class="goal-status ${foundMin?'found':'pending'}" id="gs-min">${foundMin?'✓ Found':'–'}</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MISTAKES
+// ══════════════════════════════════════════════════════════════
+function renderMistakes() {
+  for (let i = 0; i < 3; i++) {
+    document.getElementById('h' + i).classList.toggle('lost', i >= (MAX_MISTAKES - mistakes));
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DETECT BANNER + BUTTON STATE
+// ══════════════════════════════════════════════════════════════
+function updateDetectBanner() {
+  const banner = document.getElementById('detect-banner');
+  const btn = document.getElementById('btn-submit');
+
+  if (selected.length !== 3) {
+    banner.className = 'detect-banner';
+    banner.textContent = '–';
+    btn.className = 'btn btn-primary';
+    return;
+  }
+
+  const det = detectSelection(selected);
+  btn.disabled = false;
+
+  // Already found — still show but with different label
+  const alreadyMax = det === 'max' && foundMax;
+  const alreadyMin = det === 'min' && foundMin;
+
+//   if (det === 'both') {
+//     const label = (!foundMax && !foundMin) ? 'Could be both!' : 'Submit — Both?';
+//     banner.className = 'detect-banner visible is-both';
+//     banner.textContent = '✦ This looks like both extremes!';
+//     btn.className = 'btn btn-primary mode-both';
+//     btn.textContent = 'Submit';
+//   } else if (det === 'max') {
+//     banner.className = 'detect-banner visible is-max';
+//     banner.textContent = alreadyMax ? '🟨 Already found largest — resubmit?' : '🟨 This looks like the LARGEST triangle!';
+//     btn.className = 'btn btn-primary mode-max';
+//     btn.textContent = 'Submit Largest';
+//   } else if (det === 'min') {
+//     banner.className = 'detect-banner visible is-min';
+//     banner.textContent = alreadyMin ? '🟦 Already found smallest — resubmit?' : '🟦 This looks like the SMALLEST triangle!';
+//     btn.className = 'btn btn-primary mode-min';
+//     btn.textContent = 'Submit Smallest';
+//   } else {
+//     banner.className = 'detect-banner visible is-wrong';
+//     banner.textContent = 'This triangle is neither largest nor smallest';
+//     btn.className = 'btn btn-primary';
+//     btn.textContent = 'Submit Anyway';
+//   }
+}
+
+function updateBtn() {
+  const n = selected.length;
+  const btn = document.getElementById('btn-submit');
+  if (n !== 3) {
+    btn.textContent = `Select (${n}/3)`;
+    btn.disabled = true;
+    btn.className = 'btn btn-primary';
+  }
+  updateDetectBanner();
+}
+
+function updateSelHint() {
+  const n = selected.length;
+  const el = document.getElementById('sel-hint');
+  if (n === 0) el.innerHTML = `Select <b>3 dots</b> to form a triangle — game auto-detects largest/smallest`;
+  else if (n === 1) el.innerHTML = `<b>1 dot</b> selected — pick 2 more`;
+  else if (n === 2) el.innerHTML = `<b>2 dots</b> — one more to complete`;
+  else el.innerHTML = `<b>Triangle ready!</b> Hit Submit to lock in`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECTION
+// ══════════════════════════════════════════════════════════════
+function resetSel() { selected = []; updateBtn(); updateSelHint(); draw(); }
+
+function handleDotTap(dotIdx) {
+  const alreadyIdx = selected.indexOf(dotIdx);
+  if (alreadyIdx !== -1) {
+    selected.splice(alreadyIdx, 1);
+  } else {
+    if (selected.length >= 3) { showToast('Already 3 dots — deselect one first'); return; }
+    selected.push(dotIdx);
+  }
+  updateBtn(); updateSelHint(); draw();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HINT — shows dots for the next unfound target
+// ══════════════════════════════════════════════════════════════
+function useHint() {
+  if (hintUsed) return;
+  hintUsed = true;
+  document.getElementById('btn-hint').classList.add('hidden');
+  // Show hint for whichever isn't found yet (prefer max first)
+  const target = !foundMax ? 'max' : 'min';
+  hintTarget = target;
+  const triplet = target === 'max' ? maxTriplet : minTriplet;
+  triplet.forEach(i => { dots[i].hint = true; dots[i].hintTarget = target; });
+  draw();
+  showToast(target === 'max' ? '💡 Glowing dots form the largest triangle' : '💡 Glowing dots form the smallest triangle');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SUBMIT — auto-detects max/min/wrong
+// ══════════════════════════════════════════════════════════════
+function submitGuess() {
+  if (selected.length !== 3 || gameOver) return;
+
+  const [i0,i1,i2] = selected;
+  const a = calcArea(dots[i0], dots[i1], dots[i2]);
+  const isMax = Math.abs(a - maxArea) <= TOLERANCE && !foundMax;
+  const isMin = Math.abs(a - minArea) <= TOLERANCE && !foundMin;
+
+  let guessType, correct;
+
+  if (isMax && isMin) {
+    // Degenerate case: only 3 dots, max = min
+    guessType = 'both'; correct = true;
+  } else if (isMax) {
+    guessType = 'max'; correct = true;
+  } else if (isMin) {
+    guessType = 'min'; correct = true;
+  } else {
+    // wrong — determine what they were likely aiming at for history display
+    const closerToMax = Math.abs(a - maxArea) < Math.abs(a - minArea);
+    guessType = closerToMax ? 'wrong-max' : 'wrong-min';
+    correct = false;
+  }
+
+  guesses.push({ area: a, type: guessType, correct, sel: [...selected] });
+
+  if (correct) {
+    if (guessType === 'max' || guessType === 'both') {
+      foundMax = true;
+      maxTriplet.forEach(i => { dots[i].answerMax = true; });
+      if (guessType !== 'both') showToast('🟨 Largest triangle found!');
+    }
+    if (guessType === 'min' || guessType === 'both') {
+      foundMin = true;
+      minTriplet.forEach(i => { dots[i].answerMin = true; });
+      if (guessType !== 'both') showToast('🟦 Smallest triangle found!');
+    }
+    if (guessType === 'both') showToast('✦ Both triangles found at once!');
+  } else {
+    mistakes++;
+    renderMistakes();
+    if (!hintUsed) document.getElementById('btn-hint').classList.remove('hidden');
+  }
+
+  selected = [];
+  const allFound = foundMax && foundMin;
+  const outOfMistakes = mistakes >= MAX_MISTAKES;
+
+  if (allFound || outOfMistakes) {
+    gameOver = true;
+    maxTriplet.forEach(i => { dots[i].answerMax = true; });
+    minTriplet.forEach(i => { dots[i].answerMin = true; });
+  }
+
+  updateBtn(); 
+  updateSelHint(); 
+  renderGoalStrip(); 
+  renderHistory();
+
+  if (gameOver) endGame(allFound);
+  else draw();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  END GAME
+// ══════════════════════════════════════════════════════════════
+function endGame(won) {
+  document.getElementById('controls').classList.add('hidden');
+  document.getElementById('btn-hint').classList.add('hidden');
+  document.getElementById('detect-banner').className = 'detect-banner';
+  document.getElementById('sel-hint').textContent = '';
+  document.getElementById('result').classList.remove('hidden');
+
+  const titleEl = document.getElementById('res-title');
+  const subEl = document.getElementById('res-sub');
+
+  if (won) {
+    titleEl.textContent = '🎉 Solved!';
+    titleEl.style.color = 'var(--green)';
+    subEl.textContent = `Completed with ${mistakes} mistake${mistakes !== 1 ? 's' : ''}`;
+  } else {
+    titleEl.textContent = '💥 Revealed';
+    titleEl.style.color = 'var(--red)';
+    subEl.textContent = 'Out of mistakes — here are the answers';
+  }
+
+  const areasEl = document.getElementById('res-areas');
+  areasEl.innerHTML = `
+    <div class="res-area-box">
+      <div class="res-area-label">🟨 Largest</div>
+      <div class="res-area-val" style="color:var(--amber)">${Math.round(maxArea)}</div>
+    </div>
+    <div class="res-area-box">
+      <div class="res-area-label">🟦 Smallest</div>
+      <div class="res-area-val" style="color:var(--blue)">${Math.round(minArea)}</div>
+    </div>`;
+
+  document.getElementById('share-emoji').textContent = buildEmoji();
+  draw();
+}
+
+function buildEmoji() {
+  return guesses.map(g => {
+    if (!g.correct) return '🟥';
+    if (g.type === 'max') return '🟨';
+    if (g.type === 'min') return '🟦';
+    if (g.type === 'both') return '🟨🟦';
+    return '🟥';
+  }).join('');
+}
+
+function shareResult() {
+  const emoji = buildEmoji();
+  const dayStr = gameMode === 'daily' ? `Daily #${dayIndex+1}` : 'Random';
+  const text = `PolyDots ${dayStr} (${puzzle.difficulty})\n${emoji}\n🟨 largest · 🟦 smallest · 🟥 mistake`;
+  if (navigator.share) {
+    navigator.share({ title: 'PolyDots', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('Result copied!')).catch(() => showToast(text));
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════════════════════
+function renderHistory() {
+  const el = document.getElementById('history');
+  el.innerHTML = '';
+  guesses.forEach(g => {
+    let color, label, barColor;
+    if (!g.correct) {
+      color = 'var(--red)'; label = '🟥 Miss';
+    //   barColor = g.type === 'wrong-max' ? 'var(--amber)' : 'var(--blue)';
+    } else if (g.type === 'max') {
+      color = 'var(--amber)'; label = '🟨 Largest'; 
+    //   barColor = 'var(--amber)';
+    } else if (g.type === 'min') {
+      color = 'var(--blue)'; label = '🟦 Smallest'; 
+    //   barColor = 'var(--blue)';
+    } else {
+      color = 'var(--green)'; label = '✦ Both'; 
+    //   barColor = 'var(--green)';
+    }
+    const pct = maxArea > 0 ? Math.min(100, Math.round((g.area / maxArea) * 100)) : 0;
+    const row = document.createElement('div'); row.className = 'g-row';
+    row.innerHTML = `
+      <div class="g-lbl" style="color:${color}">${label}</div>
+      <div class="g-area"></div>`;
+    el.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW
+// ══════════════════════════════════════════════════════════════
+function draw() {
+  ctx.clearRect(0,0,GW,GH);
+  const isLight = document.documentElement.classList.contains('light');
+
+  // Grid
+  ctx.strokeStyle = isLight ? 'rgba(100,80,220,0.06)' : 'rgba(130,110,255,0.045)';
+  ctx.lineWidth = 1; ctx.setLineDash([]);
+  for (let x = 0; x <= GW; x += GW/4) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,GH); ctx.stroke(); }
+  for (let y = 0; y <= GH; y += GH/4) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(GW,y); ctx.stroke(); }
+
+  function drawTri(polyDots, strokeRgb, baseStrokeAlpha, baseFillAlpha, areaLabel) {
+    if (polyDots.length !== 3) return;
+    ctx.save();
+    ctx.setLineDash([7, 4]);
+    ctx.strokeStyle = `rgba(${strokeRgb},${baseStrokeAlpha})`;
+    ctx.fillStyle   = `rgba(${strokeRgb},${baseFillAlpha})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(polyDots[0].x, polyDots[0].y);
+    ctx.lineTo(polyDots[1].x, polyDots[1].y);
+    ctx.lineTo(polyDots[2].x, polyDots[2].y);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    if (areaLabel) {
+      const cx2 = (polyDots[0].x+polyDots[1].x+polyDots[2].x)/3;
+      const cy2 = (polyDots[0].y+polyDots[1].y+polyDots[2].y)/3;
+      ctx.setLineDash([]);
+      ctx.font = '11px "Courier New",monospace';
+      ctx.fillStyle = `rgba(${strokeRgb},0.9)`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(areaLabel, cx2, cy2);
+    }
+    ctx.restore();
+  }
+
+  const ansDots    = dots.filter(d => d.answerMax);
+  const ansDotsMin = dots.filter(d => d.answerMin);
+  drawTri(ansDots,    '245,166,35', 0.75, 0.09, gameOver ? `${Math.round(maxArea)} px²` : null);
+  drawTri(ansDotsMin, '56,189,248', 0.75, 0.09, gameOver ? `${Math.round(minArea)} px²` : null);
+
+  // Live selection triangle / partial lines
+  const selDots = selected.map(i => dots[i]);
+  const selColor = '124,92,246'; // always neutral purple — never reveal the answer early
+
+  ctx.setLineDash([]);
+  if (selDots.length === 3) {
+    ctx.fillStyle   = `rgba(${selColor},0.09)`;
+    ctx.strokeStyle = `rgba(${selColor},0.75)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(selDots[0].x,selDots[0].y);
+    ctx.lineTo(selDots[1].x,selDots[1].y);
+    ctx.lineTo(selDots[2].x,selDots[2].y);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else if (selDots.length === 2) {
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle = `rgba(${selColor},0.5)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(selDots[0].x,selDots[0].y);
+    ctx.lineTo(selDots[1].x,selDots[1].y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Drag line
+  if (dragActive && dragFrom !== -1 && dragPos) {
+    let anchorDot = dots[dragFrom];
+    if (selected.length > 0) anchorDot = dots[selected[selected.length - 1]];
+    const snapTarget = nearestDot(dragPos, dragFrom);
+    const snapValid  = snapTarget !== -1 && !selected.includes(snapTarget);
+    const endX = snapValid ? dots[snapTarget].x : dragPos.x;
+    const endY = snapValid ? dots[snapTarget].y : dragPos.y;
+    ctx.save();
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = `rgba(${selColor},0.6)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(anchorDot.x, anchorDot.y);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(endX, endY, snapValid ? 5 : 3, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${selColor},${snapValid ? 0.5 : 0.3})`;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Draw all dots
+  dots.forEach((dot, i) => {
+    const isSel = selected.includes(i);
+    const selOrder = selected.indexOf(i);
+    const isDragOrigin = dragActive && dragFrom === i;
+    const isAnsMax = dot.answerMax;
+    const isAnsMin = dot.answerMin;
+    const isHint   = dot.hint;
+
+    let r = DOT_R;
+    let fill   = isLight ? '#c8d0e8' : '#222a40';
+    let stroke = isLight ? 'rgba(80,90,160,0.45)' : 'rgba(90,120,180,0.55)';
+    let ringAlpha = 0, ringColor = '';
+
+    // Determine color from live detection for selected dots
+    const dotSelColor = selColor;
+
+    // if (this.polyDots.length > 0 && isAnsMax) {
+    //   r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
+    //   stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
+    // }
+    // else if (this.polyDots.length > 0 && isAnsMin) {
+    //   r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
+    //   stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
+    // }
+    // else 
+    if (isAnsMax && isAnsMin) {
+      r = DOT_R+2; fill = isLight ? '#1a2a1a' : '#122822';
+      stroke = '#3ecf8e'; ringAlpha = 0.2; ringColor = '62,207,142';
+    } else if (isAnsMax) {
+      r = DOT_R+2; fill = '#2a1a00';
+      stroke = '#f5a623'; ringAlpha = 0.18; ringColor = '245,166,35';
+    } else if (isAnsMin) {
+      r = DOT_R+2; fill = '#001a2a';
+      stroke = '#38bdf8'; ringAlpha = 0.18; ringColor = '56,189,248';
+    } else if (isSel || isDragOrigin) {
+      r = DOT_R+1;
+      fill = '#1a1a2a';
+      stroke = `rgba(${dotSelColor},0.9)`;
+      ringAlpha = 0.18; ringColor = dotSelColor;
+    } else if (isHint) {
+      const hc = dot.hintTarget === 'min' ? '56,189,248' : '167,139,250';
+      fill = isLight ? '#1a0a40' : '#2a1550'; stroke = dot.hintTarget === 'min' ? '#38bdf8' : '#a78bfa';
+      ringAlpha = 0.14; ringColor = hc;
+    }
+
+    if (ringAlpha > 0) {
+      ctx.beginPath(); ctx.arc(dot.x, dot.y, r+7, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${ringColor},${ringAlpha})`; ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(dot.x, dot.y, r, 0, Math.PI*2);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.lineWidth = (isSel || isDragOrigin || isAnsMax || isAnsMin) ? 2.5 : 1.5;
+    ctx.strokeStyle = stroke; ctx.stroke();
+    ctx.beginPath(); ctx.arc(dot.x - r*0.22, dot.y - r*0.22, r*0.3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
+
+    if ((isSel || isDragOrigin) && selOrder !== -1) {
+      ctx.font = `bold ${r>13?11:10}px "Courier New",monospace`;
+      ctx.fillStyle = `rgba(${dotSelColor},1)`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(selOrder+1, dot.x, dot.y);
+    }
+  });
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.setLineDash([]);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HOME ART
+// ══════════════════════════════════════════════════════════════
+function drawHomeArt() {
+  const c = document.getElementById('home-art');
+  const cx = c.getContext('2d');
+  const isLight = document.documentElement.classList.contains('light');
+  cx.clearRect(0,0,120,104);
+  const tris = [
+    [[10,90],[60,10],[110,90],'rgba(124,92,246,0.9)','rgba(124,92,246,0.15)'],
+    [[30,90],[60,40],[90,90],'rgba(56,189,248,0.6)','rgba(56,189,248,0.08)'],
+  ];
+  tris.forEach(([p0,p1,p2,s,f]) => {
+    cx.beginPath(); cx.moveTo(p0[0],p0[1]); cx.lineTo(p1[0],p1[1]); cx.lineTo(p2[0],p2[1]); cx.closePath();
+    cx.fillStyle = f; cx.fill(); cx.strokeStyle = s; cx.lineWidth = 2; cx.stroke();
+  });
+  [[10,90],[60,10],[110,90],[30,90],[60,40],[90,90]].forEach(([x,y]) => {
+    cx.beginPath(); cx.arc(x,y,5,0,Math.PI*2);
+    cx.fillStyle = isLight ? '#c8d0e8' : '#222a40'; cx.fill();
+    cx.strokeStyle = 'rgba(124,92,246,0.8)'; cx.lineWidth = 2; cx.stroke();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BACKGROUND
+// ══════════════════════════════════════════════════════════════
+function drawBg() {
+  const w = bgCanvas.width, h = bgCanvas.height;
+  bgCtx.clearRect(0,0,w,h);
+  const isLight = document.documentElement.classList.contains('light');
+  const alpha = isLight ? 0.03 : 0.04;
+  const strokeAlpha = isLight ? 0.06 : 0.09;
+  const tris = [
+    [[.06,.08],[.28,.04],[.16,.32]],[[.72,.06],[.96,.04],[.88,.3]],
+    [[.08,.58],[.32,.53],[.18,.84]],[[.68,.62],[.94,.58],[.86,.9]],
+    [[.38,.28],[.62,.22],[.54,.52]],[[.18,.14],[.44,.08],[.36,.4]],
+    [[.56,.68],[.84,.65],[.74,.94]],[[.04,.38],[.22,.36],[.14,.60]],
+  ];
+  tris.forEach(([p0,p1,p2]) => {
+    bgCtx.beginPath(); bgCtx.moveTo(p0[0]*w,p0[1]*h); bgCtx.lineTo(p1[0]*w,p1[1]*h); bgCtx.lineTo(p2[0]*w,p2[1]*h); bgCtx.closePath();
+    bgCtx.fillStyle = `rgba(124,92,246,${alpha})`; bgCtx.fill();
+    bgCtx.strokeStyle = `rgba(124,92,246,${strokeAlpha})`; bgCtx.lineWidth = 1; bgCtx.stroke();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════
+let _tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(_tt);
+  _tt = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAG / POINTER
+// ══════════════════════════════════════════════════════════════
+let dragActive = false, dragFrom = -1, dragPos = null, _dragStartPos = null;
+
+function getCanvasPointerXY(e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+  return { x: src.clientX - r.left, y: src.clientY - r.top };
+}
+
+function nearestDot(pos, excludeIdx) {
+  let hit = -1, bestDist = HIT_R;
+  for (let i = 0; i < dots.length; i++) {
+    if (i === excludeIdx) continue;
+    const dx = dots[i].x - pos.x, dy = dots[i].y - pos.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if (dist < bestDist) { bestDist = dist; hit = i; }
+  }
+  return hit;
+}
+
+function onPointerDown(e) {
+  if (gameOver) return;
+  if (e.type === 'mousedown' && e.button !== 0) return;
+  e.preventDefault();
+  const pos = getCanvasPointerXY(e);
+  _dragStartPos = pos;
+  dragFrom = nearestDot(pos, -1);
+  dragPos = pos; dragActive = true;
+  draw();
+}
+
+function onPointerMove(e) {
+  if (!dragActive) return;
+  e.preventDefault();
+  dragPos = getCanvasPointerXY(e);
+  draw();
+}
+
+function onPointerUp(e) {
+  if (!dragActive) return;
+  e.preventDefault();
+  const pos = getCanvasPointerXY(e);
+  const dx = _dragStartPos ? pos.x - _dragStartPos.x : 0;
+  const dy = _dragStartPos ? pos.y - _dragStartPos.y : 0;
+  const wasDrag = Math.sqrt(dx*dx+dy*dy) > 8;
+
+  if (!wasDrag) {
+    if (dragFrom !== -1) handleDotTap(dragFrom);
+  } else if (dragFrom !== -1) {
+    const target = nearestDot(pos, dragFrom);
+    if (target !== -1 && !selected.includes(target)) {
+      if (!selected.includes(dragFrom) && selected.length < 3) selected.push(dragFrom);
+      if (!selected.includes(target) && selected.length < 3) selected.push(target);
+    } else if (target === -1) {
+      if (!selected.includes(dragFrom) && selected.length < 3) selected.push(dragFrom);
+    }
+    updateBtn(); updateSelHint();
+  }
+
+  dragActive = false; dragFrom = -1; dragPos = null; _dragStartPos = null;
+  draw();
+}
+
+canvas.addEventListener('mousedown',  onPointerDown, { passive: false });
+canvas.addEventListener('mousemove',  onPointerMove, { passive: false });
+canvas.addEventListener('mouseup',    onPointerUp,   { passive: false });
+canvas.addEventListener('mouseleave', (e) => { if (dragActive) onPointerUp(e); });
+canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+canvas.addEventListener('touchmove',  onPointerMove, { passive: false });
+canvas.addEventListener('touchend',   onPointerUp,   { passive: false });
+window.addEventListener('resize', () => {
+  bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; drawBg();
+});
+window.addEventListener('load', () => {
+  drawBg(); drawHomeArt(); showScreen('home');
+});
+</script>
+</body>
+</html>
