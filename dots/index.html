@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>PolyDots</title>
+<title>Polynk</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,7 +19,7 @@
   --r:14px;
 }
 html.light{
-  --bg:#f0f2f8;--surface:#e4e8f4;--card:#dde3f0;--border:rgba(100,80,220,0.18);
+  --bg:#f0f2f8;--surface:#e4e8f4;--card:#f7e8e1;--border:rgba(100,80,220,0.18);
   --purple:#6246e5;--purple-lo:rgba(98,70,229,0.10);--purple-hi:rgba(98,70,229,0.18);
   --green:#1da672;--green-lo:rgba(29,166,114,0.12);
   --amber:#d4850a;--amber-lo:rgba(212,133,10,0.12);
@@ -85,7 +85,7 @@ body{
 .hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px}
 .hdr-left{display:flex;align-items:center;gap:10px}
 .hdr-back{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--surface);border:1px solid var(--border);font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-.hdr-title{font-size:19px;font-weight:800;letter-spacing:-.4px;font-family:'Verdana',sans-serif}
+.hdr-title{color:var(--purple);font-size:19px;font-weight:800;letter-spacing:-.4px;font-family:'Verdana',sans-serif}
 .hdr-sub{font-size:11px;color:var(--muted);margin-top:1px;font-family:'Courier New',monospace}
 .badge{font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;text-transform:uppercase;font-family:'Courier New',monospace}
 .b-easy{background:var(--green-lo);color:var(--green);border:1px solid rgba(62,207,142,.28)}
@@ -178,7 +178,7 @@ body{
 <!-- HOME -->
 <div id="home" class="screen">
   <div class="home-hero">
-    <div class="home-logo">PolyDots</div>
+    <div class="home-logo">Polynk</div>
     <div class="home-tag">The Polygon Puzzle</div>
     <canvas id="home-art" class="home-tri-art" width="120" height="104"></canvas>
   </div>
@@ -240,7 +240,7 @@ body{
     <div class="hdr-left">
       <div class="hdr-back" onclick="confirmHome()">←</div>
       <div>
-        <div class="hdr-title">PolyDots</div>
+        <div class="hdr-title">Polynk</div>
         <div class="hdr-sub" id="hdr-sub">Loading…</div>
       </div>
     </div>
@@ -276,7 +276,7 @@ body{
     </button>
     <!-- <button class="btn-play-again" id="btn-again" onclick="playAgain()">↻ Play Again</button> -->
   </div>
-  <button class="btn btn-primary btn-play-new" id="btn-new-game" onclick="playAgain()">↻ New Game</button>
+  <button class="btn btn-sec btn-play-new" id="btn-new-game" onclick="playAgain()">↻ New Game</button>
 </div>
 
 <script>
@@ -615,20 +615,14 @@ function renderGoalStrip() {
     '<div class="goal-row">' +
       '<div class="goal-label">🟨 Find the <b>Largest</b> triangle</div>' +
       '<div class="goal-status ' + (foundMax ? 'found' : 'pending') + '" id="gs-max">' +
-        (foundMax
-          ? '✓ Found (' + Math.round(maxArea) + ' px²)'
-          : (gameOver ? '(' + Math.round(maxArea) + ' px²)' : '–')
-        ) +
+        (foundMax ? '✓ Found' : '–') +
       '</div>' +
     '</div>' +
 
     '<div class="goal-row">' +
       '<div class="goal-label">🟦 Find the <b>Smallest</b> triangle</div>' +
       '<div class="goal-status ' + (foundMin ? 'found' : 'pending') + '" id="gs-min">' +
-        (foundMin
-          ? '✓ Found (' + Math.round(minArea) + ' px²)'
-          : (gameOver ? '(' + Math.round(minArea) + ' px²)' : '–')
-        ) +
+        (foundMin ? '✓ Found' : '–') +
       '</div>' +
     '</div>';
 }
@@ -798,8 +792,8 @@ function buildEmoji() {
   return guesses.map(function(g){ return !g.correct?'\uD83D\uDFE5':g.type==='max'?'\uD83D\uDFE8':g.type==='min'?'\uD83D\uDFE6':g.type==='both'?'\uD83D\uDFE8\uD83D\uDFE6':'\uD83D\uDFE5'; }).join('');
 }
 function shareResult() {
-  var text='PolyDots '+(gameMode==='daily'?'Daily · '+(this.dailyDate):'Random')+' ('+puzzle.difficulty+')\n'+buildEmoji();
-  if (navigator.share) navigator.share({title:'PolyDots',text:text}).catch(function(){});
+  var text='Polynk '+(gameMode==='daily'?'Daily · '+(this.dailyDate):'Random')+' ('+puzzle.difficulty+')\n'+buildEmoji();
+  if (navigator.share) navigator.share({title:'Polynk',text:text}).catch(function(){});
   else navigator.clipboard.writeText(text).then(function(){showToast('Result copied!');}).catch(function(){showToast(text);});
 }
 
@@ -991,14 +985,14 @@ function drawHomeArt() {
   var c=document.getElementById('home-art'), cx=c.getContext('2d');
   var isLight=document.documentElement.classList.contains('light');
   cx.clearRect(0,0,120,104);
-  [[[10,90],[60,10],[110,90],'rgba(124,92,246,0.9)','rgba(124,92,246,0.15)'],
+  [[[10,90],[60,10],[110,90],'rgba(255,120,30,0.9)','rgba(255,120,30,0.15)'],
    [[30,90],[60,40],[90,90],'rgba(56,189,248,0.6)','rgba(56,189,248,0.08)']].forEach(function(t){
     cx.beginPath(); cx.moveTo(t[0][0],t[0][1]); cx.lineTo(t[1][0],t[1][1]); cx.lineTo(t[2][0],t[2][1]); cx.closePath();
     cx.fillStyle=t[4]; cx.fill(); cx.strokeStyle=t[3]; cx.lineWidth=2; cx.stroke();
   });
   [[10,90],[60,10],[110,90],[30,90],[60,40],[90,90]].forEach(function(pt){
     cx.beginPath(); cx.arc(pt[0],pt[1],5,0,Math.PI*2);
-    cx.fillStyle=isLight?'#c8d0e8':'#222a40'; cx.fill(); cx.strokeStyle='rgba(124,92,246,0.8)'; cx.lineWidth=2; cx.stroke();
+    cx.fillStyle=isLight?'#c8d0e8':'#222a40'; cx.fill(); cx.strokeStyle='rgba(255,120,30,0.8)'; cx.lineWidth=2; cx.stroke();
   });
 }
 
@@ -1009,7 +1003,7 @@ function drawBg() {
   var w=bgCanvas.width, h=bgCanvas.height;
   bgCtx.clearRect(0,0,w,h);
   var isLight=document.documentElement.classList.contains('light');
-  var a=isLight?0.03:0.04, sa=isLight?0.06:0.09;
+  var a=isLight?0.04:0.07, sa=isLight?0.08:0.14;
   [[.06,.08],[.28,.04],[.16,.32],[.72,.06],[.96,.04],[.88,.3],
    [.08,.58],[.32,.53],[.18,.84],[.68,.62],[.94,.58],[.86,.9],
    [.38,.28],[.62,.22],[.54,.52],[.18,.14],[.44,.08],[.36,.4],
@@ -1018,8 +1012,8 @@ function drawBg() {
     acc[acc.length-1].push(pt); return acc;
   },[]).forEach(function(pts){
     bgCtx.beginPath(); bgCtx.moveTo(pts[0][0]*w,pts[0][1]*h); bgCtx.lineTo(pts[1][0]*w,pts[1][1]*h); bgCtx.lineTo(pts[2][0]*w,pts[2][1]*h); bgCtx.closePath();
-    bgCtx.fillStyle='rgba(124,92,246,'+a+')'; bgCtx.fill();
-    bgCtx.strokeStyle='rgba(124,92,246,'+sa+')'; bgCtx.lineWidth=1; bgCtx.stroke();
+    bgCtx.fillStyle='rgba(255,120,30,'+a+')'; bgCtx.fill();
+    bgCtx.strokeStyle='rgba(255,150,50,'+sa+')'; bgCtx.lineWidth=1; bgCtx.stroke();
   });
 }
 
