@@ -923,14 +923,14 @@ function draw() {
     }
     else if (dot.answerMax) { 
       r=DOT_R+2; 
-      fill='#2a1a00'; 
+      fill=isLight?'#abd989':'#2a1a00'; 
       stroke='#f5a623'; 
       ra=0.18; 
       rc='245,166,35'; 
     }
     else if (dot.answerMin) { 
       r=DOT_R+2; 
-      fill='#001a2a'; 
+      fill=isLight?'#ce89d9':'#001a2a'; 
       stroke='#38bdf8'; 
       ra=0.18; 
       rc='56,189,248'; 
@@ -938,7 +938,7 @@ function draw() {
     
     if (isSel||isDO) { 
       r=DOT_R+1; 
-      fill='#1a1a2a'; 
+      fill=isLight?'#92e4e8':'#1a1a2a'; 
       stroke='rgba('+selRgb+',0.9)'; 
       ra=0.18; 
       rc=selRgb; 
