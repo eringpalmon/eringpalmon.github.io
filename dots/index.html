@@ -554,13 +554,13 @@ function startGame(p) {
     document.getElementById('hdr-sub').textContent = 'Random · ' + puzzle.difficulty;
   } else {
     var now2 = new Date();
-    // var today2 = Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate());
-    // var dateStr = new Date(today2).toLocaleDateString('en-US', {
-    //   month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
-    // });
+    var today2 = Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate());
+    var dateStr = new Date(today2).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+    });
     var month = MONTH_NAMES[now2.getMonth()];
     var dayNum = now2.getDate();
-    document.getElementById('hdr-sub').textContent = 'Daily · ' + this.dailyDate;
+    document.getElementById('hdr-sub').textContent = 'Daily · ' + dateStr;
     badge.textContent = puzzle.difficulty;
     badge.className = 'badge b-' + puzzle.difficulty;
   }
@@ -792,7 +792,7 @@ function buildEmoji() {
   return guesses.map(function(g){ return !g.correct?'\uD83D\uDFE5':g.type==='max'?'\uD83D\uDFE8':g.type==='min'?'\uD83D\uDFE6':g.type==='both'?'\uD83D\uDFE8\uD83D\uDFE6':'\uD83D\uDFE5'; }).join('');
 }
 function shareResult() {
-  var text='PolyDots '+(gameMode==='daily'?'Daily #'+(dayIndex+1):'Random')+' ('+puzzle.difficulty+')\n'+buildEmoji()+'\n\uD83D\uDFE8 largest \xb7 \uD83D\uDFE6 smallest \xb7 \uD83D\uDFE5 mistake';
+  var text='PolyDots '+(gameMode==='daily'?'Daily · '+(this.dailyDate):'Random')+' ('+puzzle.difficulty+')\n'+buildEmoji()+'\n\uD83D\uDFE8 largest \xb7 \uD83D\uDFE6 smallest \xb7 \uD83D\uDFE5 mistake';
   if (navigator.share) navigator.share({title:'PolyDots',text:text}).catch(function(){});
   else navigator.clipboard.writeText(text).then(function(){showToast('Result copied!');}).catch(function(){showToast(text);});
 }
