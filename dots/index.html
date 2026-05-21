@@ -274,7 +274,7 @@ body{
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       Share
     </button>
-    <button class="btn-play-again" id="btn-again" onclick="playAgain()">↻ Play Again</button>
+    <!-- <button class="btn-play-again" id="btn-again" onclick="playAgain()">↻ Play Again</button> -->
   </div>
   <button class="btn btn-primary btn-play-new" id="btn-new-game" onclick="playAgain()">↻ New Game</button>
 </div>
@@ -590,7 +590,7 @@ function startGame(p) {
   document.getElementById('controls').classList.remove('hidden');
   document.getElementById('result').classList.add('hidden');
   document.getElementById('btn-hint').classList.add('hidden');
-  document.getElementById('btn-again').classList.toggle('hidden', gameMode === 'daily');
+  // document.getElementById('btn-again').classList.toggle('hidden', gameMode === 'daily');
   document.getElementById('btn-new-game').classList.toggle('hidden', gameMode === 'daily');
 
   draw();
@@ -665,8 +665,7 @@ function renderHistory() {
     else if (g.type==='min') { color='var(--blue)'; label='\uD83D\uDFE6 Smallest'; }
     else { color='var(--green)'; label='\u2746 Both'; }
     var row = document.createElement('div'); row.className='g-row';
-    row.innerHTML='<div class="g-lbl" style="color:'+color+'">'+label+'</div><div class="g-area"></div>';
-    el.appendChild(row);
+    row.innerHTML='<div class="g-lbl" style="color:'+color+'">'+label+'</div><div style="flex:1"></div><div class="g-area" style="color:'+color+'">'+Math.round(g.area)+' px²</div>';    el.appendChild(row);
   });
 }
 
@@ -707,6 +706,13 @@ function useHint() {
 
 function submitGuess() {
   if (selected.length !== 3 || gameOver) return;
+  var sorted = selected.slice().sort().join(',');
+  var alreadyGuessed = guesses.some(function(g) {
+    return g.sel.slice().sort().join(',') === sorted;
+  });
+  if (alreadyGuessed) { 
+    showToast('⚠️ Already guessed!'); return; 
+  }
   var i0=selected[0], i1=selected[1], i2=selected[2];
   var a = calcArea(dots[i0], dots[i1], dots[i2]);
   var isMax = Math.abs(a-maxArea) <= TOLERANCE && !foundMax;
