@@ -377,6 +377,7 @@ var canvas = document.getElementById('gc');
 var ctx = canvas.getContext('2d');
 var bgCanvas = document.getElementById('bg-canvas');
 var bgCtx = bgCanvas.getContext('2d');
+var dailyDate = '';
 
 const MONTH_NAMES = [
     "january","february","march","april","may","june",
@@ -507,8 +508,10 @@ function init() {
   canvas.width = GW; canvas.height = GH;
   canvas.style.width = GW + 'px'; canvas.style.height = GH + 'px';
   document.getElementById('canvas-wrap').style.width = GW + 'px';
-  bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+  bgCanvas.width = window.innerWidth; 
+  bgCanvas.height = window.innerHeight;
   drawBg();
+  getDateStr();
 
   if (gameMode === 'daily') {
     var now = new Date();
@@ -551,13 +554,13 @@ function startGame(p) {
     document.getElementById('hdr-sub').textContent = 'Random · ' + puzzle.difficulty;
   } else {
     var now2 = new Date();
-    var today2 = Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate());
-    var dateStr = new Date(today2).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
-    });
+    // var today2 = Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate());
+    // var dateStr = new Date(today2).toLocaleDateString('en-US', {
+    //   month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+    // });
     var month = MONTH_NAMES[now2.getMonth()];
     var dayNum = now2.getDate();
-    document.getElementById('hdr-sub').textContent = 'Daily · ' + dateStr;
+    document.getElementById('hdr-sub').textContent = 'Daily · ' + this.dailyDate;
     badge.textContent = puzzle.difficulty;
     badge.className = 'badge b-' + puzzle.difficulty;
   }
@@ -592,6 +595,17 @@ function startGame(p) {
 
   draw();
 }
+
+
+function getDateStr(){
+   var now2 = new Date();
+    var today2 = Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate());
+    var dateStr = new Date(today2).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+    });
+
+    this.dailyDate = dateStr;
+};
 
 // ══════════════════════════════════════════════════════════════
 //  UI RENDERS
