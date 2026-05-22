@@ -1,0 +1,840 @@
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0d14;--surface:#131621;--card:#181c2c;--border:rgba(130,110,255,0.2);
+  --purple:#7c5cf6;--purple-lo:rgba(124,92,246,0.13);
+  --green:#3ecf8e;--green-lo:rgba(62,207,142,0.13);
+  --amber:#f5a623;--amber-lo:rgba(245,166,35,0.13);
+  --red:#f05252;--red-lo:rgba(240,82,82,0.13);
+  --blue:#38bdf8;
+  --text:#e8eaf0;--muted:#5a6480;--soft:#8892aa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-height:600px;display:flex;flex-direction:column;align-items:center;padding:0 0 32px}
+.screen{width:100%;max-width:420px;padding:0 16px;display:flex;flex-direction:column;align-items:center}
+.hidden{display:none!important}
+
+.setup-hero{text-align:center;padding:28px 0 16px}
+.logo{font-size:40px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:'Monaco',monospace}
+.mode-badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;letter-spacing:2px;padding:4px 12px;border-radius:8px;background:var(--red-lo);color:var(--red);border:1px solid rgba(240,82,82,0.3);font-family:'Courier New',monospace}
+.setup-desc{font-size:12px;color:var(--soft);text-align:center;line-height:1.6;margin:10px 0 20px;padding:0 4px}
+.section-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;width:100%;font-family:'Courier New',monospace}
+
+/* .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-bottom:20px}
+.time-opt{padding:12px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card);text-align:center;cursor:pointer;transition:border-color .2s,background .2s;user-select:none}
+.time-opt .t-val{font-size:19px;font-weight:800;font-family:'Courier New',monospace}
+.time-opt .t-lbl{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Courier New',monospace}
+.time-opt.selected{border-color:var(--red);background:var(--red-lo)}
+.time-opt.selected .t-val{color:var(--red)} */
+
+.scoring-row{display:flex;gap:6px;width:100%;margin-bottom:20px}
+.s-pip{flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);background:var(--surface);text-align:center}
+.s-pip-pts{font-size:13px;font-weight:800;font-family:'Courier New',monospace}
+.s-pip-lbl{font-size:9px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+
+.rules-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+.rule{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.rule:last-child{margin-bottom:0}
+.rule-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.rule-text{font-size:12px;color:var(--soft);line-height:1.5}
+.rule-text b{color:var(--text)}
+
+.btn-start{width:100%;padding:15px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Georgia',serif}
+
+.game-hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 0 6px}
+.hdr-back{width:32px;height:32px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;user-select:none}
+
+/* .hud{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}
+.hud-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 8px;text-align:center}
+.hud-label{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace}
+.hud-val{font-size:21px;font-weight:800;margin-top:2px;font-family:'Courier New',monospace} */
+/* .hud-val.t-val{color:var(--red)}
+.hud-val.t-val.urgent{animation:pulse .5s infinite alternate} */
+@keyframes pulse{from{opacity:1}to{opacity:.3}}
+/* .hud-val.s-val{color:var(--amber)}
+.hud-val.r-val{color:var(--blue)} */
+
+.skip-wrap{width:100%;display:flex;align-items:center;gap:10px;min-height:24px;margin-bottom:3px}
+.skip-bar-outer{flex:1;height:5px;border-radius:3px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.skip-bar-inner{height:100%;border-radius:3px;width:100%}
+.skip-lbl{font-size:10px;color:var(--muted);font-family:'Courier New',monospace;min-width:52px;text-align:right}
+
+.info-strip{width:100%;min-height:26px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.info-msg{font-size:12px;font-weight:700;font-family:'Courier New',monospace;padding:3px 12px;border-radius:8px}
+.msg-hint{background:var(--purple-lo);color:var(--purple);border:1px solid rgba(124,92,246,.3)}
+.msg-ok{background:var(--green-lo);color:var(--green);border:1px solid rgba(62,207,142,.3)}
+.msg-skip{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+
+.canvas-wrap{position:relative;border-radius:16px;border:1px solid var(--border);background:var(--card);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+#gc{display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#flash{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .07s}
+
+.end-hero{text-align:center;padding:24px 0 14px}
+.end-title{font-size:28px;font-weight:800;margin-bottom:5px}
+.end-sub{font-size:13px;color:var(--muted)}
+.end-score-box{width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px}
+.end-score-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace}
+.end-score-val{font-size:60px;font-weight:900;font-family:'Courier New',monospace;color:var(--amber);line-height:1.1;margin:4px 0}
+.end-score-rounds{font-size:13px;color:var(--soft)}
+.end-breakdown{width:100%;margin-bottom:18px}
+.eb-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid rgba(255,255,255,.04);margin-bottom:4px}
+.eb-round{font-size:11px;color:var(--muted);font-family:'Courier New',monospace}
+.eb-info{font-size:11px;font-family:'Courier New',monospace;color:var(--soft)}
+.eb-pts{font-size:13px;font-weight:800;font-family:'Courier New',monospace;color:var(--amber)}
+.end-btns{width:100%;display:flex;flex-direction:column;gap:8px}
+.btn-share-end{padding:13px;border-radius:12px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-play-again-end{padding:11px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--soft);font-size:13px;font-weight:700;cursor:pointer;font-family:'Georgia',serif}
+
+.game-actions{
+  display:flex;
+  justify-content:center;
+  margin:10px 0 6px;
+}
+
+.btn-reset{
+  background:#1e2640;
+  color:#d8dcff;
+  border:1.5px solid rgba(124,92,246,0.45);
+  border-radius:12px;
+  padding:10px 16px;
+  font-size:12px;
+  font-weight:700;
+  font-family:'Courier New', monospace;
+  cursor:pointer;
+  transition:0.15s ease;
+}
+
+.btn-reset:active{
+  transform:scale(0.96);
+}
+
+.btn-reset:hover{
+  background:#2a3358;
+}
+
+#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text);z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;font-family:'Courier New',monospace;white-space:nowrap}
+</style>
+
+<div id="toast"></div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-hero">
+    <div class="logo">Polynk</div>
+    <div class="mode-badge">⚡ Capture Mode</div>
+  </div>
+  <p class="setup-desc">Surround the <b style="color:var(--text)">✛ cross</b> target by tapping or dragging across dots. The cross must be <b style="color:var(--text)">fully inside</b> your polygon — capture is instant and automatic!</p>
+
+  <!-- <div class="section-label">Time limit</div>
+  <div class="time-grid" id="time-grid">
+    <div class="time-opt selected" data-t="30"><div class="t-val">30</div><div class="t-lbl">secs</div></div>
+    <div class="time-opt" data-t="60"><div class="t-val">60</div><div class="t-lbl">secs</div></div>
+    <div class="time-opt" data-t="90"><div class="t-val">90</div><div class="t-lbl">secs</div></div>
+    <div class="time-opt" data-t="120"><div class="t-val">2</div><div class="t-lbl">mins</div></div>
+  </div> -->
+
+  <div class="section-label">Scoring</div>
+  <div class="scoring-row">
+    <div class="s-pip"><div class="s-pip-pts" style="color:var(--amber)">500</div><div class="s-pip-lbl">3 dots</div></div>
+    <div class="s-pip"><div class="s-pip-pts" style="color:var(--soft)">300</div><div class="s-pip-lbl">4 dots</div></div>
+    <div class="s-pip"><div class="s-pip-pts" style="color:var(--soft)">150</div><div class="s-pip-lbl">5 dots</div></div>
+    <div class="s-pip"><div class="s-pip-pts" style="color:var(--muted)">60</div><div class="s-pip-lbl">6+</div></div>
+    <div class="s-pip"><div class="s-pip-pts" style="color:var(--blue)">+⏱</div><div class="s-pip-lbl">speed</div></div>
+  </div>
+
+  <div class="section-label">How to play</div>
+  <div class="rules-card">
+    <div class="rule"><div class="rule-ico">✛</div><div class="rule-text">Each round shows a bright <b>cross target</b>. Enclose <b>all 4 tips</b> of the cross inside your polygon to capture it.</div></div>
+    <div class="rule"><div class="rule-ico">👆</div><div class="rule-text"><b>Tap</b> dots or <b>drag</b> across them to select. Capture triggers <b>automatically</b> the moment the cross is fully enclosed.</div></div>
+    <div class="rule"><div class="rule-ico">⚠️</div><div class="rule-text"><b>5 seconds</b> of no action = auto-skip (red flash). Green = 3-dot capture. Yellow = 4+ dots.</div></div>
+    <div class="rule"><div class="rule-ico">📐</div><div class="rule-text">Fewer dots + smaller polygon + faster = higher score.</div></div>
+  </div>
+
+  <button class="btn-start" onclick="startCapture()">Start Game →</button>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen hidden">
+  <div class="game-hdr">
+    <div class="hdr-back" onclick="confirmQuit()">←</div>
+    <div style="text-align:center">
+      <div style="color:var(--red);font-size:15px;font-weight:800;font-family:'Verdana',sans-serif">Polynk</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">⚡ Capture</div>
+    </div>
+    <div style="width:32px"></div>
+  </div>
+
+  <!-- <div class="hud">
+    <div class="hud-box"><div class="hud-label">Time</div><div class="hud-val t-val" id="hud-time">30</div></div>
+    <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val s-val" id="hud-score">0</div></div>
+    <div class="hud-box"><div class="hud-label">Round</div><div class="hud-val r-val" id="hud-round">1</div></div>
+  </div> -->
+
+  <div class="skip-wrap">
+    <div class="skip-bar-outer"><div class="skip-bar-inner" id="skip-bar"></div></div>
+    <div class="skip-lbl" id="skip-lbl">5.0s</div>
+  </div>
+
+  <div class="info-strip"><div class="info-msg msg-hint" id="info-msg">Tap or drag to surround the ✛ cross</div></div>
+
+  <div class="canvas-wrap" id="canvas-wrap">
+    <canvas id="gc"></canvas>
+    <div id="flash"></div>
+  </div>
+
+  
+  <div class="game-actions">
+    <button class="btn-reset" onclick="resetSelection()">Reset Selection</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="screen-end" class="screen hidden">
+  <div class="end-hero">
+    <div class="end-title">⏱ Time's Up!</div>
+    <div class="end-sub">Here's how you did</div>
+  </div>
+  <div class="end-score-box">
+    <div class="end-score-label">Total Score</div>
+    <div class="end-score-val" id="end-score-val">0</div>
+    <div class="end-score-rounds" id="end-rounds-lbl"></div>
+  </div>
+  <div class="end-breakdown" id="end-breakdown"></div>
+  <div class="end-btns">
+    <button class="btn-share-end" onclick="shareCapture()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share Result
+    </button>
+    <button class="btn-play-again-end" onclick="goSetup()">↻ Play Again</button>
+  </div>
+</div>
+
+<script>
+var C = {
+  GW:0,GH:0,
+  totalScore:0,roundNum:1,
+  gameRunning:false,transitioning:false,
+  mainTimer:null,skipRafId:null,skipDeadline:0,SKIP_MS:5000,
+
+  target:null,
+  CROSS_ARM:10,
+
+  gridDots:[],
+  selected:[],
+  roundLog:[],
+
+  canvas:null,ctx:null,
+
+  DOT_R:11,HIT_R:26,
+
+  isDragging:false,
+  dragPos:null,
+  lastDragPos:null,
+  dragAddedThisStroke:[],
+
+  // lastCaptureTime:0,
+  // FAIL_NO_CAPTURE_MS:45000,
+
+  // ✅ MISSING PIECES (IMPORTANT FIX)
+  obstacles:[],
+  obstacleTimers:[30,60],
+  nextObstacleIndex:0
+};
+
+function showScreen(id){
+  ['screen-setup','screen-game','screen-end'].forEach(function(s){
+    document.getElementById(s).classList.toggle('hidden',s!==id);
+  });
+}
+function goSetup(){
+  clearInterval(C.mainTimer);
+  cancelAnimationFrame(C.skipRafId);
+  C.gameRunning=false;
+  showScreen('screen-setup');
+}
+
+// document.getElementById('time-grid').addEventListener('click',function(e){
+//   var opt=e.target.closest('.time-opt');if(!opt)return;
+//   document.querySelectorAll('.time-opt').forEach(function(o){o.classList.remove('selected');});
+//   opt.classList.add('selected');
+//   C.timeLimit=parseInt(opt.dataset.t);
+// });
+
+// ── GEOMETRY ──
+function dist(a,b){return Math.sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));}
+
+function pointInPoly(pt,poly){
+  var x=pt.x,y=pt.y,inside=false;
+  for(var i=0,j=poly.length-1;i<poly.length;j=i++){
+    var xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;
+    if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+
+// All 4 arm-tips of the cross must be inside the polygon
+function crossFullyEnclosed(poly){
+  if(poly.length<3)return false;
+  var t=C.target,arm=C.CROSS_ARM;
+  var tips=[
+    {x:t.x,       y:t.y-arm},  // top
+    {x:t.x,       y:t.y+arm},  // bottom
+    {x:t.x-arm,   y:t.y},      // left
+    {x:t.x+arm,   y:t.y}       // right
+  ];
+  return tips.every(function(p){return pointInPoly(p,poly);});
+}
+
+function polyArea(pts){
+  var a=0;
+  for(var i=0,j=pts.length-1;i<pts.length;j=i++){
+    a+=pts[j].x*pts[i].y-pts[i].x*pts[j].y;
+  }
+  return Math.abs(a)/2;
+}
+
+function segTouchesCircle(ax,ay,bx,by,cx,cy,r){
+  var dx=bx-ax,dy=by-ay,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<0.001)return dist({x:ax,y:ay},{x:cx,y:cy})<r;
+  var t=((cx-ax)*dx+(cy-ay)*dy)/(len*len);
+  t=Math.max(0,Math.min(1,t));
+  return dist({x:ax+t*dx,y:ay+t*dy},{x:cx,y:cy})<r;
+}
+
+// ── ROUND GENERATION — target placed first, 3 guard dots guaranteed around it ──
+function generateRound(){
+  var margin=0.12,GW=C.GW,GH=C.GH;
+  var tx=(0.25+Math.random()*0.50)*GW;
+  var ty=(0.25+Math.random()*0.50)*GH;
+  var target={x:tx,y:ty};
+
+  var guardDots=[];
+  var baseAngle=Math.random()*Math.PI*2;
+  for(var g=0;g<3;g++){
+    var a=baseAngle+g*(Math.PI*2/3)+(Math.random()*0.35-0.175);
+    var r=GW*(0.16+Math.random()*0.14);
+    var gx=Math.max(margin*GW,Math.min((1-margin)*GW,tx+Math.cos(a)*r));
+    var gy=Math.max(margin*GH,Math.min((1-margin)*GH,ty+Math.sin(a)*r));
+    guardDots.push({x:gx,y:gy,guard:true});
+  }
+  // verify enclosure with cross tips
+  var arm=C.CROSS_ARM;
+  var tips=[{x:tx,y:ty-arm},{x:tx,y:ty+arm},{x:tx-arm,y:ty},{x:tx+arm,y:ty}];
+  var allIn=tips.every(function(p){return pointInPoly(p,guardDots);});
+  if(!allIn){
+    guardDots=guardDots.map(function(d){
+      var dx=d.x-tx,dy=d.y-ty,len=Math.sqrt(dx*dx+dy*dy)||1;
+      var s=Math.max(1.35,(GW*0.20)/len);
+      return{x:Math.max(margin*GW,Math.min((1-margin)*GW,tx+dx*s)),
+             y:Math.max(margin*GH,Math.min((1-margin)*GH,ty+dy*s)),guard:true};
+    });
+  }
+
+  var extraCount=6+Math.floor(Math.random()*5);
+  var extras=[],minSep=GW*0.09,tries=0;
+  while(extras.length<extraCount&&tries<300){
+    tries++;
+    var ex=(margin+Math.random()*(1-2*margin))*GW;
+    var ey=(margin+Math.random()*(1-2*margin))*GH;
+    var ok=dist({x:ex,y:ey},target)>minSep;
+    if(ok)guardDots.concat(extras).forEach(function(d){if(dist({x:ex,y:ey},d)<minSep)ok=false;});
+    if(ok)extras.push({x:ex,y:ey,guard:false});
+  }
+
+  var all=guardDots.concat(extras);
+  for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=all[i];all[i]=all[j];all[j]=tmp;}
+  return{target:target,dots:all};
+}
+
+// ── START ──
+function startCapture(){
+  C.sessionStart = Date.now();
+  C.lastCaptureTime = Date.now();
+
+  C.obstacles = [];
+  C.obstacleTimers = [30,60];
+  C.nextObstacleIndex = 0;
+
+  C.timeLeft=C.timeLimit;C.totalScore=0;C.roundNum=1;
+  C.roundLog=[];C.gameRunning=true;C.transitioning=false;
+  showScreen('screen-game');
+
+  var availW=Math.min(window.innerWidth-32,388);
+  C.GW=Math.floor(availW);C.GH=C.GW;
+  C.CROSS_ARM=Math.round(C.GW*0.038); // scale arm to canvas
+
+  var oldC=document.getElementById('gc');
+  var newC=oldC.cloneNode(false);
+  oldC.parentNode.replaceChild(newC,oldC);
+  C.canvas=newC;C.ctx=newC.getContext('2d');
+  C.canvas.width=C.GW;C.canvas.height=C.GH;
+  C.canvas.style.width=C.GW+'px';C.canvas.style.height=C.GH+'px';
+  document.getElementById('canvas-wrap').style.width=C.GW+'px';
+
+  bindEvents();
+  initRound();
+  // startMainTimer();
+  // startSessionWatcher();
+}
+
+// function startSessionWatcher(){
+//   setInterval(function(){
+//     if(!C.gameRunning || C.transitioning) return;
+
+//     var idle = Date.now() - C.lastCaptureTime;
+
+//     if(idle > C.FAIL_NO_CAPTURE_MS){
+//       triggerFail("No capture for too long");
+//     }
+
+//     handleObstacleSpawns();
+//   }, 500);
+// }
+
+function spawnObstacle(){
+  var margin=0.12;
+  var x=(margin+Math.random()*(1-2*margin))*C.GW;
+  var y=(margin+Math.random()*(1-2*margin))*C.GH;
+
+  C.obstacles.push({x:x,y:y,r:10});
+}
+
+function handleObstacleSpawns(){
+  var elapsed = (Date.now() - C.sessionStart)/1000;
+
+  while(
+    C.nextObstacleIndex < C.obstacleTimers.length &&
+    elapsed >= C.obstacleTimers[C.nextObstacleIndex]
+  ){
+    spawnObstacle();
+
+    C.nextObstacleIndex++;
+
+    // extend timeline after 60s
+    if(C.nextObstacleIndex >= C.obstacleTimers.length){
+      C.obstacleTimers.push(
+        C.obstacleTimers[C.obstacleTimers.length-1] + 30
+      );
+    }
+
+    setMsg("⚠ Obstacle spawned!", "msg-skip");
+  }
+}
+
+function checkObstacleCollision(a,b){
+  for(var i=0;i<(C.obstacles||[]).length;i++){
+    var o=C.obstacles[i];
+    if(segTouchesCircle(a.x,a.y,b.x,b.y,o.x,o.y,o.r)){
+      return true;
+    }
+  }
+  return false;
+}
+
+function initRound(){
+  C.selected=[];C.transitioning=false;
+  C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];
+  var r=generateRound();
+  C.target=r.target;C.gridDots=r.dots;
+  C.roundStartTime=Date.now();
+  updateHUD();
+  setMsg('Surround the ✛ cross to capture','msg-hint');
+  resetSkipTimer();
+  draw();
+}
+
+// ── TIMERS ──
+// function startMainTimer(){
+//   clearInterval(C.mainTimer);
+//   C.mainTimer=setInterval(function(){
+//     if(!C.gameRunning)return;
+//     C.timeLeft--;updateHUD();
+//     if(C.timeLeft<=0)endGame();
+//   },1000);
+// }
+
+function resetSkipTimer(){
+  cancelAnimationFrame(C.skipRafId);
+  C.skipDeadline=Date.now()+C.SKIP_MS;
+  tickSkip();
+}
+
+function tickSkip(){
+  if(!C.gameRunning||C.transitioning)return;
+  handleObstacleSpawns();
+  var rem=C.skipDeadline-Date.now();
+  var pct=Math.max(0,Math.min(1,rem/C.SKIP_MS));
+  var bar=document.getElementById('skip-bar');
+  var lbl=document.getElementById('skip-lbl');
+  if(bar){bar.style.width=(pct*100)+'%';bar.style.background=pct>0.5?'#3ecf8e':pct>0.2?'#f5a623':'#f05252';}
+  if(lbl)lbl.textContent=(Math.max(0,rem)/1000).toFixed(1)+'s';
+  if(rem<=0){triggerFail("Capture Failed");return;}
+  C.skipRafId=requestAnimationFrame(tickSkip);
+}
+
+function doSkip(){
+  if(C.transitioning||!C.gameRunning)return;
+  C.transitioning=true;
+  C.roundLog.push({round:C.roundNum,dots:0,pts:0,skipped:true,elapsed:5});
+  setMsg('Skipped! Next round…','msg-skip');
+  flashCanvas('rgba(240,82,82,0.52)',function(){C.roundNum++;initRound();});
+}
+
+function flashCanvas(color,cb){
+  var f=document.getElementById('flash');
+  f.style.background=color;f.style.opacity='1';
+  setTimeout(function(){f.style.opacity='0';setTimeout(function(){if(cb)cb();},180);},300);
+}
+
+// ── HUD ──
+function updateHUD(){
+  // var te=document.getElementById('hud-time');
+  // te.textContent=C.timeLeft;
+  // te.classList.toggle('urgent',C.timeLeft<=8);
+  // document.getElementById('hud-score').textContent=C.totalScore;
+  // document.getElementById('hud-round').textContent=C.roundNum;
+}
+
+function setMsg(txt,cls){
+  var el=document.getElementById('info-msg');
+  el.textContent=txt;el.className='info-msg '+(cls||'msg-hint');
+}
+
+// ── AUTO-CAPTURE CHECK — called after every selection change ──
+function checkCapture(){
+  if(C.transitioning||!C.gameRunning)return;
+  var selPts=C.selected.map(function(i){return C.gridDots[i];});
+  if(!crossFullyEnclosed(selPts))return;
+
+  for(var i=0;i<selPts.length-1;i++){
+    if(checkObstacleCollision(selPts[i],selPts[i+1])){
+      triggerFail("Polygon touched obstacle");
+      return;
+    }
+  }
+
+  // cross is fully inside — trigger capture
+  C.transitioning=true;
+  cancelAnimationFrame(C.skipRafId);
+
+  var elapsed=(Date.now()-C.roundStartTime)/1000;
+  var n=C.selected.length;
+  var base=n<=3?500:n===4?300:n===5?150:60;
+  var canvasArea=C.GW*C.GH;
+  var pArea=polyArea(selPts);
+  var areaBonus=Math.round(Math.max(0,1-(pArea/canvasArea)*20)*200);
+  var speedBonus=Math.round(Math.max(0,(5-elapsed)/5)*150);
+  var pts=base+areaBonus+speedBonus;
+
+  C.totalScore+=pts;
+  C.roundLog.push({round:C.roundNum,dots:n,pts:pts,elapsed:Math.round(elapsed*10)/10,skipped:false});
+  setMsg('+'+pts+' pts  ('+n+' dots · '+Math.round(elapsed*10)/10+'s)','msg-ok');
+  updateHUD();
+
+  var flashCol=n<=3?'rgba(62,207,142,0.50)':'rgba(245,166,35,0.46)';
+  draw(); // draw once with captured state before flash
+  flashCanvas(flashCol,function(){C.roundNum++;initRound();});
+}
+
+function triggerFail(reason){
+  if(!C.gameRunning) return;
+
+  C.gameRunning=false;
+  C.transitioning=true;
+
+  flashCanvas('rgba(240,82,82,0.6)',function(){
+    alert("Game Over: " + reason);
+    endGame();
+  });
+}
+
+// ── DOT SELECTION ──
+function selectDot(i){
+  if(C.selected.includes(i))return false;
+  C.selected.push(i);
+  return true;
+}
+
+function selectDotsAlongSegment(from,to){
+  var added=false;
+  for(var i=0;i<C.gridDots.length;i++){
+    if(C.selected.includes(i))continue;
+    if(C.dragAddedThisStroke.includes(i))continue;
+    var d=C.gridDots[i];
+    if(segTouchesCircle(from.x,from.y,to.x,to.y,d.x,d.y,C.HIT_R)){
+      selectDot(i);
+      C.dragAddedThisStroke.push(i);
+      added=true;
+    }
+  }
+  return added;
+}
+
+function afterSelect(){
+  // resetSkipTimer();
+  // update hint message
+  var selPts=C.selected.map(function(i){return C.gridDots[i];});
+  var enc=crossFullyEnclosed(selPts);
+  if(!enc){
+    var n=C.selected.length;
+    setMsg(n===0?'Surround the ✛ cross to capture':'Keep going · '+n+' dot'+(n!==1?'s':'')+' selected','msg-hint');
+  }
+  draw();
+  checkCapture();
+}
+
+// ── POINTER HELPERS ──
+function getPos(e){
+  var r=C.canvas.getBoundingClientRect();
+  var src=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;
+  var sx=C.GW/r.width,sy=C.GH/r.height;
+  return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};
+}
+
+function nearestDot(pos){
+  var best=-1,bestD=C.HIT_R;
+  for(var i=0;i<C.gridDots.length;i++){
+    if(C.selected.includes(i))continue;
+    var d=dist(pos,C.gridDots[i]);
+    if(d<bestD){bestD=d;best=i;}
+  }
+  return best;
+}
+
+// ── EVENT BINDING ──
+function bindEvents(){
+  var canvas=C.canvas;
+
+  function onDown(e){
+    e.preventDefault();
+    if(!C.gameRunning||C.transitioning)return;
+    var pos=getPos(e);
+    C.isDragging=true;C.lastDragPos=pos;C.dragPos=pos;C.dragAddedThisStroke=[];
+    var hit=nearestDot(pos);
+    if(hit!==-1){selectDot(hit);C.dragAddedThisStroke.push(hit);afterSelect();}
+    else draw();
+  }
+  function onMove(e){
+    e.preventDefault();
+    if(!C.isDragging||!C.gameRunning||C.transitioning)return;
+    var pos=getPos(e);
+    var added=selectDotsAlongSegment(C.lastDragPos,pos);
+    C.lastDragPos=pos;C.dragPos=pos;
+    if(checkObstacleCollision(C.lastDragPos,pos)){
+      triggerFail("Hit obstacle");
+      return;
+    }
+    if(added)afterSelect();
+    else draw();
+  }
+  function onUp(e){
+    e.preventDefault();
+    C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];
+    draw();
+  }
+  function onLeave(e){
+    if(C.isDragging){C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];draw();}
+  }
+
+  canvas.addEventListener('mousedown',onDown,{passive:false});
+  canvas.addEventListener('mousemove',onMove,{passive:false});
+  canvas.addEventListener('mouseup',onUp,{passive:false});
+  canvas.addEventListener('mouseleave',onLeave,{passive:false});
+  canvas.addEventListener('touchstart',onDown,{passive:false});
+  canvas.addEventListener('touchmove',onMove,{passive:false});
+  canvas.addEventListener('touchend',onUp,{passive:false});
+  canvas.addEventListener('touchcancel',onUp,{passive:false});
+}
+
+// ── DRAW ──
+function draw(){
+  var canvas=C.canvas,ctx=C.ctx,GW=C.GW,GH=C.GH;
+  if(!canvas)return;
+  ctx.clearRect(0,0,GW,GH);
+
+  // faint grid
+  ctx.strokeStyle='rgba(130,110,255,0.04)';ctx.lineWidth=1;ctx.setLineDash([]);
+  for(var gx=0;gx<=GW;gx+=GW/4){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,GH);ctx.stroke();}
+  for(var gy=0;gy<=GH;gy+=GH/4){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(GW,gy);ctx.stroke();}
+
+  var selPts=C.selected.map(function(i){return C.gridDots[i];});
+  var enclosed=crossFullyEnclosed(selPts);
+
+  // polygon fill + stroke
+  if(selPts.length>=2){
+    ctx.beginPath();
+    ctx.moveTo(selPts[0].x,selPts[0].y);
+    for(var k=1;k<selPts.length;k++)ctx.lineTo(selPts[k].x,selPts[k].y);
+    if(selPts.length>=3){
+      ctx.closePath();
+      ctx.fillStyle=enclosed?'rgba(62,207,142,0.14)':'rgba(124,92,246,0.09)';
+      ctx.fill();
+    }
+    ctx.strokeStyle=enclosed?'rgba(62,207,142,0.88)':'rgba(124,92,246,0.72)';
+    ctx.lineWidth=2;ctx.setLineDash(enclosed?[]:[6,4]);
+    ctx.stroke();ctx.setLineDash([]);
+  }
+
+  // drag trail line
+  if(C.isDragging&&C.dragPos&&selPts.length>=1){
+    var last=selPts[selPts.length-1];
+    ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(C.dragPos.x,C.dragPos.y);
+    ctx.strokeStyle='rgba(124,92,246,0.32)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(C.dragPos.x,C.dragPos.y,4,0,Math.PI*2);
+    ctx.fillStyle='rgba(124,92,246,0.38)';ctx.fill();
+  }
+
+  // proximity halos during drag
+  if(C.isDragging&&C.dragPos){
+    for(var i=0;i<C.gridDots.length;i++){
+      if(C.selected.includes(i))continue;
+      if(dist(C.dragPos,C.gridDots[i])<C.HIT_R*1.9){
+        ctx.beginPath();ctx.arc(C.gridDots[i].x,C.gridDots[i].y,C.DOT_R+8,0,Math.PI*2);
+        ctx.fillStyle='rgba(124,92,246,0.10)';ctx.fill();
+      }
+    }
+  }
+
+  // ── TARGET CROSS ──
+  var t=C.target,arm=C.CROSS_ARM,thick=3.5;
+  var tipsCaptured=enclosed||C.transitioning;
+
+  // OBSTACLES
+  for(var i=0;i<C.obstacles.length;i++){
+    var o=C.obstacles[i];
+    ctx.beginPath();
+    ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(240,82,82,0.6)';
+    ctx.fill();
+
+    ctx.lineWidth=2;
+    ctx.strokeStyle='rgba(255,255,255,0.5)';
+    ctx.stroke();
+  }
+
+  // soft glow behind cross
+  var grad=ctx.createRadialGradient(t.x,t.y,0,t.x,t.y,arm+10);
+  grad.addColorStop(0,tipsCaptured?'rgba(62,207,142,0.28)':'rgba(255,80,80,0.22)');
+  grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath();ctx.arc(t.x,t.y,arm+12,0,Math.PI*2);
+  ctx.fillStyle=grad;ctx.fill();
+
+  // cross arms — bright and sharp
+  var crossColor=tipsCaptured?'#3ecf8e':'#ff4444';
+  var glowColor=tipsCaptured?'rgba(62,207,142,0.7)':'rgba(255,68,68,0.6)';
+
+  // outer glow stroke
+  ctx.lineCap='round';
+  ctx.lineWidth=thick+4;ctx.strokeStyle=glowColor;
+  ctx.beginPath();ctx.moveTo(t.x,t.y-arm);ctx.lineTo(t.x,t.y+arm);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(t.x-arm,t.y);ctx.lineTo(t.x+arm,t.y);ctx.stroke();
+  // bright centre stroke
+  ctx.lineWidth=thick;ctx.strokeStyle=crossColor;
+  ctx.beginPath();ctx.moveTo(t.x,t.y-arm);ctx.lineTo(t.x,t.y+arm);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(t.x-arm,t.y);ctx.lineTo(t.x+arm,t.y);ctx.stroke();
+
+  // 4 tip dots — these are the points that must be enclosed
+  [[t.x,t.y-arm],[t.x,t.y+arm],[t.x-arm,t.y],[t.x+arm,t.y]].forEach(function(tp){
+    var tipIn=pointInPoly({x:tp[0],y:tp[1]},selPts);
+    ctx.beginPath();ctx.arc(tp[0],tp[1],3.5,0,Math.PI*2);
+    ctx.fillStyle=tipIn?'#3ecf8e':'#ff4444';ctx.fill();
+    ctx.lineWidth=1.5;ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.stroke();
+  });
+
+  // centre dot
+  ctx.beginPath();ctx.arc(t.x,t.y,3,0,Math.PI*2);
+  ctx.fillStyle='#fff';ctx.fill();
+
+  ctx.lineCap='butt';
+
+  // ── GRID DOTS ──
+  C.gridDots.forEach(function(dot,i){
+    var isSel=C.selected.includes(i);
+    var order=C.selected.indexOf(i);
+    var r=C.DOT_R;
+    if(isSel){
+      ctx.beginPath();ctx.arc(dot.x,dot.y,r+8,0,Math.PI*2);
+      ctx.fillStyle='rgba(124,92,246,0.18)';ctx.fill();
+    }
+    ctx.beginPath();ctx.arc(dot.x,dot.y,r,0,Math.PI*2);
+    ctx.fillStyle=isSel?'#1e1a3a':'#1e2640';ctx.fill();
+    ctx.lineWidth=isSel?2.5:1.5;
+    ctx.strokeStyle=isSel?'rgba(124,92,246,0.95)':'rgba(90,120,180,0.48)';
+    ctx.stroke();
+    if(isSel&&order>=0){
+      ctx.font='bold 10px "Courier New",monospace';
+      ctx.fillStyle='rgba(190,170,255,1)';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(order+1,dot.x,dot.y);
+    }
+    ctx.beginPath();ctx.arc(dot.x-r*0.22,dot.y-r*0.24,r*0.27,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fill();
+  });
+
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.setLineDash([]);
+}
+
+function resetSelection(){
+  if(!C.gameRunning || C.transitioning) return;
+
+  C.selected = [];
+  C.isDragging = false;
+  C.dragPos = null;
+  C.lastDragPos = null;
+  C.dragAddedThisStroke = [];
+
+  setMsg('Selection cleared','msg-hint');
+
+  draw();
+}
+
+// ── END ──
+function endGame(){
+  clearInterval(C.mainTimer);cancelAnimationFrame(C.skipRafId);
+  C.gameRunning=false;
+  showScreen('screen-end');
+  document.getElementById('end-score-val').textContent=C.totalScore;
+  var caps=C.roundLog.filter(function(r){return !r.skipped;}).length;
+  var skips=C.roundLog.filter(function(r){return r.skipped;}).length;
+  document.getElementById('end-rounds-lbl').textContent=caps+' capture'+(caps!==1?'s':'')+' · '+skips+' skip'+(skips!==1?'s':'');
+  var bd=document.getElementById('end-breakdown');bd.innerHTML='';
+  C.roundLog.forEach(function(r){
+    var row=document.createElement('div');row.className='eb-row';
+    if(r.skipped){
+      row.innerHTML='<span class="eb-round">Rd '+r.round+'</span><span class="eb-info" style="color:var(--muted)">skipped</span><span class="eb-pts" style="color:var(--muted)">0</span>';
+    }else{
+      row.innerHTML='<span class="eb-round">Rd '+r.round+'</span><span class="eb-info">'+r.dots+' dots · '+r.elapsed+'s</span><span class="eb-pts">+'+r.pts+'</span>';
+    }
+    bd.appendChild(row);
+  });
+  if(!C.roundLog.length){
+    var row=document.createElement('div');row.className='eb-row';
+    row.innerHTML='<span style="color:var(--muted);font-size:12px;width:100%;text-align:center;font-family:\'Courier New\',monospace">No captures</span>';
+    bd.appendChild(row);
+  }
+}
+
+function shareCapture(){
+  var caps=C.roundLog.filter(function(r){return !r.skipped;});
+  var emojis=C.roundLog.map(function(r){return r.skipped?'🟥':r.dots<=3?'🟩':'🟨';}).join('');
+  var text='Polynk ⚡ Capture\n🏆 '+C.totalScore+' pts ('+C.timeLimit+'s)\n'+caps.length+' captures\n'+emojis;
+  if(navigator.share)navigator.share({title:'Polynk',text:text}).catch(function(){});
+  else navigator.clipboard.writeText(text).then(function(){showToast('Copied!');}).catch(function(){showToast(text);});
+}
+
+function confirmQuit(){
+  if(!C.gameRunning||!confirm('Quit this game?'))return;
+  clearInterval(C.mainTimer);cancelAnimationFrame(C.skipRafId);
+  C.gameRunning=false;goSetup();
+}
+
+var _tt;
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(_tt);_tt=setTimeout(function(){t.style.opacity='0';},2500);
+}
+
+showScreen('screen-setup');
+</script>
