@@ -144,10 +144,10 @@ body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-heig
 
   <div class="section-label">How to play</div>
   <div class="rules-card">
-    <div class="rule"><div class="rule-ico">✛</div><div class="rule-text">Each round shows a bright <b>cross target</b>. Enclose <b>all 4 tips</b> of the cross inside your polygon to capture it.</div></div>
+    <div class="rule"><div class="rule-ico">✛</div><div class="rule-text">Each round shows a <b>cross target</b>. Enclose <b>all 4 tips</b> of the cross inside your polygon to capture it.</div></div>
     <div class="rule"><div class="rule-ico">👆</div><div class="rule-text"><b>Tap</b> dots or <b>drag</b> across them to select. Capture triggers <b>automatically</b> the moment the cross is fully enclosed.</div></div>
-    <div class="rule"><div class="rule-ico">⚠️</div><div class="rule-text"><b>5 seconds</b> of no action = auto-skip (red flash). Green = 3-dot capture. Yellow = 4+ dots.</div></div>
-    <div class="rule"><div class="rule-ico">📐</div><div class="rule-text">Fewer dots + smaller polygon + faster = higher score.</div></div>
+    <div class="rule"><div class="rule-ico">⚠️</div><div class="rule-text">Failing to capture the cross is <b>game over</b>. <b>Avoid</b> spawning obstacles!</div></div>
+    <div class="rule"><div class="rule-ico">📐</div><div class="rule-text"><b>Fewer</b> dots + <b>Smaller</b> Polygon + <b>Faster</b> = <b>Higher Score!</b></div></div>
   </div>
 
   <button class="btn-start" onclick="startCapture()">Start Game →</button>
@@ -237,7 +237,7 @@ var C = {
 
   // ✅ MISSING PIECES (IMPORTANT FIX)
   obstacles:[],
-  obstacleTimers:[30,60],
+  obstacleTimers:[20],
   nextObstacleIndex:0
 };
 
@@ -352,7 +352,7 @@ function startCapture(){
   C.lastCaptureTime = Date.now();
 
   C.obstacles = [];
-  C.obstacleTimers = [30,60];
+  C.obstacleTimers = [20];
   C.nextObstacleIndex = 0;
 
   C.timeLeft=C.timeLimit;C.totalScore=0;C.roundNum=1;
@@ -413,7 +413,7 @@ function handleObstacleSpawns(){
     // extend timeline after 60s
     if(C.nextObstacleIndex >= C.obstacleTimers.length){
       C.obstacleTimers.push(
-        C.obstacleTimers[C.obstacleTimers.length-1] + 30
+        C.obstacleTimers[C.obstacleTimers.length-1] + 20
       );
     }
 
