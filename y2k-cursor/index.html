@@ -8,8 +8,7 @@
   :root {
     --pink: #FF69B4; --hot-pink: #FF1493; --purple: #9B59B6;
     --light-purple: #DDA0DD; --cyan: #00FFFF; --lime: #ADFF2F;
-    --gold: #FFD700; --cream: #FFF5E6; --dark-bg: #1A0A2E;
-    --chat-bg: #0D0520; --input-bg: #2D1B4E; --border-glow: #FF69B4;
+    --gold: #FFD700; --dark-bg: #1A0A2E; --input-bg: #2D1B4E;
   }
   body { font-family: 'VT323', monospace; background: var(--dark-bg); color: #E0D0F0; min-height: 600px; overflow: hidden; user-select: none; position: relative; }
   body::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 10% 20%, white 0%, transparent 100%), radial-gradient(1px 1px at 30% 60%, #DDA0DD 0%, transparent 100%), radial-gradient(1px 1px at 50% 10%, white 0%, transparent 100%), radial-gradient(1px 1px at 70% 80%, #00FFFF 0%, transparent 100%), radial-gradient(1px 1px at 85% 40%, white 0%, transparent 100%), radial-gradient(1px 1px at 20% 90%, #FF69B4 0%, transparent 100%), radial-gradient(1px 1px at 60% 50%, white 0%, transparent 100%), radial-gradient(1px 1px at 90% 15%, #FFD700 0%, transparent 100%); pointer-events: none; z-index: 0; animation: starTwinkle 3s ease-in-out infinite alternate; }
@@ -19,21 +18,17 @@
   .connect-card { width: 360px; border: 3px solid var(--hot-pink); background: rgba(13,5,32,0.95); padding: 24px; text-align: center; }
   .connect-card h1 { margin-bottom: 6px; color: var(--pink); font-size: 14px; }
   .connect-subtitle { font-size: 13px; color: var(--light-purple); margin-bottom: 18px; }
-
-  .tab-row { display: flex; gap: 0; margin-bottom: 20px; border: 2px solid var(--purple); }
+  .tab-row { display: flex; margin-bottom: 20px; border: 2px solid var(--purple); }
   .tab-btn { flex: 1; padding: 8px; background: transparent; border: none; color: var(--light-purple); font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer; transition: all 0.1s; }
   .tab-btn.active { background: var(--purple); color: white; }
   .tab-btn:hover:not(.active) { background: rgba(155,89,182,0.3); }
-
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-
   .connect-input { width: 100%; margin-bottom: 10px; padding: 10px; background: var(--input-bg); border: 2px solid var(--purple); color: white; font-family: 'VT323', monospace; font-size: 20px; outline: none; }
   .connect-input:focus { border-color: var(--pink); }
   .connect-btn { width: 100%; padding: 10px; border: 2px solid var(--gold); background: linear-gradient(135deg, var(--purple), var(--hot-pink)); color: white; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; transition: filter 0.1s; }
   .connect-btn:hover { filter: brightness(1.15); }
   .connect-btn:disabled { filter: brightness(0.5); cursor: not-allowed; }
-
   .room-code-display { background: var(--input-bg); border: 2px solid var(--gold); padding: 10px; margin-bottom: 10px; position: relative; }
   .room-code-label { font-size: 11px; color: var(--light-purple); margin-bottom: 4px; }
   .room-code-value { font-size: 28px; color: var(--gold); letter-spacing: 4px; font-family: 'Press Start 2P', monospace; }
@@ -44,31 +39,57 @@
   .firebase-status.ok { color: var(--lime); }
   .firebase-status.err { color: #FF6347; }
 
-  .app { position: relative; z-index: 1; display: flex; flex-direction: column; height: 600px; padding: 8px; gap: 8px;}
+  .app { position: relative; z-index: 1; display: flex; flex-direction: column; height: 600px; padding: 8px; gap: 6px; }
   .titlebar { background: linear-gradient(90deg, #9B59B6, #FF69B4, #9B59B6); border: 2px solid var(--gold); padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-family: 'Press Start 2P', monospace; font-size: 8px; color: white; text-shadow: 1px 1px 0 #000; flex-shrink: 0; position: relative; overflow: hidden; }
   .titlebar::after { content: '★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★'; position: absolute; bottom: 1px; left: 0; color: var(--gold); font-size: 6px; opacity: 0.5; letter-spacing: 2px; }
   .title-pixel-icon { width: 30px; height: 16px; background: var(--gold); flex-shrink: 0; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
   .room-pill { font-size: 15px; font-family: 'Press Start 2P', monospace; padding: 2px 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); color: var(--gold); }
-
   .main { display: flex; gap: 8px; flex: 1; min-height: 0; }
-  .sidebar { width: 160px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-  .panel { border: 2px solid var(--purple); background: rgba(13,5,32,0.9); padding: 8px; position: relative; }
-  .panel::before { content: attr(data-title); position: absolute; top: -9px; left: 8px; background: var(--purple); color: white; font-size: 10px; padding: 0 4px; font-family: 'Press Start 2P', monospace; }
+
+  /* Sidebar with scroll */
+  .sidebar { width: 166px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; overflow-x: hidden; }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: var(--dark-bg); }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--purple); }
+
+  .panel { border: 2px solid var(--purple); background: rgba(13,5,32,0.9); padding: 8px; position: relative; flex-shrink: 0; }
+  .panel::before { content: attr(data-title); position: absolute; top: -9px; left: 8px; background: var(--purple); color: white; font-size: 9px; padding: 0 4px; font-family: 'Press Start 2P', monospace; white-space: nowrap; }
   .users-list { margin-top: 4px; }
   .user-entry { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 14px; }
   .user-dot { width: 8px; height: 8px; background: var(--lime); border: 1px solid #000; flex-shrink: 0; animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
   .cursor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
-  .cursor-option { width: 28px; height: 28px; background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: border-color 0.1s; }
+  .cursor-option { width: 28px; height: 28px; background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: border-color 0.1s; cursor: pointer; }
   .cursor-option:hover { border-color: var(--pink); }
   .cursor-option.selected { border-color: var(--gold); background: #3D2060; }
   .color-swatches { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
-  .swatch { width: 16px; height: 16px; border: 2px solid #000; }
+  .swatch { width: 16px; height: 16px; border: 2px solid #000; cursor: pointer; }
   .swatch:hover { outline: 1px solid white; }
   .swatch.selected { outline: 2px solid white; }
   .name-input-wrap { margin-top: 6px; }
-  .pixel-input { width: 100%; background: var(--input-bg); border: 2px solid var(--purple); color: var(--cyan); font-family: 'VT323', monospace; font-size: 16px; padding: 3px 6px; outline: none; cursor: none; }
+  .pixel-input { width: 100%; background: var(--input-bg); border: 2px solid var(--purple); color: var(--cyan); font-family: 'VT323', monospace; font-size: 16px; padding: 3px 6px; outline: none; }
   .pixel-input:focus { border-color: var(--pink); }
+
+  /* Cursor size control */
+  .size-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+  .size-label { font-size: 12px; color: var(--light-purple); flex-shrink: 0; }
+  .size-input { width: 36px; background: var(--input-bg); border: 2px solid var(--purple); color: var(--cyan); font-family: 'VT323', monospace; font-size: 16px; padding: 1px 4px; outline: none; text-align: center; }
+  .size-btn { width: 20px; height: 20px; background: var(--input-bg); border: 1px solid var(--purple); color: var(--light-purple); font-family: 'VT323', monospace; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; padding: 0; }
+  .size-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+  /* Emotes panel */
+  .emote-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
+  .emote-option { background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; padding: 3px; transition: border-color 0.1s; }
+  .emote-option:hover { border-color: var(--pink); }
+  .emote-option.selected { border-color: var(--gold); background: #3D2060; }
+
+  /* Trail panel */
+  .trail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 4px; }
+  .trail-option { background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Press Start 2P', monospace; cursor: pointer; padding: 4px 2px; text-align: center; color: var(--light-purple); transition: border-color 0.1s; line-height: 1.4; }
+  .trail-option:hover { border-color: var(--pink); }
+  .trail-option.selected { border-color: var(--gold); background: #3D2060; color: var(--gold); }
+
   .chat-area { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
   .chat-viewport { cursor: none; flex: 1; border: 2px solid var(--hot-pink); background: rgba(13,5,32,0.95); position: relative; overflow: hidden; box-shadow: 0 0 12px rgba(255,105,180,0.3), inset 0 0 20px rgba(155,89,182,0.1); }
   .messages { position: absolute; inset: 0; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
@@ -79,16 +100,19 @@
   @keyframes msgIn { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: translateX(0); } }
   .msg .sender { font-size: 13px; font-family: 'Press Start 2P', monospace; margin-right: 6px; }
   .msg.system { color: var(--gold); font-size: 13px; text-align: center; opacity: 0.7; }
-  .remote-cursor { position: absolute; pointer-events: none; z-index: 50; transition: left 0.05s linear, top 0.05s linear; }
+
+  .remote-cursor { position: absolute; pointer-events: none; z-index: 50; }
   .remote-cursor .cursor-label { position: absolute; top: 22px; left: 4px; font-size: 11px; font-family: 'Press Start 2P', monospace; white-space: nowrap; padding: 1px 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.7); pointer-events: none; }
   .cursor-layer { position: absolute; inset: 0; pointer-events: none; z-index: 100; }
   .my-cursor { position: absolute; pointer-events: none; transform: translate(-2px, -2px); }
+
   .input-bar { display: flex; gap: 6px; flex-shrink: 0; }
   .msg-input { flex: 1; background: var(--input-bg); border: 2px solid var(--purple); color: #E0D0F0; font-family: 'VT323', monospace; font-size: 18px; padding: 4px 8px; outline: none; }
   .msg-input:focus { border-color: var(--hot-pink); box-shadow: 0 0 6px rgba(255,20,147,0.4); }
-  .send-btn { background: linear-gradient(135deg, var(--purple), var(--hot-pink)); border: 2px solid var(--gold); color: white; font-family: 'Press Start 2P', monospace; font-size: 8px; padding: 4px 10px; text-shadow: 1px 1px 0 #000; transition: filter 0.1s; }
+  .send-btn { background: linear-gradient(135deg, var(--purple), var(--hot-pink)); border: 2px solid var(--gold); color: white; font-family: 'Press Start 2P', monospace; font-size: 8px; padding: 4px 10px; cursor: pointer; text-shadow: 1px 1px 0 #000; transition: filter 0.1s; }
   .send-btn:hover { filter: brightness(1.2); }
   .send-btn:active { filter: brightness(0.8); }
+
   .marquee-wrap { overflow: hidden; background: #0D0520; border: 1px solid var(--purple); flex-shrink: 0; }
   .marquee-inner { display: inline-block; white-space: nowrap; animation: marquee 18s linear infinite; font-size: 13px; color: var(--pink); padding: 2px 0; }
   @keyframes marquee { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
@@ -98,6 +122,25 @@
   .status-badge.offline { border-color: #888; color: #888; }
   .status-dot { width: 6px; height: 6px; background: currentColor; }
   .pixel-deco { position: absolute; width: 4px; height: 4px; pointer-events: none; z-index: 0; }
+
+  /* Trail particles */
+  .trail-particle { position: absolute; pointer-events: none; z-index: 99; font-size: 14px; animation: trailFade 0.8s ease-out forwards; }
+  @keyframes trailFade { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-120%) scale(0.3); } }
+  .trail-particle.sparkle { animation: trailSparkle 0.6s ease-out forwards; }
+  @keyframes trailSparkle { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); } 100% { opacity: 0; transform: translate(-50%,-80%) scale(0.2) rotate(180deg); } }
+  .trail-particle.bubble { animation: trailBubble 1s ease-out forwards; }
+  @keyframes trailBubble { 0% { opacity: 0.9; transform: translate(-50%,-50%) scale(1); } 50% { opacity: 0.6; } 100% { opacity: 0; transform: translate(-50%,-200%) scale(1.5); } }
+  .trail-particle.pixel { animation: trailPixel 0.5s steps(3) forwards; }
+  @keyframes trailPixel { 0% { opacity: 1; transform: translate(-50%,-50%); } 100% { opacity: 0; transform: translate(-50%, 20px); } }
+
+  /* Cursor emote pop */
+  .cursor-emote { position: absolute; pointer-events: none; z-index: 200; font-size: 24px; animation: emotePop 1.2s ease-out forwards; transform-origin: center bottom; }
+  @keyframes emotePop {
+    0%   { opacity: 1; transform: translate(-50%, -120%) scale(0.5); }
+    20%  { transform: translate(-50%, -150%) scale(1.2); }
+    60%  { transform: translate(-50%, -180%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -220%) scale(0.8); opacity: 0; }
+  }
 </style>
 </head>
 <body>
@@ -107,25 +150,22 @@
     <h1>✦ CozyCursor Chat ✦</h1>
     <p class="connect-subtitle">y2k cursor chatroom</p>
     <div class="firebase-status" id="fbStatus">loading multiplayer...</div>
-
     <div class="tab-row">
       <button class="tab-btn active" id="tabJoin" onclick="switchTab('join')">⇒ JOIN</button>
       <button class="tab-btn" id="tabHost" onclick="switchTab('host')">★ HOST</button>
     </div>
-
     <div class="tab-panel active" id="panelJoin">
       <input id="joinName" class="connect-input" placeholder="Nickname" maxlength="12">
-      <input id="joinRoom" class="connect-input" placeholder="Room Code" maxlength="10" style="text-transform:uppercase; letter-spacing:3px;">
+      <input id="joinRoom" class="connect-input" placeholder="Room Code" maxlength="10" style="text-transform:uppercase;letter-spacing:3px;">
       <button class="connect-btn" id="joinBtn" onclick="joinChat('join')">JOIN ROOM ⇒</button>
     </div>
-
     <div class="tab-panel" id="panelHost">
       <input id="hostName" class="connect-input" placeholder="Nickname" maxlength="12">
       <div class="room-code-display">
         <div class="room-code-label">your room code:</div>
         <div class="room-code-value" id="generatedCode">------</div>
         <div class="room-code-hint">share this with friends!</div>
-        <button class="reroll-btn" onclick="rerollCode()" title="Generate new code">↺</button>
+        <button class="reroll-btn" onclick="rerollCode()">↺</button>
       </div>
       <button class="connect-btn" id="hostBtn" onclick="joinChat('host')">CREATE ROOM ★</button>
     </div>
@@ -147,21 +187,45 @@
   </div>
   <div class="main">
     <div class="sidebar">
+
+      <!-- Online panel -->
       <div class="panel" data-title="online" style="padding-top:14px;">
         <div class="users-list" id="usersList"></div>
       </div>
+
+      <!-- Cursor panel -->
       <div class="panel" data-title="ur cursor" style="padding-top:14px;">
         <div class="cursor-grid" id="cursorGrid"></div>
-        <div style="margin-top:6px; font-size:12px; color: var(--light-purple);">color:</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--light-purple);">color:</div>
         <div class="color-swatches" id="colorSwatches"></div>
+        <div class="size-row">
+          <span class="size-label">size:</span>
+          <button class="size-btn" id="sizeDown">▼</button>
+          <input class="size-input" id="sizeInput" type="number" min="12" max="64" value="22">
+          <button class="size-btn" id="sizeUp">▲</button>
+        </div>
         <div class="name-input-wrap">
-          <div style="font-size:12px; color:var(--light-purple); margin-bottom:3px;">ur name:</div>
+          <div style="font-size:12px;color:var(--light-purple);margin-bottom:3px;">ur name:</div>
           <input class="pixel-input" id="nameInput" maxlength="12" placeholder="nickname">
         </div>
       </div>
-      <div class="panel" data-title="emotes" style="padding-top:14px; font-size:18px;">
-        <div style="display:flex; flex-wrap:wrap; gap:4px;" id="emoteBar"></div>
+
+      <!-- Emojis panel -->
+      <div class="panel" data-title="emojis" style="padding-top:14px;">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;" id="emojiBar"></div>
       </div>
+
+      <!-- Emotes panel (animated cursor emotes) -->
+      <div class="panel" data-title="emotes" style="padding-top:14px;">
+        <div style="font-size:10px;color:var(--light-purple);margin-bottom:6px;font-family:'Press Start 2P',monospace;line-height:1.5;">click to pop!</div>
+        <div class="emote-grid" id="emoteGrid"></div>
+      </div>
+
+      <!-- Trail panel -->
+      <div class="panel" data-title="cursor trail" style="padding-top:14px;">
+        <div class="trail-grid" id="trailGrid"></div>
+      </div>
+
     </div>
     <div class="chat-area">
       <div class="chat-viewport" id="chatViewport">
@@ -182,17 +246,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
 <script>
 const CURSOR_SHAPES = [
-  { id: 'arrow',  label: '▲',  svg: (c) => `<svg width="20" height="20" viewBox="0 0 20 20"><polygon points="2,2 2,16 7,12 10,18 12,17 9,11 15,11" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>` },
-  { id: 'star',   label: '★',  svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><polygon points="11,2 13.5,8.5 21,8.5 15,13 17.5,20 11,16 4.5,20 7,13 1,8.5 8.5,8.5" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>` },
-  { id: 'heart',  label: '♥',  svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><path d="M11,18 C11,18 3,12 3,7 C3,4.5 5,3 7.5,3 C9,3 10.5,4 11,5.5 C11.5,4 13,3 14.5,3 C17,3 19,4.5 19,7 C19,12 11,18 11,18Z" fill="${c}" stroke="#000" stroke-width="1.5"/></svg>` },
-  { id: 'wand',   label: '🪄', svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><line x1="3" y1="19" x2="14" y2="8" stroke="${c}" stroke-width="3" stroke-linecap="round"/><polygon points="14,3 15.5,7.5 20,8 15.5,9.5 17,14 14,10 11,14 12.5,9.5 8,8 12.5,7.5" fill="${c}" stroke="#000" stroke-width="1"/></svg>` },
-  { id: 'flower', label: '✿',  svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="3" fill="#FFD700"/><circle cx="11" cy="5" r="3" fill="${c}"/><circle cx="11" cy="17" r="3" fill="${c}"/><circle cx="5" cy="11" r="3" fill="${c}"/><circle cx="17" cy="11" r="3" fill="${c}"/><circle cx="7" cy="7" r="2.5" fill="${c}"/><circle cx="15" cy="7" r="2.5" fill="${c}"/><circle cx="7" cy="15" r="2.5" fill="${c}"/><circle cx="15" cy="15" r="2.5" fill="${c}"/></svg>` },
-  { id: 'gem',    label: '💎', svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><polygon points="7,4 15,4 20,10 11,20 2,10" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/><polygon points="7,4 2,10 11,10 11,4" fill="${c}" opacity="0.6"/></svg>` },
-  { id: 'moon',   label: '🌙', svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><path d="M15,4 A8,8 0 1,0 15,18 A5,5 0 1,1 15,4Z" fill="${c}" stroke="#000" stroke-width="1.5"/></svg>` },
-  { id: 'cat',    label: '🐱', svg: (c) => `<svg width="22" height="22" viewBox="0 0 22 22"><ellipse cx="11" cy="13" rx="7" ry="6" fill="${c}" stroke="#000" stroke-width="1.5"/><polygon points="4,8 6,2 9,8" fill="${c}" stroke="#000" stroke-width="1"/><polygon points="13,8 16,2 18,8" fill="${c}" stroke="#000" stroke-width="1"/><circle cx="8" cy="13" r="1.5" fill="#000"/><circle cx="14" cy="13" r="1.5" fill="#000"/></svg>` },
+  { id: 'arrow',  label: '▲',  svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20"><polygon points="2,2 2,16 7,12 10,18 12,17 9,11 15,11" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>` },
+  { id: 'star',   label: '★',  svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><polygon points="11,2 13.5,8.5 21,8.5 15,13 17.5,20 11,16 4.5,20 7,13 1,8.5 8.5,8.5" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>` },
+  { id: 'heart',  label: '♥',  svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><path d="M11,18 C11,18 3,12 3,7 C3,4.5 5,3 7.5,3 C9,3 10.5,4 11,5.5 C11.5,4 13,3 14.5,3 C17,3 19,4.5 19,7 C19,12 11,18 11,18Z" fill="${c}" stroke="#000" stroke-width="1.5"/></svg>` },
+  { id: 'wand',   label: '🪄', svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><line x1="3" y1="19" x2="14" y2="8" stroke="${c}" stroke-width="3" stroke-linecap="round"/><polygon points="14,3 15.5,7.5 20,8 15.5,9.5 17,14 14,10 11,14 12.5,9.5 8,8 12.5,7.5" fill="${c}" stroke="#000" stroke-width="1"/></svg>` },
+  { id: 'flower', label: '✿',  svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><circle cx="11" cy="11" r="3" fill="#FFD700"/><circle cx="11" cy="5" r="3" fill="${c}"/><circle cx="11" cy="17" r="3" fill="${c}"/><circle cx="5" cy="11" r="3" fill="${c}"/><circle cx="17" cy="11" r="3" fill="${c}"/><circle cx="7" cy="7" r="2.5" fill="${c}"/><circle cx="15" cy="7" r="2.5" fill="${c}"/><circle cx="7" cy="15" r="2.5" fill="${c}"/><circle cx="15" cy="15" r="2.5" fill="${c}"/></svg>` },
+  { id: 'gem',    label: '💎', svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><polygon points="7,4 15,4 20,10 11,20 2,10" fill="${c}" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/><polygon points="7,4 2,10 11,10 11,4" fill="${c}" opacity="0.6"/></svg>` },
+  { id: 'moon',   label: '🌙', svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><path d="M15,4 A8,8 0 1,0 15,18 A5,5 0 1,1 15,4Z" fill="${c}" stroke="#000" stroke-width="1.5"/></svg>` },
+  { id: 'cat',    label: '🐱', svg: (c,s) => `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><ellipse cx="11" cy="13" rx="7" ry="6" fill="${c}" stroke="#000" stroke-width="1.5"/><polygon points="4,8 6,2 9,8" fill="${c}" stroke="#000" stroke-width="1"/><polygon points="13,8 16,2 18,8" fill="${c}" stroke="#000" stroke-width="1"/><circle cx="8" cy="13" r="1.5" fill="#000"/><circle cx="14" cy="13" r="1.5" fill="#000"/></svg>` },
 ];
 const CURSOR_COLORS = ['#FF69B4','#FF1493','#9B59B6','#00FFFF','#ADFF2F','#FFD700','#FF6347','#00BFFF','#7FFFD4','#FF8C00','#E066FF','#FFFFFF'];
-const EMOTES = ['✨','💖','🌟','💫','🦄','🍭','🌈','💎','🔮','🎀','👾','💝','🌸','⭐','🎆','🦋'];
+const EMOJIS = ['✨','💖','🌟','💫','🦄','🍭','🌈','💎','🔮','🎀','👾','💝','🌸','⭐','🎆','🦋'];
+
+// Animated emotes that pop above cursor
+const EMOTES = [
+  { id: 'heart',   label: '💖', frames: ['💖','❤️','💗'] },
+  { id: 'star',    label: '⭐', frames: ['⭐','✨','🌟'] },
+  { id: 'laugh',   label: '😂', frames: ['😂','🤣','😆'] },
+  { id: 'wave',    label: '👋', frames: ['👋'] },
+  { id: 'fire',    label: '🔥', frames: ['🔥','💥'] },
+  { id: 'flower',  label: '🌸', frames: ['🌸','🌺','🌼'] },
+  { id: 'rainbow', label: '🌈', frames: ['🌈','✨'] },
+  { id: 'ghost',   label: '👻', frames: ['👻','💀','👾'] },
+  { id: 'kiss',    label: '💋', frames: ['💋','😘'] },
+  { id: 'uwu',     label: '🥺', frames: ['🥺','😳','OwO'] },
+  { id: 'gg',      label: '🎮', frames: ['🎮','GG!'] },
+  { id: 'vibe',    label: '🎵', frames: ['🎵','🎶','🎸'] },
+];
+
+// Trail definitions
+const TRAIL_TYPES = [
+  { id: 'none',     label: '✕\nnone',      particles: [] },
+  { id: 'sparkle',  label: '✨\nsparkle',   particles: ['✨','⭐','💫'], cls: 'sparkle' },
+  { id: 'hearts',   label: '💖\nhearts',    particles: ['💖','💗','💕'], cls: 'default' },
+  { id: 'stars',    label: '★\nstars',      particles: ['★','✦','✧'], cls: 'sparkle' },
+  { id: 'bubbles',  label: '🫧\nbubbles',   particles: ['○','◌','⊙'], cls: 'bubble' },
+  { id: 'pixels',   label: '▪\npixels',     particles: ['▪','▫','◾'], cls: 'pixel' },
+  { id: 'flowers',  label: '🌸\nflowers',   particles: ['🌸','🌺','🌼'], cls: 'default' },
+  { id: 'rainbow',  label: '🌈\nrainbow',   particles: ['🔴','🟠','🟡','🟢','🔵','🟣'], cls: 'bubble' },
+];
+
 const chatColors = ['#FF69B4','#00FFFF','#ADFF2F','#FFD700','#FF8C00','#E066FF','#7FFFD4','#FF6347','#DDA0DD','#00BFFF'];
 
 function generateRoomCode() {
@@ -203,30 +296,28 @@ function generateRoomCode() {
 }
 function rerollCode() { document.getElementById('generatedCode').textContent = generateRoomCode(); }
 function switchTab(tab) {
-  document.getElementById('tabJoin').classList.toggle('active', tab === 'join');
-  document.getElementById('tabHost').classList.toggle('active', tab === 'host');
-  document.getElementById('panelJoin').classList.toggle('active', tab === 'join');
-  document.getElementById('panelHost').classList.toggle('active', tab === 'host');
+  document.getElementById('tabJoin').classList.toggle('active', tab==='join');
+  document.getElementById('tabHost').classList.toggle('active', tab==='host');
+  document.getElementById('panelJoin').classList.toggle('active', tab==='join');
+  document.getElementById('panelHost').classList.toggle('active', tab==='host');
 }
-
 rerollCode();
 
-let myId = (typeof uuid !== 'undefined' && uuid.v4) ? uuid.v4() : Math.random().toString(36).slice(2);
+let myId = (typeof uuid!=='undefined'&&uuid.v4)?uuid.v4():Math.random().toString(36).slice(2);
 let myName = 'starr';
 let myCursorShape = 'star';
 let myCursorColor = '#FF69B4';
-let myColor = chatColors[Math.floor(Math.random() * chatColors.length)];
+let myCursorSize = 22;
+let myTrail = 'sparkle';
+let myColor = chatColors[Math.floor(Math.random()*chatColors.length)];
 let localX = 0, localY = 0;
-let firebaseDB = null;
-let cursorsRef = null;
-let messagesRef = null;
+let firebaseDB = null, cursorsRef = null, messagesRef = null;
 let remoteUsers = {};
-let roomCode = "LOBBY";
+let roomCode = 'LOBBY';
 let isConnected = false;
 
-// Firebase ready promise — resolved once scripts load, rejected if they fail
 let firebaseReadyResolve, firebaseReadyReject;
-const firebaseReady = new Promise((res, rej) => { firebaseReadyResolve = res; firebaseReadyReject = rej; });
+const firebaseReady = new Promise((res,rej) => { firebaseReadyResolve=res; firebaseReadyReject=rej; });
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBtt9gh-sH7yN2j4sTqYmrFs3vUCtGVt2A",
@@ -238,59 +329,138 @@ const FIREBASE_CONFIG = {
   appId: "1:491650760783:web:e9d6dc845d7cd9288aaa3a"
 };
 
-function getCursorSVG(shapeId, color) {
-  const shape = CURSOR_SHAPES.find(s => s.id === shapeId) || CURSOR_SHAPES[0];
-  return shape.svg(color);
+function getCursorSVG(shapeId, color, size) {
+  const shape = CURSOR_SHAPES.find(s=>s.id===shapeId)||CURSOR_SHAPES[0];
+  return shape.svg(color, size||22);
 }
 
 function buildCursorGrid() {
   const grid = document.getElementById('cursorGrid');
-  grid.innerHTML = CURSOR_SHAPES.map(s => `<div class="cursor-option${s.id===myCursorShape?' selected':''}" data-id="${s.id}" title="${s.id}">${s.label}</div>`).join('');
-  grid.querySelectorAll('.cursor-option').forEach(el => {
-    el.addEventListener('click', () => {
-      myCursorShape = el.dataset.id;
-      grid.querySelectorAll('.cursor-option').forEach(x => x.classList.remove('selected'));
+  grid.innerHTML = CURSOR_SHAPES.map(s=>`<div class="cursor-option${s.id===myCursorShape?' selected':''}" data-id="${s.id}">${s.label}</div>`).join('');
+  grid.querySelectorAll('.cursor-option').forEach(el=>{
+    el.addEventListener('click',()=>{
+      myCursorShape=el.dataset.id;
+      grid.querySelectorAll('.cursor-option').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
-      updateMyCursor();
-      broadcastPresence();
+      updateMyCursor(); broadcastPresence();
     });
   });
 }
 
 function buildColorSwatches() {
   const bar = document.getElementById('colorSwatches');
-  bar.innerHTML = CURSOR_COLORS.map(c => `<div class="swatch${c===myCursorColor?' selected':''}" data-color="${c}" style="background:${c};"></div>`).join('');
-  bar.querySelectorAll('.swatch').forEach(el => {
-    el.addEventListener('click', () => {
-      myCursorColor = el.dataset.color;
-      bar.querySelectorAll('.swatch').forEach(x => x.classList.remove('selected'));
+  bar.innerHTML = CURSOR_COLORS.map(c=>`<div class="swatch${c===myCursorColor?' selected':''}" data-color="${c}" style="background:${c};"></div>`).join('');
+  bar.querySelectorAll('.swatch').forEach(el=>{
+    el.addEventListener('click',()=>{
+      myCursorColor=el.dataset.color;
+      bar.querySelectorAll('.swatch').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
-      updateMyCursor();
+      updateMyCursor(); broadcastPresence();
+    });
+  });
+}
+
+function buildSizeControls() {
+  const input = document.getElementById('sizeInput');
+  document.getElementById('sizeUp').addEventListener('click',()=>{
+    myCursorSize = Math.min(64, myCursorSize+4);
+    input.value = myCursorSize;
+    updateMyCursor(); broadcastPresence();
+  });
+  document.getElementById('sizeDown').addEventListener('click',()=>{
+    myCursorSize = Math.max(12, myCursorSize-4);
+    input.value = myCursorSize;
+    updateMyCursor(); broadcastPresence();
+  });
+  input.addEventListener('change',()=>{
+    myCursorSize = Math.max(12, Math.min(64, parseInt(input.value)||22));
+    input.value = myCursorSize;
+    updateMyCursor(); broadcastPresence();
+  });
+}
+
+function buildEmojiBar() {
+  const bar = document.getElementById('emojiBar');
+  bar.innerHTML = EMOJIS.map(e=>`<span style="font-size:18px;cursor:pointer;" class="emote-btn" data-e="${e}">${e}</span>`).join('');
+  bar.querySelectorAll('.emote-btn').forEach(el=>{
+    el.addEventListener('click',()=>{ const inp=document.getElementById('msgInput'); inp.value+=el.dataset.e; inp.focus(); });
+  });
+}
+
+function buildEmoteGrid() {
+  const grid = document.getElementById('emoteGrid');
+  grid.innerHTML = EMOTES.map(e=>`<div class="emote-option" data-id="${e.id}" title="pop ${e.id}!">${e.label}</div>`).join('');
+  grid.querySelectorAll('.emote-option').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const emote = EMOTES.find(e=>e.id===el.dataset.id);
+      if (emote) popEmote(localX, localY, emote);
+      // briefly highlight
+      el.classList.add('selected');
+      setTimeout(()=>el.classList.remove('selected'),400);
+    });
+  });
+}
+
+function buildTrailGrid() {
+  const grid = document.getElementById('trailGrid');
+  grid.innerHTML = TRAIL_TYPES.map(t=>`<div class="trail-option${t.id===myTrail?' selected':''}" data-id="${t.id}">${t.label}</div>`).join('');
+  grid.querySelectorAll('.trail-option').forEach(el=>{
+    el.addEventListener('click',()=>{
+      myTrail=el.dataset.id;
+      grid.querySelectorAll('.trail-option').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
       broadcastPresence();
     });
   });
 }
 
-function buildEmoteBar() {
-  const bar = document.getElementById('emoteBar');
-  bar.innerHTML = EMOTES.map(e => `<span style="font-size:18px;" class="emote-btn" data-e="${e}">${e}</span>`).join('');
-  bar.querySelectorAll('.emote-btn').forEach(el => {
-    el.addEventListener('click', () => {
-      const inp = document.getElementById('msgInput');
-      inp.value += el.dataset.e;
-      inp.focus();
-    });
-  });
-}
-
 function updateMyCursor() {
-  const el = document.getElementById('myCursor');
-  el.innerHTML = getCursorSVG(myCursorShape, myCursorColor);
+  document.getElementById('myCursor').innerHTML = getCursorSVG(myCursorShape, myCursorColor, myCursorSize);
 }
 
+// --- Trail system ---
+let trailThrottle = 0;
+function spawnTrail(x, y) {
+  const trailDef = TRAIL_TYPES.find(t=>t.id===myTrail);
+  if (!trailDef || !trailDef.particles.length) return;
+  const now = Date.now();
+  if (now - trailThrottle < 80) return;
+  trailThrottle = now;
+  const vp = document.getElementById('chatViewport');
+  const p = document.createElement('div');
+  p.className = 'trail-particle ' + (trailDef.cls||'default');
+  p.textContent = trailDef.particles[Math.floor(Math.random()*trailDef.particles.length)];
+  p.style.left = (x + (Math.random()-0.5)*14) + 'px';
+  p.style.top  = (y + (Math.random()-0.5)*14) + 'px';
+  p.style.fontSize = (10 + Math.random()*8) + 'px';
+  vp.appendChild(p);
+  setTimeout(()=>p.remove(), 900);
+}
+
+// --- Emote pop ---
+function popEmote(x, y, emote) {
+  const vp = document.getElementById('chatViewport');
+  let frameIdx = 0;
+  const el = document.createElement('div');
+  el.className = 'cursor-emote';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.textContent = emote.frames[0];
+  vp.appendChild(el);
+  // cycle frames
+  if (emote.frames.length > 1) {
+    const iv = setInterval(()=>{
+      frameIdx = (frameIdx+1) % emote.frames.length;
+      el.textContent = emote.frames[frameIdx];
+    }, 200);
+    setTimeout(()=>clearInterval(iv), 1200);
+  }
+  setTimeout(()=>el.remove(), 1300);
+}
+
+// Messages
 let localMessages = [];
 let seenMsgIds = new Set();
-
 function addMessage(msg) {
   if (msg.id && seenMsgIds.has(msg.id)) return;
   if (msg.id) seenMsgIds.add(msg.id);
@@ -298,72 +468,64 @@ function addMessage(msg) {
   if (localMessages.length > 80) localMessages = localMessages.slice(-80);
   renderMessages();
 }
-
 function renderMessages() {
-  const container = document.getElementById('messages');
-  container.innerHTML = localMessages.map(m => {
-    if (m.type === 'system') return `<div class="msg system">— ${escHtml(m.text)} —</div>`;
+  const c = document.getElementById('messages');
+  c.innerHTML = localMessages.map(m=>{
+    if (m.type==='system') return `<div class="msg system">— ${escHtml(m.text)} —</div>`;
     return `<div class="msg"><span class="sender" style="color:${m.color||'#FF69B4'}">${escHtml(m.name)}:</span><span>${escHtml(m.text)}</span></div>`;
   }).join('');
-  container.scrollTop = container.scrollHeight;
+  c.scrollTop = c.scrollHeight;
 }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
+// Mouse tracking + trail
 const viewport = document.getElementById('chatViewport');
 const myCursorEl = document.getElementById('myCursor');
-viewport.addEventListener('mousemove', (e) => {
+viewport.addEventListener('mousemove',(e)=>{
   const rect = viewport.getBoundingClientRect();
   localX = e.clientX - rect.left;
   localY = e.clientY - rect.top;
-  myCursorEl.style.left = localX + 'px';
-  myCursorEl.style.top = localY + 'px';
+  myCursorEl.style.left = localX+'px';
+  myCursorEl.style.top = localY+'px';
+  spawnTrail(localX, localY);
   broadcastPresence();
 });
 
+// Send message
 function sendMessage() {
   const inp = document.getElementById('msgInput');
   const text = inp.value.trim();
   if (!text) return;
   inp.value = '';
-  const msgObj = { id: myId + '_' + Date.now(), name: myName, color: myColor, text, ts: Date.now(), type: 'chat' };
+  const msgObj = { id: myId+'_'+Date.now(), name: myName, color: myColor, text, ts: Date.now(), type: 'chat' };
   if (isConnected && messagesRef) {
     try { messagesRef.push().set(msgObj); } catch(e) { addMessage(msgObj); }
   } else { addMessage(msgObj); }
 }
-
 document.getElementById('sendBtn').addEventListener('click', sendMessage);
-document.getElementById('msgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-document.getElementById('nameInput').addEventListener('input', (e) => {
-  myName = e.target.value.trim() || 'anon';
-  document.getElementById('usersList').querySelector('span') && updateUsersList();
-  broadcastPresence();
+document.getElementById('msgInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendMessage(); });
+document.getElementById('nameInput').addEventListener('input',(e)=>{
+  myName = e.target.value.trim()||'anon';
+  updateUsersList(); broadcastPresence();
 });
 
+// Presence
 let lastBroadcast = 0;
 function broadcastPresence() {
-  if (!isConnected || !cursorsRef) return;
+  if (!isConnected||!cursorsRef) return;
   const now = Date.now();
-  if (now - lastBroadcast < 50) return;
+  if (now-lastBroadcast < 50) return;
   lastBroadcast = now;
   try {
-    cursorsRef.child(myId).set({
-      id: myId, name: myName, color: myColor,
-      x: Math.round(localX), y: Math.round(localY),
-      shape: myCursorShape, cursorColor: myCursorColor, ts: Date.now()
-    });
+    cursorsRef.child(myId).set({ id:myId, name:myName, color:myColor, x:Math.round(localX), y:Math.round(localY), shape:myCursorShape, cursorColor:myCursorColor, cursorSize:myCursorSize, trail:myTrail, ts:Date.now() });
   } catch(e) {}
 }
-
-setInterval(() => { broadcastPresence(); }, 2000);
+setInterval(broadcastPresence, 2000);
 
 function updateUsersList() {
   const list = document.getElementById('usersList');
-  const others = Object.values(remoteUsers);
   let html = `<div class="user-entry"><div class="user-dot"></div><span style="color:${myColor}">${escHtml(myName)}</span></div>`;
-  others.forEach(u => {
+  Object.values(remoteUsers).forEach(u=>{
     html += `<div class="user-entry"><div class="user-dot" style="background:${u.color||'#ADFF2F'}"></div><span style="color:${u.color||'#E0D0F0'}">${escHtml(u.name||'anon')}</span></div>`;
   });
   list.innerHTML = html;
@@ -372,188 +534,141 @@ function updateUsersList() {
 function updateRemoteCursors() {
   const container = document.getElementById('remoteCursors');
   const existing = {};
-  container.querySelectorAll('.remote-cursor').forEach(el => { existing[el.dataset.uid] = el; });
+  container.querySelectorAll('.remote-cursor').forEach(el=>{ existing[el.dataset.uid]=el; });
   const now = Date.now();
-  Object.values(remoteUsers).forEach(u => {
-    if (now - (u.ts || 0) > 15000) return;
+  Object.values(remoteUsers).forEach(u=>{
+    if (now-(u.ts||0)>15000) return;
     let el = existing[u.id];
-    if (!el) { el = document.createElement('div'); el.className = 'remote-cursor'; el.dataset.uid = u.id; container.appendChild(el); }
-    el.style.left = u.x + 'px';
-    el.style.top = u.y + 'px';
-    el.innerHTML = getCursorSVG(u.shape || 'arrow', u.cursorColor || u.color || '#FF69B4') + `<div class="cursor-label" style="color:${u.color||'#FF69B4'}">${escHtml(u.name||'?')}</div>`;
+    if (!el) { el=document.createElement('div'); el.className='remote-cursor'; el.dataset.uid=u.id; container.appendChild(el); }
+    el.style.left = u.x+'px';
+    el.style.top = u.y+'px';
+    const sz = u.cursorSize||22;
+    el.innerHTML = getCursorSVG(u.shape||'arrow', u.cursorColor||u.color||'#FF69B4', sz) + `<div class="cursor-label" style="color:${u.color||'#FF69B4'}">${escHtml(u.name||'?')}</div>`;
   });
-  Object.keys(existing).forEach(uid => { if (!remoteUsers[uid]) existing[uid].remove(); });
+  Object.keys(existing).forEach(uid=>{ if(!remoteUsers[uid]) existing[uid].remove(); });
 }
 
 function setStatus(state, text) {
   const badge = document.getElementById('statusBadge');
-  badge.className = 'status-badge ' + state;
+  badge.className = 'status-badge '+state;
   document.getElementById('statusText').textContent = text;
 }
 
 function createPixelDecos() {
   const app = document.getElementById('app');
   const colors = ['#FF69B4','#9B59B6','#00FFFF','#FFD700','#ADFF2F'];
-  for (let i = 0; i < 20; i++) {
-    const d = document.createElement('div');
-    d.className = 'pixel-deco';
-    d.style.cssText = `left:${Math.random()*98}%;top:${Math.random()*98}%;background:${colors[Math.floor(Math.random()*colors.length)]};opacity:${0.3+Math.random()*0.4};animation:twinkle ${1+Math.random()*2}s ${Math.random()*2}s ease-in-out infinite alternate;`;
+  for (let i=0;i<20;i++) {
+    const d=document.createElement('div'); d.className='pixel-deco';
+    d.style.cssText=`left:${Math.random()*98}%;top:${Math.random()*98}%;background:${colors[Math.floor(Math.random()*colors.length)]};opacity:${0.3+Math.random()*0.4};animation:twinkle ${1+Math.random()*2}s ${Math.random()*2}s ease-in-out infinite alternate;`;
     app.appendChild(d);
   }
   if (!document.getElementById('twinkleKF')) {
-    const s = document.createElement('style');
-    s.id = 'twinkleKF';
-    s.textContent = '@keyframes twinkle{from{opacity:0.1;transform:scale(0.5)}to{opacity:0.8;transform:scale(1.5)}}';
+    const s=document.createElement('style'); s.id='twinkleKF';
+    s.textContent='@keyframes twinkle{from{opacity:0.1;transform:scale(0.5)}to{opacity:0.8;transform:scale(1.5)}}';
     document.head.appendChild(s);
   }
 }
 
 function connectFirebase() {
   try {
-    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    if (!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     firebaseDB = firebase.database();
     const room = roomCode.toLowerCase();
     cursorsRef = firebaseDB.ref(`rooms/${room}/cursors`);
     messagesRef = firebaseDB.ref(`rooms/${room}/messages`);
-
-    cursorsRef.on('value', (snap) => {
-      const data = snap.val() || {};
+    cursorsRef.on('value',(snap)=>{
+      const data = snap.val()||{};
       remoteUsers = {};
-      Object.entries(data).forEach(([uid, u]) => { if (uid !== myId) remoteUsers[uid] = u; });
-      updateRemoteCursors();
-      updateUsersList();
+      Object.entries(data).forEach(([uid,u])=>{ if(uid!==myId) remoteUsers[uid]=u; });
+      updateRemoteCursors(); updateUsersList();
     });
-
-    messagesRef.limitToLast(50).on('child_added', (snap) => {
-      const m = snap.val();
-      if (m && m.id) addMessage(m);
-    });
-
+    messagesRef.limitToLast(50).on('child_added',(snap)=>{ const m=snap.val(); if(m&&m.id) addMessage(m); });
     cursorsRef.child(myId).onDisconnect().remove();
     isConnected = true;
-    setStatus('connected', 'connected!');
+    setStatus('connected','connected!');
     broadcastPresence();
   } catch(e) {
-    console.error('Firebase connect error:', e);
-    setStatus('offline', 'demo mode');
+    console.error(e);
+    setStatus('offline','demo mode');
     startDemoMode();
   }
 }
 
 function startDemoMode() {
   isConnected = false;
-  addMessage({ type: 'system', text: 'running in demo mode ✦ (multiplayer unavailable)' });
+  addMessage({ type:'system', text:'running in demo mode ✦' });
   const demoUsers = [
-    { id: 'demo1', name: 'xox_luna', color: '#00FFFF', shape: 'star', cursorColor: '#00FFFF', x: 80, y: 80, ts: Date.now() },
-    { id: 'demo2', name: 'pixie_grl', color: '#ADFF2F', shape: 'heart', cursorColor: '#ADFF2F', x: 200, y: 140, ts: Date.now() },
-    { id: 'demo3', name: 'sk8r_boi', color: '#FFD700', shape: 'gem', cursorColor: '#FFD700', x: 350, y: 60, ts: Date.now() },
+    { id:'demo1', name:'xox_luna',  color:'#00FFFF', shape:'star',   cursorColor:'#00FFFF', cursorSize:22, trail:'sparkle', x:80,  y:80,  ts:Date.now() },
+    { id:'demo2', name:'pixie_grl', color:'#ADFF2F', shape:'heart',  cursorColor:'#ADFF2F', cursorSize:28, trail:'hearts',  x:200, y:140, ts:Date.now() },
+    { id:'demo3', name:'sk8r_boi',  color:'#FFD700', shape:'gem',    cursorColor:'#FFD700', cursorSize:18, trail:'pixels',  x:350, y:60,  ts:Date.now() },
   ];
   const demoMsgs = [
-    { name: 'xox_luna', color: '#00FFFF', text: 'omg hiiii ✨ welcome to cozychat!!' },
-    { name: 'pixie_grl', color: '#ADFF2F', text: 'asl?? jk lol 💖' },
-    { name: 'sk8r_boi', color: '#FFD700', text: 'this chatroom is sooo cute wtf' },
-    { name: 'xox_luna', color: '#00FFFF', text: 'move ur mouse around!! u can see everyone ✿' },
+    { name:'xox_luna',  color:'#00FFFF', text:'omg hiiii ✨ welcome to cozychat!!' },
+    { name:'pixie_grl', color:'#ADFF2F', text:'asl?? jk lol 💖' },
+    { name:'sk8r_boi',  color:'#FFD700', text:'this chatroom is sooo cute wtf' },
+    { name:'xox_luna',  color:'#00FFFF', text:'try the emotes + trails!! ✿' },
   ];
-  demoUsers.forEach(u => { remoteUsers[u.id] = u; });
+  demoUsers.forEach(u=>{ remoteUsers[u.id]=u; });
   updateUsersList(); updateRemoteCursors();
-  let mi = 0;
-  function addNextMsg() { if (mi < demoMsgs.length) { addMessage({ type: 'chat', id: 'demo_'+mi, ...demoMsgs[mi++] }); setTimeout(addNextMsg, 900 + Math.random() * 600); } }
-  setTimeout(addNextMsg, 600);
-  function animateDemoCursors() {
-    const t = Date.now() / 1000;
-    demoUsers[0].x = 60 + Math.sin(t * 0.7) * 80; demoUsers[0].y = 80 + Math.cos(t * 0.5) * 50;
-    demoUsers[1].x = 200 + Math.cos(t * 0.4) * 100; demoUsers[1].y = 130 + Math.sin(t * 0.6) * 60;
-    demoUsers[2].x = 300 + Math.sin(t * 0.3 + 1) * 120; demoUsers[2].y = 80 + Math.cos(t * 0.5 + 2) * 70;
-    demoUsers.forEach(u => { u.ts = Date.now(); remoteUsers[u.id] = u; });
+  let mi=0;
+  function addNext() { if(mi<demoMsgs.length){addMessage({type:'chat',id:'demo_'+mi,...demoMsgs[mi++]});setTimeout(addNext,900+Math.random()*600);} }
+  setTimeout(addNext,600);
+  function animate() {
+    const t=Date.now()/1000;
+    demoUsers[0].x=60+Math.sin(t*0.7)*80; demoUsers[0].y=80+Math.cos(t*0.5)*50;
+    demoUsers[1].x=200+Math.cos(t*0.4)*100; demoUsers[1].y=130+Math.sin(t*0.6)*60;
+    demoUsers[2].x=300+Math.sin(t*0.3+1)*120; demoUsers[2].y=80+Math.cos(t*0.5+2)*70;
+    demoUsers.forEach(u=>{ u.ts=Date.now(); remoteUsers[u.id]=u; });
     updateRemoteCursors();
-    requestAnimationFrame(animateDemoCursors);
+    requestAnimationFrame(animate);
   }
-  animateDemoCursors();
+  animate();
 }
 
-// Load Firebase scripts, then resolve/reject the promise
 function initFirebase() {
   const fbStatus = document.getElementById('fbStatus');
   function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = src; s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
+    return new Promise((resolve,reject)=>{ const s=document.createElement('script'); s.src=src; s.onload=resolve; s.onerror=reject; document.head.appendChild(s); });
   }
   Promise.all([
-    loadScript("https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"),
-    loadScript("https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js")
-  ]).then(() => {
-    if (window.firebase) {
-      fbStatus.textContent = '✦ multiplayer ready!';
-      fbStatus.className = 'firebase-status ok';
-      firebaseReadyResolve(true);
-    } else {
-      throw new Error('firebase not defined');
-    }
-  }).catch((err) => {
-    console.warn('Firebase load failed:', err);
-    fbStatus.textContent = '✦ demo mode only (firebase blocked)';
-    fbStatus.className = 'firebase-status err';
-    firebaseReadyReject(err);
-  });
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js'),
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js')
+  ]).then(()=>{
+    if (window.firebase) { fbStatus.textContent='✦ multiplayer ready!'; fbStatus.className='firebase-status ok'; firebaseReadyResolve(true); }
+    else throw new Error('firebase not defined');
+  }).catch(err=>{ fbStatus.textContent='✦ demo mode only'; fbStatus.className='firebase-status err'; firebaseReadyReject(err); });
 }
 
-// joinChat now waits for Firebase to be ready (or fail) before proceeding
 async function joinChat(mode) {
   let name, code;
-  if (mode === 'host') {
-    name = document.getElementById('hostName').value.trim();
-    code = document.getElementById('generatedCode').textContent.trim();
-  } else {
-    name = document.getElementById('joinName').value.trim();
-    code = document.getElementById('joinRoom').value.trim().toUpperCase();
-  }
-  if (!name || !code || code === '------') {
-    alert('Enter a nickname' + (mode === 'join' ? ' and room code.' : '.'));
-    return;
-  }
-
-  // Disable buttons while connecting
-  document.getElementById('joinBtn').disabled = true;
-  document.getElementById('hostBtn').disabled = true;
-  document.getElementById('fbStatus').textContent = 'connecting...';
-  document.getElementById('fbStatus').className = 'firebase-status';
-
-  myName = name;
-  roomCode = code;
-  document.getElementById('myNameDisplay') && (document.getElementById('myNameDisplay').textContent = name);
-  document.getElementById('nameInput').value = name;
-  document.getElementById('roomPill').textContent = code;
-  document.getElementById('connectScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-
-  if (mode === 'host') {
-    addMessage({ type: 'system', text: `room "${code}" created! share the code with friends ★` });
-  }
-  addMessage({ type: 'system', text: '★ welcome to CozyCursor Chat v2K ★' });
+  if (mode==='host') { name=document.getElementById('hostName').value.trim(); code=document.getElementById('generatedCode').textContent.trim(); }
+  else { name=document.getElementById('joinName').value.trim(); code=document.getElementById('joinRoom').value.trim().toUpperCase(); }
+  if (!name||!code||code==='------') { alert('Enter a nickname'+(mode==='join'?' and room code.':'.')); return; }
+  document.getElementById('joinBtn').disabled=true; document.getElementById('hostBtn').disabled=true;
+  document.getElementById('fbStatus').textContent='connecting...'; document.getElementById('fbStatus').className='firebase-status';
+  myName=name; roomCode=code;
+  document.getElementById('nameInput').value=name;
+  document.getElementById('roomPill').textContent=code;
+  document.getElementById('connectScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  if (mode==='host') addMessage({type:'system',text:`room "${code}" created! share the code ★`});
+  addMessage({type:'system',text:'★ welcome to CozyCursor Chat ★'});
   updateUsersList();
-
-  // Wait for Firebase to load, then connect; fall back to demo if it failed
-  try {
-    await firebaseReady;
-    connectFirebase();
-  } catch(e) {
-    setStatus('offline', 'demo mode');
-    startDemoMode();
-  }
+  try { await firebaseReady; connectFirebase(); }
+  catch(e) { setStatus('offline','demo mode'); startDemoMode(); }
 }
 
 setInterval(updateRemoteCursors, 100);
-
 initFirebase();
 createPixelDecos();
 buildCursorGrid();
 buildColorSwatches();
-buildEmoteBar();
+buildSizeControls();
+buildEmojiBar();
+buildEmoteGrid();
+buildTrailGrid();
 updateMyCursor();
-setStatus('offline', 'waiting...');
+setStatus('offline','waiting...');
 </script>
 </body>
 </html>
