@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROPE PULL — Live Tug of War</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, update, push, get, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ─── FIREBASE CONFIG ───────────────────────────────────────────────
+  // Using a public demo project — replace with your own for production
+  const firebaseConfig = {
+    apiKey: "AIzaSyAl_HDGTrhXAXvhqci8R4a9HMMbBiDGSr0",
+    authDomain: "tugofwar-11058.firebaseapp.com",
+    databaseURL: "https://tugofwar-11058-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tugofwar-11058",
+    storageBucket: "tugofwar-11058.firebasestorage.app",
+    messagingSenderId: "476464125900",
+    appId: "1:476464125900:web:7d8317ff1da8b6d8cc6f69"
+  };
+
+  // ─── GAME STATE ────────────────────────────────────────────────────
+  const ROPE_NODES = 18;
+  const GRAVITY = 0.38;
+  const ITERATIONS = 18;
+  const SEGMENT_LENGTH = 22;
+  const WIN_DIST = 140; // px from center to win
+  const PULL_FORCE = 3.2;
+  const WHEEL_FORCE = 1.8;
+
+  let app, db, roomRef, myRole = null, roomId = null;
+  let gamePhase = 'lobby'; // lobby | waiting | countdown | playing | won
+  let countdownVal = 3;
+  let winner = null;
+
+  let fakeOpponent = false;
+  let FORCE_SINGLE_PLAYER = true;
+
+  let lastMouseX = 0;
+  let lastMouseTime = 0;
+  let mouseVelocityX = 0;
+
+  // Rope physics (run locally, P1 syncs to Firebase)
+  let nodes = [];
+  let prevNodes = [];
+  let ropeOffset = 0; // center offset, +right, -left
+  let ropeLocked = true;
+  let dropProgress = 0; // 0-1 for drop animation
+  let dropStart = null;
+
+  // Player state
+  let myX = -1000, myY = -1000;
+  let theirX = -1000, theirY = -1000;
+  let myPull = 0; // accumulated pull
+  let theirPull = 0;
+  let myPullDecay = 0;
+
+  // Canvas / rendering
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, CX, CY;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    CX = W / 2;
+    CY = H / 2;
+    initRope();
+  }
+
+  function initRope(dropped = false) {
+    nodes = [];
+    prevNodes = [];
+    const totalLen = ROPE_NODES * SEGMENT_LENGTH;
+    const startX = CX - totalLen / 2 + ropeOffset;
+    for (let i = 0; i < ROPE_NODES; i++) {
+      const x = startX + i * SEGMENT_LENGTH;
+      // Start high (off top) or at mid or resting
+      const y = dropped ? CY - 60 : H * 0.18;
+      nodes.push({ x, y, pinned: false });
+      prevNodes.push({ x, y });
+    }
+    // Pin endpoints
+    nodes[0].pinned = true;
+    nodes[ROPE_NODES - 1].pinned = true;
+  }
+
+  function updateRopeEndpoints() {
+    const totalLen = ROPE_NODES * SEGMENT_LENGTH;
+    const leftX = CX - totalLen / 2 + ropeOffset;
+    const rightX = CX + totalLen / 2 + ropeOffset;
+
+    // Endpoints follow cursor smoothly if in range
+    const leftTarget = (myRole === 'p1') ? { x: myX, y: myY } : { x: theirX, y: theirY };
+    const rightTarget = (myRole === 'p2') ? { x: myX, y: myY } : { x: theirX, y: theirY };
+
+    if (gamePhase === 'playing') {
+      // Left endpoint (P1)
+      const lx = leftTarget.x > 0 ? leftTarget.x : leftX;
+      const ly = leftTarget.y > 0 ? leftTarget.y : CY - 60;
+      nodes[0].x += (lx - nodes[0].x) * 0.28;
+      nodes[0].y += (ly - nodes[0].y) * 0.28;
+
+      // Right endpoint (P2)
+      const rx = rightTarget.x > 0 ? rightTarget.x : rightX;
+      const ry = rightTarget.y > 0 ? rightTarget.y : CY - 60;
+      nodes[ROPE_NODES-1].x += (rx - nodes[ROPE_NODES-1].x) * 0.28;
+      nodes[ROPE_NODES-1].y += (ry - nodes[ROPE_NODES-1].y) * 0.28;
+    } else {
+      nodes[0].x = leftX;
+      nodes[0].y = CY - 60;
+      nodes[ROPE_NODES-1].x = rightX;
+      nodes[ROPE_NODES-1].y = CY - 60;
+    }
+  }
+
+  function stepRope() {
+    if (ropeLocked) return;
+
+    for (let i = 0; i < ROPE_NODES; i++) {
+      if (nodes[i].pinned) continue;
+      const vx = (nodes[i].x - prevNodes[i].x) * 0.98;
+      const vy = (nodes[i].y - prevNodes[i].y) * 0.98;
+      prevNodes[i].x = nodes[i].x;
+      prevNodes[i].y = nodes[i].y;
+      nodes[i].x += vx;
+      nodes[i].y += vy + GRAVITY;
+      // Floor
+      if (nodes[i].y > H - 120) {
+        nodes[i].y = H - 120;
+        prevNodes[i].y = nodes[i].y + vy * 0.3;
+      }
+    }
+
+    // Constraints
+    for (let iter = 0; iter < ITERATIONS; iter++) {
+      for (let i = 0; i < ROPE_NODES - 1; i++) {
+        const dx = nodes[i+1].x - nodes[i].x;
+        const dy = nodes[i+1].y - nodes[i].y;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
+        const diff = (dist - SEGMENT_LENGTH) / dist;
+        const corr = diff * 0.5;
+        if (!nodes[i].pinned) {
+          nodes[i].x += dx * corr;
+          nodes[i].y += dy * corr;
+        }
+        if (!nodes[i+1].pinned) {
+          nodes[i+1].x -= dx * corr;
+          nodes[i+1].y -= dy * corr;
+        }
+      }
+    }
+  }
+
+  // ─── PULL MECHANIC ─────────────────────────────────────────────────
+  function applyPull(dir, force) {
+    if (!FORCE_SINGLE_PLAYER && gamePhase !== 'playing') return;
+    ropeOffset += dir * force;
+    myPull += Math.abs(force);
+    // clamp
+    ropeOffset = Math.max(-WIN_DIST - 20, Math.min(WIN_DIST + 20, ropeOffset));
+  }
+
+  function startFakeOpponent() {
+  fakeOpponent = true;
+
+  let t = 0;
+  setInterval(() => {
+    if (!FORCE_SINGLE_PLAYER && gamePhase !== 'playing') return;
+
+    t += 0.03;
+
+    // fake opponent moves side-to-side + up/down wobble
+    const side = myRole === 'p1' ? 1 : -1;
+
+    theirX = CX + side * (W * 0.25 + Math.sin(t) * 80);
+    theirY = CY + Math.cos(t * 1.7) * 60;
+
+    // fake pulling force (THIS is what makes rope move)
+    const fakeForce = Math.sin(t * 2.2) * 2.5;
+
+    ropeOffset += (myRole === 'p1' ? 1 : -1) * fakeForce * 0.6;
+
+  }, 16);
+}
+
+  // ─── FIREBASE ──────────────────────────────────────────────────────
+  async function connectFirebase() {
+  if (FORCE_SINGLE_PLAYER) {
+    runSinglePlayerMode();
+    return;
+  }
+
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    showStatus('Firebase connected. Looking for rooms…');
+    await joinOrCreateRoom();
+  } catch (e) {
+    showStatus('Demo mode (offline)', true);
+    runSinglePlayerMode();
+  }
+}
+
+  async function joinOrCreateRoom() {
+    const roomsRef = ref(db, 'rooms');
+    const snap = await get(roomsRef);
+    let joined = false;
+
+    if (snap.exists()) {
+      const rooms = snap.val();
+      for (const [id, room] of Object.entries(rooms)) {
+        if (room.phase === 'waiting' && room.p1 && !room.p2) {
+          roomId = id;
+          myRole = 'p2';
+          roomRef = ref(db, `rooms/${roomId}`);
+          await update(roomRef, { p2: true, phase: 'countdown' });
+          joined = true;
+          break;
+        }
+      }
+    }
+
+    if (!joined) {
+      const newRoom = push(ref(db, 'rooms'));
+      roomId = newRoom.key;
+      myRole = 'p1';
+      roomRef = ref(db, `rooms/${roomId}`);
+      await set(roomRef, {
+        p1: true, p2: false, phase: 'waiting',
+        ropeOffset: 0,
+        p1x: -1000, p1y: -1000,
+        p2x: -1000, p2y: -1000,
+        winner: null
+      });
+      onDisconnect(roomRef).remove();
+    }
+
+    document.getElementById('roleLabel').textContent = myRole === 'p1' ? '🔴 LEFT SIDE' : '🔵 RIGHT SIDE';
+    document.getElementById('roomLabel').textContent = `Room: ${roomId?.slice(-6)}`;
+
+    listenRoom();
+  }
+
+  function runSinglePlayerMode() {
+  myRole = 'p1';
+  gamePhase = 'playing';
+
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('roomLabel').textContent = 'Single Player Mode';
+  document.getElementById('roleLabel').textContent = '🔴 LEFT SIDE (YOU)';
+
+  // spawn fake opponent immediately
+  startFakeOpponent();
+
+  // reset rope so it is visible and centered
+  ropeOffset = 0;
+  initRope(false);
+
+  ropeLocked = false;
+}
+
+  function listenRoom() {
+    onValue(roomRef, (snap) => {
+      if (!snap.exists()) return;
+      const d = snap.val();
+
+      if (myRole === 'p2') {
+        ropeOffset = d.ropeOffset ?? 0;
+      }
+
+      if (myRole === 'p1') {
+        theirX = d.p2x ?? -1000;
+        theirY = d.p2y ?? -1000;
+        theirPull = d.p2pull ?? 0;
+      } else {
+        theirX = d.p1x ?? -1000;
+        theirY = d.p1y ?? -1000;
+        theirPull = d.p1pull ?? 0;
+      }
+
+      if (d.phase === 'countdown' && gamePhase !== 'countdown' && gamePhase !== 'playing') {
+        startCountdown();
+      }
+      if (d.phase === 'playing' && gamePhase === 'countdown') {
+        beginPlay();
+      }
+      if (d.winner && gamePhase === 'playing') {
+        gamePhase = 'won';
+        winner = d.winner;
+      }
+    });
+  }
+
+  async function syncToFirebase() {
+    if (!roomRef || !myRole) return;
+    const patch = {};
+    if (myRole === 'p1') {
+      patch.p1x = Math.round(myX);
+      patch.p1y = Math.round(myY);
+      patch.p1pull = myPull;
+      patch.ropeOffset = Math.round(ropeOffset * 10) / 10;
+    } else {
+      patch.p2x = Math.round(myX);
+      patch.p2y = Math.round(myY);
+      patch.p2pull = myPull;
+    }
+    update(roomRef, patch).catch(() => {});
+  }
+
+  async function declareWinner(role) {
+    if (!roomRef) return;
+    await update(roomRef, { winner: role, phase: 'won' });
+  }
+
+  // ─── COUNTDOWN / PHASES ────────────────────────────────────────────
+  function startCountdown() {
+    gamePhase = 'countdown';
+    countdownVal = 3;
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('overlayTitle').textContent = '';
+    document.getElementById('overlayMsg').textContent = '';
+    initRope(false); // rope starts high
+    ropeLocked = true;
+
+    let t = 3;
+    const tick = setInterval(() => {
+      document.getElementById('countdown').textContent = t > 0 ? t : 'PULL!';
+      if (t === 0) {
+        clearInterval(tick);
+        if (myRole === 'p1') {
+          update(roomRef, { phase: 'playing' }).catch(() => {});
+        }
+        setTimeout(() => {
+          beginPlay();
+        }, 800);
+      }
+      t--;
+    }, 1000);
+  }
+
+  function beginPlay() {
+    gamePhase = 'playing';
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('countdown').textContent = '';
+    ropeLocked = false;
+    dropStart = performance.now();
+  }
+
+  // ─── OFFLINE DEMO ──────────────────────────────────────────────────
+  function runOfflineDemo() {
+    myRole = 'p1';
+    document.getElementById('roleLabel').textContent = '🔴 LEFT SIDE (demo)';
+    document.getElementById('roomLabel').textContent = 'Offline Demo';
+    document.getElementById('waitingMsg').style.display = 'none';
+
+    // Fake opponent cursor that moves around
+    let t = 0;
+    setInterval(() => {
+      t += 0.02;
+      theirX = CX + W * 0.25 + Math.sin(t * 1.3) * 60;
+      theirY = H * 0.45 + Math.cos(t) * 80;
+    }, 16);
+
+    startCountdown();
+    startFakeOpponent();
+  }
+
+  // ─── DRAW ──────────────────────────────────────────────────────────
+  function drawGround() {
+    // Sky gradient
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#1a0d00');
+    sky.addColorStop(0.6, '#3d1f00');
+    sky.addColorStop(1, '#5c3010');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    // Ground
+    const groundY = H - 100;
+    ctx.fillStyle = '#2a1500';
+    ctx.fillRect(0, groundY, W, 100);
+
+    // Dirt texture stripes
+    ctx.strokeStyle = 'rgba(80,40,10,0.3)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, groundY + i * 9);
+      ctx.lineTo(W, groundY + i * 9);
+      ctx.stroke();
+    }
+
+    // Grass edge
+    ctx.fillStyle = '#1e3a00';
+    ctx.fillRect(0, groundY - 6, W, 8);
+    // Grass tufts
+    ctx.fillStyle = '#2d5500';
+    for (let i = 0; i < W; i += 14) {
+      const h = 4 + Math.sin(i * 0.7) * 3;
+      ctx.fillRect(i, groundY - 8 - h, 3, h);
+    }
+
+    // Center post
+    ctx.fillStyle = '#c8820a';
+    ctx.fillRect(CX - 6, groundY - 220, 12, 220);
+    ctx.fillStyle = '#ffc107';
+    ctx.fillRect(CX - 5, groundY - 220, 10, 8);
+
+    // Center line flag
+    ctx.fillStyle = ropeOffset > 20 ? '#ff4444' : ropeOffset < -20 ? '#4488ff' : '#ffd700';
+    ctx.beginPath();
+    ctx.moveTo(CX + 6, groundY - 215);
+    ctx.lineTo(CX + 36, groundY - 200);
+    ctx.lineTo(CX + 6, groundY - 185);
+    ctx.closePath();
+    ctx.fill();
+
+    // Win zone markers
+    ctx.setLineDash([8, 6]);
+    ctx.strokeStyle = 'rgba(255,68,68,0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(CX - WIN_DIST, 0);
+    ctx.lineTo(CX - WIN_DIST, H);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(68,136,255,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(CX + WIN_DIST, 0);
+    ctx.lineTo(CX + WIN_DIST, H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Win zone labels
+    ctx.fillStyle = 'rgba(255,68,68,0.5)';
+    ctx.font = '700 13px Barlow Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText('P1 WINS', CX - WIN_DIST, H - 75);
+    ctx.fillStyle = 'rgba(68,136,255,0.5)';
+    ctx.fillText('P2 WINS', CX + WIN_DIST, H - 75);
+  }
+
+  function drawRope() {
+    if (nodes.length < 2) return;
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 6;
+
+    // Rope core
+    ctx.beginPath();
+    ctx.moveTo(nodes[0].x, nodes[0].y);
+    for (let i = 1; i < nodes.length; i++) {
+      const mx = (nodes[i-1].x + nodes[i].x) / 2;
+      const my = (nodes[i-1].y + nodes[i].y) / 2;
+      ctx.quadraticCurveTo(nodes[i-1].x, nodes[i-1].y, mx, my);
+    }
+    ctx.lineTo(nodes[nodes.length-1].x, nodes[nodes.length-1].y);
+    ctx.strokeStyle = '#c8920a';
+    ctx.lineWidth = 9;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
+
+    // Rope highlight strands
+    ctx.beginPath();
+    ctx.moveTo(nodes[0].x, nodes[0].y);
+    for (let i = 1; i < nodes.length; i++) {
+      const mx = (nodes[i-1].x + nodes[i].x) / 2;
+      const my = (nodes[i-1].y + nodes[i].y) / 2;
+      ctx.quadraticCurveTo(nodes[i-1].x, nodes[i-1].y, mx, my);
+    }
+    ctx.lineTo(nodes[nodes.length-1].x, nodes[nodes.length-1].y);
+    ctx.strokeStyle = '#f5c842';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Twist marks on rope
+    ctx.strokeStyle = 'rgba(100,60,0,0.6)';
+    ctx.lineWidth = 1.5;
+    for (let i = 2; i < nodes.length - 2; i += 2) {
+      ctx.beginPath();
+      ctx.moveTo(nodes[i].x - 4, nodes[i].y - 3);
+      ctx.lineTo(nodes[i].x + 4, nodes[i].y + 3);
+      ctx.stroke();
+    }
+
+    // Center knot / ribbon
+    const mid = nodes[Math.floor(nodes.length/2)];
+    ctx.beginPath();
+    ctx.arc(mid.x, mid.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff3333';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Tug indicator under center knot
+    if (gamePhase === 'playing') {
+      const pull = ropeOffset / WIN_DIST;
+      ctx.fillStyle = pull > 0 ? `rgba(68,136,255,${Math.min(Math.abs(pull),1)*0.8})` : `rgba(255,68,68,${Math.min(Math.abs(pull),1)*0.8})`;
+      ctx.font = 'bold 11px Barlow Condensed';
+      ctx.textAlign = 'center';
+      const pct = Math.round(Math.abs(pull) * 100);
+      ctx.fillText(`${pct}%`, mid.x, mid.y + 22);
+    }
+  }
+
+  function drawCursor(x, y, color, label, isMe) {
+    if (x < 0 || y < 0) return;
+    ctx.save();
+
+    // Glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = isMe ? 14 : 20;
+
+    // Cursor shape (arrow)
+    ctx.fillStyle = color;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 14, y + 18);
+    ctx.lineTo(x + 8, y + 16);
+    ctx.lineTo(x + 6, y + 24);
+    ctx.lineTo(x + 2, y + 22);
+    ctx.lineTo(x + 4, y + 14);
+    ctx.lineTo(x - 2, y + 13);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Label
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = color;
+    ctx.font = '700 12px Barlow Condensed';
+    ctx.textAlign = 'left';
+    ctx.fillText(label, x + 18, y + 8);
+
+    ctx.restore();
+  }
+
+  function drawHUD() {
+    // Pull meters
+    const barW = 180, barH = 22;
+    const barY = H - 60;
+
+    // P1 bar (left)
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(CX - WIN_DIST, barY, barW, barH);
+    const p1pct = Math.min((myRole === 'p1' ? myPull : theirPull) / 800, 1);
+    ctx.fillStyle = '#ff4444';
+    ctx.fillRect(CX - WIN_DIST, barY, barW * p1pct, barH);
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 11px Barlow Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText('P1 PULL', CX - WIN_DIST + barW / 2, barY + 15);
+
+    // P2 bar (right)
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(CX + WIN_DIST - barW, barY, barW, barH);
+    const p2pct = Math.min((myRole === 'p2' ? myPull : theirPull) / 800, 1);
+    ctx.fillStyle = '#4488ff';
+    ctx.fillRect(CX + WIN_DIST - barW, barY, barW * p2pct, barH);
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText('P2 PULL', CX + WIN_DIST - barW / 2, barY + 15);
+
+    // Rope offset indicator
+    const indW = 300;
+    const indX = CX - indW / 2;
+    const indY = H - 88;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.roundRect?.(indX, indY, indW, 18, 4);
+    ctx.fill();
+    const pos = CX + (ropeOffset / (WIN_DIST + 20)) * (indW / 2);
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.arc(pos, indY + 9, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 10px Barlow Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText('CENTER ROPE', CX, indY - 3);
+
+    // Controls hint
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '500 11px Barlow Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText('SCROLL WHEEL  •  ← →  •  MOVE CURSOR to pull', CX, H - 14);
+  }
+
+  function drawWinScreen() {
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(0, 0, W, H);
+
+    const isWinner = (winner === myRole);
+    ctx.fillStyle = isWinner ? '#ffd700' : '#ff4444';
+    ctx.font = `900 120px Bebas Neue`;
+    ctx.textAlign = 'center';
+    ctx.fillText(isWinner ? 'YOU WIN!' : 'YOU LOSE', CX, H/2 - 20);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 28px Barlow Condensed';
+    ctx.fillText(`${winner?.toUpperCase()} dragged the rope across!`, CX, H/2 + 40);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '500 18px Barlow Condensed';
+    ctx.fillText('Refresh to play again', CX, H/2 + 80);
+  }
+
+  // ─── MAIN LOOP ─────────────────────────────────────────────────────
+  let lastSync = 0;
+  function loop(ts) {
+    ctx.clearRect(0, 0, W, H);
+    drawGround();
+
+    updateRopeEndpoints();
+    stepRope();
+    drawRope();
+
+    // Draw cursors
+    const p1x = myRole === 'p1' ? myX : theirX;
+    const p1y = myRole === 'p1' ? myY : theirY;
+    const p2x = myRole === 'p2' ? myX : theirX;
+    const p2y = myRole === 'p2' ? myY : theirY;
+    drawCursor(p1x, p1y, '#ff4444', myRole === 'p1' ? 'YOU (P1)' : 'P1', myRole === 'p1');
+    drawCursor(p2x, p2y, '#4488ff', myRole === 'p2' ? 'YOU (P2)' : 'P2', myRole === 'p2');
+
+    if (gamePhase === 'playing') drawHUD();
+    if (gamePhase === 'won') drawWinScreen();
+
+    // Win check
+    if (gamePhase === 'playing') {
+      if (ropeOffset >= WIN_DIST) {
+        gamePhase = 'won';
+        winner = 'p2';
+        declareWinner('p2');
+      } else if (ropeOffset <= -WIN_DIST) {
+        gamePhase = 'won';
+        winner = 'p1';
+        declareWinner('p1');
+      }
+    }
+
+    // Sync every 50ms
+    if (ts - lastSync > 50) {
+      syncToFirebase();
+      lastSync = ts;
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  // ─── INPUT ─────────────────────────────────────────────────────────
+  canvas.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+
+    myX = e.clientX;
+    myY = e.clientY;
+
+    // velocity calculation
+    const dt = now - lastMouseTime || 16;
+    mouseVelocityX = (myX - lastMouseX) / dt;
+
+    lastMouseX = myX;
+    lastMouseTime = now;
+
+    // Pull based on cursor horizontal velocity
+    if (gamePhase === 'playing') {
+      const dir = myRole === 'p1' ? -1 : 1;
+
+      const targetX = myRole === 'p1' ? nodes[0].x : nodes[ROPE_NODES - 1].x;
+
+      const distancePull = (myX - targetX);
+
+      // 🔥 NEW: velocity-based "shake power"
+      const shakePower = Math.abs(mouseVelocityX) * 2.5;
+
+      // base pull
+      const basePull = distancePull * 0.01;
+
+      // combine both
+      ropeOffset += dir * (basePull + shakePower * Math.sign(distancePull));
+    }
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (!FORCE_SINGLE_PLAYER && gamePhase !== 'playing') return;
+    const dir = myRole === 'p1' ? -1 : 1;
+    const force = Math.sign(e.deltaY) * WHEEL_FORCE * -dir;
+    applyPull(dir, Math.abs(force) * (e.deltaY < 0 ? 1 : -1) * 0.8 * dir);
+  }, { passive: false });
+
+  window.addEventListener('keydown', (e) => {
+    if (!FORCE_SINGLE_PLAYER && gamePhase !== 'playing') return;
+    const dir = myRole === 'p1' ? -1 : 1;
+    const keys = ['ArrowLeft', 'a', 'A'];
+    const keysR = ['ArrowRight', 'd', 'D'];
+    if (keys.includes(e.key)) applyPull(dir, PULL_FORCE);
+    if (keysR.includes(e.key)) applyPull(dir, -PULL_FORCE * 0.5); // resist but don't pull other way
+    if (e.code === 'Space') {
+    if (gamePhase !== 'playing') return;
+
+    const dir = myRole === 'p1' ? -1 : 1;
+
+    // BIG burst
+    ropeOffset += dir * 18;
+
+    // optional visual feedback boost
+    myPull += 60;
+  }
+  });
+
+  // ─── LOBBY UI ──────────────────────────────────────────────────────
+  function showStatus(msg, isError) {
+    document.getElementById('statusMsg').textContent = msg;
+    document.getElementById('statusMsg').style.color = isError ? '#ff8888' : '#aaffaa';
+  }
+
+  // ─── INIT ──────────────────────────────────────────────────────────
+  window.addEventListener('resize', resize);
+  window.addEventListener('load', () => {
+    resize();
+    requestAnimationFrame(loop);
+    connectFirebase();
+  });
+</script>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a0d00;
+    overflow: hidden;
+    font-family: 'Barlow Condensed', sans-serif;
+    cursor: none;
+  }
+
+  #gameCanvas {
+    display: block;
+    cursor: none;
+  }
+
+  /* ─── OVERLAY ─── */
+  #overlay {
+    position: fixed; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,5,0,0.88);
+    z-index: 100;
+    gap: 12px;
+  }
+
+  #gameLogo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 9vw, 96px);
+    color: #ffd700;
+    letter-spacing: 6px;
+    text-shadow: 0 0 40px rgba(255,200,0,0.4), 4px 4px 0 #7a3a00;
+    line-height: 1;
+  }
+  #gameLogo span { color: #ff4444; }
+
+  #overlayTitle {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: #fff;
+    letter-spacing: 3px;
+    opacity: 0.85;
+  }
+
+  #countdown {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 15vw, 160px);
+    color: #ffd700;
+    text-shadow: 0 0 60px rgba(255,200,0,0.7);
+    line-height: 1;
+    min-height: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #overlayMsg {
+    font-size: 18px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  #statusMsg {
+    font-size: 13px;
+    color: #aaffaa;
+    letter-spacing: 1px;
+    margin-top: 8px;
+    opacity: 0.8;
+  }
+
+  #waitingMsg {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #c88800;
+    letter-spacing: 3px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ─── HUD BADGES ─── */
+  #hudbadges {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .badge {
+    background: rgba(0,0,0,0.65);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.75);
+  }
+
+  #roleLabel { color: #ffd700; font-weight: 700; }
+
+  /* ─── FIREBASE NOTICE ─── */
+  #firebaseNotice {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,180,0,0.12);
+    border-top: 1px solid rgba(255,180,0,0.3);
+    padding: 10px 20px;
+    font-size: 12px;
+    color: rgba(255,200,100,0.75);
+    text-align: center;
+    z-index: 200;
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+  }
+  #firebaseNotice strong { color: #ffd700; }
+  #firebaseNotice a { color: #ffcc44; }
+  #dismissNotice {
+    background: none; border: 1px solid rgba(255,200,0,0.4);
+    color: #ffd700; padding: 2px 10px; border-radius: 4px;
+    cursor: pointer; font-family: inherit; font-size: 12px;
+    margin-left: 12px;
+  }
+  #dismissNotice:hover { background: rgba(255,200,0,0.15); }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- HUD Badges -->
+<div id="hudbadges">
+  <div class="badge" id="roomLabel">Connecting…</div>
+  <div class="badge" id="roleLabel">…</div>
+</div>
+
+<!-- Main Overlay (lobby / countdown) -->
+<div id="overlay">
+  <div id="gameLogo">ROPE<span>&</span>PULL</div>
+  <div id="overlayTitle">LIVE TUG OF WAR</div>
+  <div id="countdown"></div>
+  <div id="waitingMsg">⏳ WAITING FOR OPPONENT…</div>
+  <div id="overlayMsg">Share this page with a friend — first person to join gets the other side. Move your cursor, scroll your wheel, or use ← → keys to pull!</div>
+  <div id="statusMsg">Connecting to Firebase…</div>
+</div>
+
+<!-- Firebase Setup Notice -->
+<div id="firebaseNotice">
+  ⚠️ <strong>Setup required for live multiplayer:</strong>
+  Replace the Firebase config in the &lt;script&gt; block with your own free 
+  <a href="https://console.firebase.google.com/" target="_blank">Firebase Realtime Database</a> credentials.
+  Enable <strong>Realtime Database</strong> → set rules to <code>".read": true, ".write": true</code> for testing.
+  Until then, the game runs in <strong>offline demo mode</strong>.
+  <button id="dismissNotice" onclick="this.parentElement.style.display='none'">Got it</button>
+</div>
+
+</body>
+</html>

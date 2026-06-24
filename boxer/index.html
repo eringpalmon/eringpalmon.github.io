@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Box It Up</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }
+.browser-outer { width: 100%; max-width: 860px; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }
+.browser-chrome { background: #dee1e6; border-bottom: 1px solid #c2c5cc; }
+.title-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px 0; background: #dee1e6; }
+.traffic-lights { display: flex; gap: 6px; }
+.tl { width: 12px; height: 12px; border-radius: 50%; }
+.tl.red { background: #ff5f57; }
+.tl.yellow { background: #febc2e; }
+.tl.green { background: #28c840; }
+.tab-bar { display: flex; align-items: flex-end; padding: 0 8px; gap: 2px; margin-top: 6px; }
+.tab { background: white; border-radius: 8px 8px 0 0; padding: 6px 14px 6px 10px; font-size: 12px; color: #333; display: flex; align-items: center; gap: 6px; min-width: 160px; max-width: 200px; position: relative; border: 1px solid #c2c5cc; border-bottom: none; }
+.tab .favicon { width: 14px; height: 14px; border-radius: 2px; flex-shrink: 0; }
+.tab-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
+.tab-close { font-size: 11px; color: #888; cursor: pointer; margin-left: 4px; }
+.address-bar-row { background: #dee1e6; padding: 6px 12px 8px; display: flex; align-items: center; gap: 8px; }
+.nav-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; font-size: 16px; }
+.nav-btn:hover { background: rgba(0,0,0,0.1); }
+.nav-btn.disabled { opacity: 0.35; cursor: default; }
+.address-bar { flex: 1; background: white; border-radius: 20px; padding: 5px 14px; font-size: 12px; color: #1a73e8; display: flex; align-items: center; gap: 6px; border: 1px solid #c2c5cc; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lock-icon { color: #34a853; font-size: 12px; flex-shrink: 0; }
+.address-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browser-content { position: relative; overflow: hidden; background: white; }
+canvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
+.game-hud { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(79,70,229,0.92); backdrop-filter: blur(4px); padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; }
+.hud-score { font-size: 15px; color: #a78bfa; font-weight: 700; }
+.hud-hint { font-size: 11px; color: rgba(255,255,255,0.7); }
+.hud-dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+.dot.done { background: #818cf8; }
+.dot.active { background: white; }
+</style>
+</head>
+<body>
+
+<div class="browser-outer">
+  <div class="browser-chrome">
+    <div class="title-bar">
+      <div class="traffic-lights">
+        <div class="tl red"></div><div class="tl yellow"></div><div class="tl green"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab" id="tab">
+          <img class="favicon" id="tabFavicon" src="" alt="">
+          <span class="tab-title" id="tabTitle">Box It Up</span>
+          <span class="tab-close">✕</span>
+        </div>
+      </div>
+    </div>
+    <div class="address-bar-row">
+      <button class="nav-btn disabled">&#8592;</button>
+      <button class="nav-btn disabled">&#8594;</button>
+      <button class="nav-btn">&#8635;</button>
+      <div class="address-bar">
+        <span class="lock-icon">&#128274;</span>
+        <span class="address-text" id="addressBar">https://www.google.com</span>
+      </div>
+      <button class="nav-btn" style="font-size:18px; color:#666;">&#8942;</button>
+    </div>
+  </div>
+  <div class="browser-content" id="browserContent">
+    <canvas id="canvas"></canvas>
+    <div class="game-hud">
+      <div class="hud-dots" id="dotsEl"></div>
+      <div class="hud-score" id="scoreEl">0 pts</div>
+      <div class="hud-hint" id="hintEl">drag to box the character</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  BOX IT UP — STAGE CONFIGURATION
+//  To add a new stage, push an object into STAGES below.
+//
+//  Required fields:
+//    url      {string}  Address bar URL text
+//    tab      {string}  Browser tab title
+//    hint     {string}  HUD hint text
+//    label    {string}  Small label shown on canvas
+//    maxTries {number}  Allowed attempts before auto-advance
+//    background        — one of:
+//      { type: 'draw', fn: (ctx, W, H) => void }
+//      { type: 'image', src: 'https://...' }         ← future use
+//    characters        — array of character configs:
+//      {
+//        type: 'procedural',                          ← built-in stick figure
+//        color: '#hex',
+//        size: 56,          optional (default 56)
+//        position: { x: 0.4, y: 0.5 },  0–1 of W/H
+//        motion: null | { type: 'bounce', speed: 1.2, axis: 'x' }
+//      }
+//      — OR —
+//      {
+//        type: 'sprite',                              ← PNG with auto-bounding
+//        src: 'https://...',
+//        size: 64,          render height in px
+//        position: { x: 0.4, y: 0.5 },
+//        motion: null | { type: 'bounce', speed: 1.2, axis: 'x' }
+//        //  Auto-bounding reads the PNG alpha channel to find the
+//        //  tight non-transparent region — no manual bbox needed.
+//        //  Sprite must be CORS-accessible for alpha detection to work;
+//        //  if not, falls back to the full rendered rect.
+//      }
+//
+//  Target for the player is the union bounding box of ALL characters.
+// ============================================================
+
+const STAGES = [
+  // ── STAGE 1 ──────────────────────────────────────────────
+  {
+    url: 'https://www.google.com',
+    tab: 'Box It Up',
+    favicon: 'https://www.google.com/favicon.ico',
+    hint: 'drag to draw a box around the character',
+    label: 'Box up the character!',
+    maxTries: 3,
+    background: { type: 'draw', fn: drawGoogleBg },
+    characters: [
+      {
+        type: 'procedural',
+        color: '#4f46e5',
+        size: 56,
+        position: { x: 0.45, y: 0.52 },
+        motion: null,
+      }
+    ],
+  },
+
+  // ── STAGE 2 ──────────────────────────────────────────────
+  {
+    url: 'https://www.google.com/search?q=funny+stick+man+walking',
+    tab: 'funny stick man walking - Google Search',
+    favicon: 'https://www.google.com/favicon.ico',
+    hint: 'moving target — draw fast!',
+    label: 'Moving target — box it!',
+    maxTries: 3,
+    background: { type: 'draw', fn: drawGoogleImagesBg },
+    characters: [
+      {
+        type: 'procedural',
+        color: '#059669',
+        size: 56,
+        position: { x: 0.35, y: 0.5 },
+        motion: { type: 'bounce', speed: 1.2, axis: 'x', min: 0.22, max: 0.78 },
+      }
+    ],
+  },
+
+  // ── STAGE 3 ──────────────────────────────────────────────
+  {
+    url: 'https://blog.dailyboost.com/stay-productive-every-day',
+    tab: 'How to Stay Productive Every Day',
+    favicon: null,
+    hint: 'box ALL three characters!',
+    label: 'Box ALL three characters!',
+    maxTries: 4,
+    background: { type: 'draw', fn: drawBlogBg },
+    characters: [
+      { type: 'procedural', color: '#dc2626', size: 46, position: { x: 0.25, y: 0.50 }, motion: null },
+      { type: 'procedural', color: '#dc2626', size: 46, position: { x: 0.50, y: 0.47 }, motion: null },
+      { type: 'procedural', color: '#dc2626', size: 46, position: { x: 0.75, y: 0.50 }, motion: null },
+    ],
+  },
+
+  // ── STAGE 4 ──────────────────────────────────────────────
+  {
+    url: 'https://www.watchit.com/watch?v=stickman-walk',
+    tab: 'Stick Man Walks into a Coffee Shop...',
+    favicon: null,
+    hint: 'tiny target — be precise!',
+    label: 'Tiny target — be precise!',
+    maxTries: 3,
+    background: { type: 'draw', fn: drawYoutubeBg },
+    characters: [
+      {
+        type: 'procedural',
+        color: '#1a1a2e',
+        size: 38,
+        position: { x: 0.55, y: 0.52 },
+        motion: null,
+      }
+    ],
+  },
+
+  // ── STAGE 5 ──────────────────────────────────────────────
+  {
+    url: 'https://news.worldly.com/park-reopens',
+    tab: 'City Park Reopens After Renovation - Worldly News',
+    favicon: null,
+    hint: 'final scene — no hints!',
+    label: 'Final challenge — no hints!',
+    maxTries: 2,
+    background: { type: 'draw', fn: drawNewsBg },
+    characters: [
+      {
+        type: 'procedural',
+        color: '#1a1a2e',
+        size: 46,
+        // slightly randomised in spawnChars for 'tricky' feel
+        position: { x: 0.72, y: 0.55 },
+        positionJitter: { x: 0.10, y: 0.10 },   // optional: random ±jitter added at spawn
+        motion: null,
+      }
+    ],
+  },
+
+  // ── STAGE 6: animated PNG sprite ─────────────────────────────
+  // 'animated-sprite' type: supply a src pointing at a horizontal
+  // sprite sheet PNG (frames left→right, all equal width).
+  // The engine reads frameCount frames, auto-detects the alpha bbox
+  // on EACH frame individually, and updates the target box every tick
+  // so it always conforms to the current pose.
+  // This stage uses a data-URI sprite sheet generated at startup
+  // (see generateAlienSpriteSheet() below) so there are zero CORS issues.
+  // To use a real PNG from the internet, just replace src with your URL
+  // and set frameCount to match — the engine handles the rest.
+  {
+    url: 'https://arcade.retro-games.io/alien-run',
+    tab: 'Alien Runner — Retro Arcade',
+    favicon: null,
+    hint: 'the box conforms to the PNG — watch the pose!',
+    label: 'Box the alien sprite!',
+    maxTries: 3,
+    suppressHint: false,
+    background: { type: 'draw', fn: drawGoogleImagesBg },
+    characters: [
+      {
+        type: 'animated-sprite',
+        // src is populated at runtime by generateAlienSpriteSheet()
+        src: '__alien__',   // magic key — swapped for data URI before game starts
+        frameCount: 8,      // how many horizontal frames in the sheet
+        fps: 10,            // animation playback speed
+        size: 80,           // render height in px
+        position: { x: 0.35, y: 0.48 },
+        motion: { type: 'bounce', speed: 1.8, axis: 'x', min: 0.12, max: 0.88 },
+      }
+    ],
+  },
+
+  // ── ADD YOUR OWN STAGES BELOW ─────────────────────────────
+  //
+  // Example: external animated PNG sprite sheet
+  //
+  // {
+  //   url: 'https://mysite.com/game',
+  //   tab: 'Sprite Stage',
+  //   favicon: null,
+  //   hint: 'box the sprite!',
+  //   label: 'Box the PNG character!',
+  //   maxTries: 3,
+  //   background: { type: 'draw', fn: drawGoogleBg },
+  //   characters: [
+  //     {
+  //       type: 'animated-sprite',        // animated sprite sheet
+  //       src: 'https://example.com/walk-sheet.png',
+  //       frameCount: 6,                  // frames in the sheet
+  //       fps: 12,
+  //       size: 80,
+  //       position: { x: 0.5, y: 0.5 },
+  //       motion: { type: 'bounce', speed: 1.5, axis: 'x', min: 0.15, max: 0.85 },
+  //     }
+  //     // — OR — a single static transparent PNG:
+  //     // { type: 'sprite', src: 'https://example.com/char.png', size: 80,
+  //     //   position: { x: 0.5, y: 0.5 }, motion: null }
+  //   ],
+  // },
+  //
+  // Example: image background
+  //
+  // {
+  //   url: 'https://example.com',
+  //   tab: 'Image Background Stage',
+  //   favicon: null,
+  //   hint: 'box the character!',
+  //   label: 'Box the character!',
+  //   maxTries: 3,
+  //   background: { type: 'image', src: 'https://example.com/bg.jpg' },
+  //   characters: [
+  //     { type: 'procedural', color: '#4f46e5', size: 56, position: { x: 0.5, y: 0.5 }, motion: null }
+  //   ],
+  // },
+];
+
+// ============================================================
+//  ENGINE — edit below only to change game mechanics
+// ============================================================
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('scoreEl');
+const hintEl = document.getElementById('hintEl');
+const dotsEl = document.getElementById('dotsEl');
+const addressBar = document.getElementById('addressBar');
+const tabTitle = document.getElementById('tabTitle');
+const tabFavicon = document.getElementById('tabFavicon');
+const browserContent = document.getElementById('browserContent');
+
+let W = 0, H = 0;
+function resizeCanvas() {
+  const bw = browserContent.clientWidth;
+  W = bw;
+  H = Math.round(bw * 0.58);
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.height = H + 'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const TOTAL = STAGES.length;
+
+// ── Asset cache ─────────────────────────────────────────────
+// Stores { img, bounds } per src URL (single sprites).
+// Animated sprites store { frames: [{img, bounds}, ...] } per src key.
+const assetCache = {};
+
+// ── Pixel-art alien sprite sheet generator ───────────────────
+// Draws 8 walk frames onto one wide offscreen canvas and returns
+// it as a data URI.  No network, no CORS.  Each frame is 32×40px.
+// The alien has a distinct silhouette per frame so per-frame
+// alpha bounding is meaningfully different (arms swing, legs stride).
+function generateAlienSpriteSheet() {
+  const FW = 32, FH = 40, FRAMES = 8;
+  const oc = document.createElement('canvas');
+  oc.width = FW * FRAMES; oc.height = FH;
+  const c = oc.getContext('2d');
+
+  // colour palette
+  const BODY = '#7c3aed', HEAD = '#a78bfa', EYE = '#ffffff',
+        PUPIL = '#1e1b4b', ANTENNA = '#c4b5fd', LEG = '#6d28d9',
+        ARM = '#8b5cf6', GLOW = 'rgba(167,139,250,0.35)';
+
+  // leg/arm poses per frame (angle in degrees from vertical, + = forward)
+  const legAngles  = [0, 25, 40, 25, 0, -25, -40, -25];
+  const armAngles  = [20, 5, -15, -30, -20, -5, 15, 30];
+  // body bob (y offset in px)
+  const bobY       = [0, -1, -2, -1, 0, -1, -2, -1];
+  // antenna wiggle (x offset of tip)
+  const antWiggle  = [0, 1, 2, 1, 0, -1, -2, -1];
+
+  function rad(deg) { return deg * Math.PI / 180; }
+
+  for (let f = 0; f < FRAMES; f++) {
+    const ox = f * FW;
+    const by = bobY[f];         // body vertical bob
+    const la = legAngles[f];
+    const aa = armAngles[f];
+    const aw = antWiggle[f];
+
+    c.save();
+    c.translate(ox, 0);
+
+    // glow aura
+    c.fillStyle = GLOW;
+    c.beginPath(); c.ellipse(16, 28+by, 9, 5, 0, 0, Math.PI*2); c.fill();
+
+    // ── legs ──────────────────────────────────────────────────
+    // left leg
+    c.save();
+    c.translate(13, 29+by);
+    c.rotate(rad(la));
+    c.fillStyle = LEG;
+    c.fillRect(-2, 0, 4, 10);
+    // foot
+    c.fillRect(-3, 9, 7, 3);
+    c.restore();
+    // right leg (opposite phase)
+    c.save();
+    c.translate(19, 29+by);
+    c.rotate(rad(-la));
+    c.fillStyle = LEG;
+    c.fillRect(-2, 0, 4, 10);
+    c.fillRect(-3, 9, 7, 3);
+    c.restore();
+
+    // ── body ──────────────────────────────────────────────────
+    c.fillStyle = BODY;
+    // torso (rounded rect via path)
+    c.beginPath();
+    c.roundRect(8, 17+by, 16, 14, 4);
+    c.fill();
+
+    // ── arms ──────────────────────────────────────────────────
+    // left arm
+    c.save();
+    c.translate(8, 21+by);
+    c.rotate(rad(-aa));
+    c.fillStyle = ARM;
+    c.fillRect(-4, 0, 4, 9);
+    // hand blob
+    c.beginPath(); c.arc(-2, 9, 2.5, 0, Math.PI*2); c.fill();
+    c.restore();
+    // right arm
+    c.save();
+    c.translate(24, 21+by);
+    c.rotate(rad(aa));
+    c.fillStyle = ARM;
+    c.fillRect(0, 0, 4, 9);
+    c.beginPath(); c.arc(2, 9, 2.5, 0, Math.PI*2); c.fill();
+    c.restore();
+
+    // ── head ──────────────────────────────────────────────────
+    c.fillStyle = HEAD;
+    c.beginPath(); c.ellipse(16, 13+by, 9, 8, 0, 0, Math.PI*2); c.fill();
+
+    // ── antennae ──────────────────────────────────────────────
+    c.strokeStyle = ANTENNA; c.lineWidth = 1.5; c.lineCap = 'round';
+    // left antenna
+    c.beginPath(); c.moveTo(11, 6+by); c.lineTo(8+aw, 1+by); c.stroke();
+    c.fillStyle = ANTENNA;
+    c.beginPath(); c.arc(8+aw, 1+by, 2, 0, Math.PI*2); c.fill();
+    // right antenna
+    c.beginPath(); c.moveTo(21, 6+by); c.lineTo(24-aw, 1+by); c.stroke();
+    c.beginPath(); c.arc(24-aw, 1+by, 2, 0, Math.PI*2); c.fill();
+
+    // ── eyes ──────────────────────────────────────────────────
+    c.fillStyle = EYE;
+    c.beginPath(); c.ellipse(12, 13+by, 3, 3.5, 0, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(20, 13+by, 3, 3.5, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = PUPIL;
+    c.beginPath(); c.arc(12.5, 13.5+by, 1.4, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(20.5, 13.5+by, 1.4, 0, Math.PI*2); c.fill();
+
+    c.restore();
+  }
+
+  return { dataURL: oc.toDataURL('image/png'), frameW: FW, frameH: FH, frameCount: FRAMES };
+}
+
+/**
+ * Slice a horizontal sprite sheet into per-frame {img, bounds} entries.
+ * Returns a promise resolving to an array of {img, bounds}.
+ * bounds is the tight alpha bbox in the frame's local coords.
+ */
+function sliceAnimatedSprite(src, frameCount) {
+  const cacheKey = 'anim:' + src + ':' + frameCount;
+  if (assetCache[cacheKey]) return Promise.resolve(assetCache[cacheKey]);
+
+  return new Promise(resolve => {
+    const master = new Image();
+    master.crossOrigin = 'anonymous';
+    master.onload = () => {
+      const FW = Math.round(master.naturalWidth / frameCount);
+      const FH = master.naturalHeight;
+      const frames = [];
+      let tainted = false;
+
+      // Try reading pixels to get per-frame alpha bounds
+      try {
+        const sheet = document.createElement('canvas');
+        sheet.width = master.naturalWidth; sheet.height = FH;
+        const sc = sheet.getContext('2d');
+        sc.drawImage(master, 0, 0);
+
+        for (let f = 0; f < frameCount; f++) {
+          const fx = f * FW;
+          const { data } = sc.getImageData(fx, 0, FW, FH);
+          const threshold = 16;
+          let minX = FW, minY = FH, maxX = 0, maxY = 0;
+          for (let y = 0; y < FH; y++) {
+            for (let x = 0; x < FW; x++) {
+              const a = data[(y * FW + x) * 4 + 3];
+              if (a > threshold) {
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+              }
+            }
+          }
+          const bounds = (maxX >= minX && maxY >= minY)
+            ? { ox: minX, oy: minY, ow: maxX-minX+1, oh: maxY-minY+1, fullW: FW, fullH: FH }
+            : null;
+
+          // Bake this frame into its own Image for clean drawing
+          const fc = document.createElement('canvas');
+          fc.width = FW; fc.height = FH;
+          fc.getContext('2d').drawImage(master, -fx, 0);
+          const fimg = new Image();
+          fimg.src = fc.toDataURL('image/png');
+          frames.push({ img: fimg, bounds });
+        }
+      } catch(e) {
+        // Cross-origin taint: fall back to full frame rect for all frames
+        tainted = true;
+        for (let f = 0; f < frameCount; f++) {
+          frames.push({ img: master, bounds: null, frameIdx: f, FW, FH });
+        }
+      }
+
+      assetCache[cacheKey] = frames;
+      resolve(frames);
+    };
+    master.onerror = () => {
+      assetCache[cacheKey] = [];
+      resolve([]);
+    };
+    master.src = src;
+  });
+}
+
+/**
+ * Load an image and compute its tight alpha bounding box.
+ * Returns a promise resolving to { img, bounds }.
+ * bounds is null if the image couldn't be read (cross-origin taint).
+ */
+function loadSpriteWithBounds(src) {
+  if (assetCache[src]) return Promise.resolve(assetCache[src]);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      let bounds = null;
+      try {
+        // Draw to an offscreen canvas to read pixels
+        const oc = document.createElement('canvas');
+        oc.width = img.naturalWidth;
+        oc.height = img.naturalHeight;
+        const octx = oc.getContext('2d');
+        octx.drawImage(img, 0, 0);
+        const { data } = octx.getImageData(0, 0, oc.width, oc.height);
+        let minX = oc.width, minY = oc.height, maxX = 0, maxY = 0;
+        const threshold = 16; // alpha > 16 counts as opaque
+        for (let y = 0; y < oc.height; y++) {
+          for (let x = 0; x < oc.width; x++) {
+            const a = data[(y * oc.width + x) * 4 + 3];
+            if (a > threshold) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        if (maxX >= minX && maxY >= minY) {
+          bounds = { ox: minX, oy: minY, ow: maxX - minX + 1, oh: maxY - minY + 1,
+                     fullW: oc.width, fullH: oc.height };
+        }
+      } catch(e) {
+        // Cross-origin canvas taint — bounds stays null, fall back to full rect
+      }
+      const entry = { img, bounds };
+      assetCache[src] = entry;
+      resolve(entry);
+    };
+    img.onerror = () => {
+      assetCache[src] = { img: null, bounds: null };
+      resolve(assetCache[src]);
+    };
+    img.src = src;
+  });
+}
+
+/**
+ * Load a background image.
+ * Returns a promise resolving to an Image element, or null on error.
+ */
+function loadBgImage(src) {
+  if (assetCache['bg:' + src]) return Promise.resolve(assetCache['bg:' + src]);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => { assetCache['bg:' + src] = img; resolve(img); };
+    img.onerror = () => { assetCache['bg:' + src] = null; resolve(null); };
+    img.src = src;
+  });
+}
+
+// ── Game state ───────────────────────────────────────────────
+let totalScore = 0;
+let sceneIdx = 0;
+let tries = 0;
+let sceneDone = false;
+let lastBox = null;
+let showEnd = false;
+let chars = [];       // runtime character state (cx, cy, sz, config, asset?)
+let animRAF = null;
+let dragging = false;
+let dragX0 = 0, dragY0 = 0, dragX1 = 0, dragY1 = 0;
+
+// ── Dots ─────────────────────────────────────────────────────
+function buildDots(current) {
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' done' : i === current ? ' active' : '');
+    dotsEl.appendChild(d);
+  }
+}
+
+// ── Spawn characters for current stage ───────────────────────
+async function spawnChars() {
+  const stage = STAGES[sceneIdx];
+  chars = [];
+
+  // Preload static sprite assets
+  const spritePromises = stage.characters
+    .filter(c => c.type === 'sprite')
+    .map(c => loadSpriteWithBounds(c.src));
+
+  // Preload animated sprite assets
+  const animPromises = stage.characters
+    .filter(c => c.type === 'animated-sprite')
+    .map(c => sliceAnimatedSprite(c.src, c.frameCount || 1));
+
+  // Preload bg image if needed
+  const bgPromise = stage.background.type === 'image'
+    ? [loadBgImage(stage.background.src)] : [];
+
+  await Promise.all([...spritePromises, ...animPromises, ...bgPromise]);
+
+  for (const cfg of stage.characters) {
+    const jx = cfg.positionJitter ? (Math.random() - 0.5) * cfg.positionJitter.x : 0;
+    const jy = cfg.positionJitter ? (Math.random() - 0.5) * cfg.positionJitter.y : 0;
+    const cx = (cfg.position.x + jx) * W;
+    const cy = (cfg.position.y + jy) * H;
+    const sz = cfg.size || 56;
+
+    const char = { cfg, cx, cy, sz, moveDir: 1 };
+
+    if (cfg.type === 'sprite') {
+      char.asset = assetCache[cfg.src] || { img: null, bounds: null };
+    } else if (cfg.type === 'animated-sprite') {
+      const key = 'anim:' + cfg.src + ':' + (cfg.frameCount || 1);
+      char.frames = assetCache[key] || [];
+      char.frameIdx = 0;
+      char.frameTick = 0;              // counts render frames between animation steps
+      char.frameInterval = Math.round(60 / (cfg.fps || 10));
+    }
+
+    chars.push(char);
+  }
+}
+
+// ── Draw a single character ───────────────────────────────────
+function drawChar(char, expr) {
+  if (char.cfg.type === 'animated-sprite') {
+    drawAnimatedSpriteChar(char);
+  } else if (char.cfg.type === 'sprite') {
+    drawSpriteChar(char);
+  } else {
+    drawProceduralChar(char.cx, char.cy, char.sz, char.cfg.color, expr);
+  }
+}
+
+function drawAnimatedSpriteChar(char) {
+  const { cx, cy, sz, frames, cfg } = char;
+
+  // Advance animation frame
+  if (!sceneDone) {
+    char.frameTick++;
+    if (char.frameTick >= char.frameInterval) {
+      char.frameTick = 0;
+      char.frameIdx = (char.frameIdx + 1) % (frames.length || 1);
+    }
+  }
+
+  if (!frames || frames.length === 0) {
+    // fallback placeholder
+    ctx.fillStyle = 'rgba(124,58,237,0.3)';
+    ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1;
+    ctx.fillRect(cx - sz/2, cy - sz/2, sz, sz);
+    ctx.strokeRect(cx - sz/2, cy - sz/2, sz, sz);
+    return;
+  }
+
+  const frame = frames[char.frameIdx] || frames[0];
+  const img = frame.img;
+  if (!img) return;
+
+  // Scale by height; flip horizontally when moving left
+  const scale = sz / (frame.bounds ? frame.bounds.fullH : img.naturalHeight || sz);
+  const rw = (frame.bounds ? frame.bounds.fullW : img.naturalWidth || sz) * scale;
+  const rh = sz;
+
+  ctx.save();
+  if (char.moveDir < 0) {
+    // flip: translate to centre, scale x by -1
+    ctx.translate(cx, cy - rh/2);
+    ctx.scale(-1, 1);
+    ctx.drawImage(img, -rw/2, 0, rw, rh);
+  } else {
+    ctx.drawImage(img, cx - rw/2, cy - rh/2, rw, rh);
+  }
+  ctx.restore();
+}
+
+function drawSpriteChar(char) {
+  const { cx, cy, sz, asset } = char;
+  if (!asset || !asset.img) {
+    // Fallback: draw a placeholder rect
+    ctx.fillStyle = 'rgba(200,200,200,0.5)';
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.fillRect(cx - sz/2, cy - sz/2, sz, sz);
+    ctx.strokeRect(cx - sz/2, cy - sz/2, sz, sz);
+    return;
+  }
+  const img = asset.img;
+  const scale = sz / img.naturalHeight;
+  const rw = img.naturalWidth * scale;
+  const rh = sz;
+  ctx.drawImage(img, cx - rw/2, cy - rh/2, rw, rh);
+}
+
+function drawProceduralChar(cx, cy, sz, color, expr) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath(); ctx.ellipse(cx, cy + sz*0.58, sz*0.28, sz*0.06, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.roundRect(cx - sz*0.22, cy - sz*0.08, sz*0.44, sz*0.48, sz*0.06); ctx.fill();
+  ctx.fillStyle = '#fde68a';
+  ctx.beginPath(); ctx.arc(cx, cy - sz*0.22, sz*0.22, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath(); ctx.arc(cx - sz*0.08, cy - sz*0.25, sz*0.036, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + sz*0.08, cy - sz*0.25, sz*0.036, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = sz*0.02; ctx.lineCap = 'round';
+  ctx.beginPath();
+  if (expr === 'happy') ctx.arc(cx, cy - sz*0.16, sz*0.07, 0.15, Math.PI - 0.15);
+  else if (expr === 'wow') ctx.arc(cx, cy - sz*0.15, sz*0.045, 0, Math.PI*2);
+  else { ctx.moveTo(cx - sz*0.06, cy - sz*0.16); ctx.lineTo(cx + sz*0.06, cy - sz*0.16); }
+  ctx.stroke();
+  ctx.strokeStyle = color; ctx.lineWidth = sz*0.065;
+  ctx.beginPath(); ctx.moveTo(cx - sz*0.22, cy + sz*0.06); ctx.lineTo(cx - sz*0.38, cy + sz*0.22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + sz*0.22, cy + sz*0.06); ctx.lineTo(cx + sz*0.38, cy + sz*0.22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - sz*0.10, cy + sz*0.40); ctx.lineTo(cx - sz*0.14, cy + sz*0.60); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + sz*0.10, cy + sz*0.40); ctx.lineTo(cx + sz*0.14, cy + sz*0.60); ctx.stroke();
+  ctx.restore();
+}
+
+// ── Bounding box computation ──────────────────────────────────
+/**
+ * Get the canvas-space bounding box for a single character.
+ * For animated-sprite: uses the alpha-detected bounds of the CURRENT frame,
+ * so the target box shifts with every pose change.
+ * For static sprite: uses the whole-image alpha bounds.
+ * For procedural: uses hardcoded proportions.
+ */
+function charBounds(char) {
+  const { cx, cy, sz, cfg } = char;
+
+  if (cfg.type === 'animated-sprite') {
+    const frames = char.frames;
+    if (!frames || frames.length === 0) {
+      return { x: cx - sz/2, y: cy - sz/2, w: sz, h: sz };
+    }
+    const frame = frames[char.frameIdx] || frames[0];
+    const b = frame.bounds;
+    const fullW = b ? b.fullW : (frame.img ? frame.img.naturalWidth : sz);
+    const fullH = b ? b.fullH : (frame.img ? frame.img.naturalHeight : sz);
+    const scale = sz / fullH;
+    const rw = fullW * scale;
+    const imgLeft = cx - rw / 2;
+    const imgTop  = cy - sz / 2;
+    if (b) {
+      // Account for horizontal flip when moving left
+      let ox = b.ox;
+      if (char.moveDir < 0) ox = fullW - b.ox - b.ow;
+      return {
+        x: imgLeft + ox * scale,
+        y: imgTop  + b.oy * scale,
+        w: b.ow * scale,
+        h: b.oh * scale,
+      };
+    }
+    return { x: imgLeft, y: imgTop, w: rw, h: sz };
+  }
+  if (cfg.type === 'sprite' && char.asset && char.asset.bounds) {
+    const b = char.asset.bounds;
+    const scale = sz / b.fullH;
+    const rw = b.fullW * scale;
+    // rh = sz (render height)
+    // rendered image is centred at (cx, cy)
+    const imgLeft = cx - rw / 2;
+    const imgTop  = cy - sz / 2;
+    return {
+      x: imgLeft + b.ox * scale,
+      y: imgTop  + b.oy * scale,
+      w: b.ow * scale,
+      h: b.oh * scale,
+    };
+  } else if (cfg.type === 'sprite' && char.asset && char.asset.img) {
+    // Full rendered rect fallback (no alpha data)
+    const img = char.asset.img;
+    const scale = sz / img.naturalHeight;
+    const rw = img.naturalWidth * scale;
+    return { x: cx - rw/2, y: cy - sz/2, w: rw, h: sz };
+  } else {
+    // Procedural stick figure proportions
+    return { x: cx - sz*0.38, y: cy - sz*0.44, w: sz*0.76, h: sz*1.04 };
+  }
+}
+
+function combinedBounds(arr) {
+  let mx = Infinity, my = Infinity, xx = -Infinity, xy = -Infinity;
+  arr.forEach(c => {
+    const b = charBounds(c);
+    mx = Math.min(mx, b.x); my = Math.min(my, b.y);
+    xx = Math.max(xx, b.x + b.w); xy = Math.max(xy, b.y + b.h);
+  });
+  return { x: mx, y: my, w: xx - mx, h: xy - my };
+}
+
+function getTarget() {
+  return chars.length === 1 ? charBounds(chars[0]) : combinedBounds(chars);
+}
+
+// ── Scoring ───────────────────────────────────────────────────
+function calcIoU(ax, ay, aw, ah, bx, by, bw, bh) {
+  const ix = Math.max(0, Math.min(ax+aw, bx+bw) - Math.max(ax, bx));
+  const iy = Math.max(0, Math.min(ay+ah, by+bh) - Math.max(ay, by));
+  const inter = ix * iy, union = aw*ah + bw*bh - inter;
+  return union > 0 ? inter / union : 0;
+}
+function calcScore(acc) {
+  let p = Math.round(acc * 150);
+  if (acc > 0.85) p += 40;
+  if (acc > 0.95) p += 60;
+  return p;
+}
+
+// ── Motion update ─────────────────────────────────────────────
+function updateMotion() {
+  for (const char of chars) {
+    const m = char.cfg.motion;
+    if (!m || sceneDone) continue;
+    if (m.type === 'bounce') {
+      const minVal = (m.min || 0.1) * (m.axis === 'x' ? W : H);
+      const maxVal = (m.max || 0.9) * (m.axis === 'x' ? W : H);
+      if (m.axis === 'x') {
+        char.cx += char.moveDir * m.speed;
+        if (char.cx > maxVal) { char.cx = maxVal; char.moveDir = -1; }
+        if (char.cx < minVal) { char.cx = minVal; char.moveDir = 1; }
+      } else {
+        char.cy += char.moveDir * m.speed;
+        if (char.cy > maxVal) { char.cy = maxVal; char.moveDir = -1; }
+        if (char.cy < minVal) { char.cy = minVal; char.moveDir = 1; }
+      }
+    }
+  }
+}
+
+// ── Background drawing ────────────────────────────────────────
+function drawBackground() {
+  const stage = STAGES[sceneIdx];
+  const bg = stage.background;
+  if (bg.type === 'draw') {
+    bg.fn(ctx, W, H);
+  } else if (bg.type === 'image') {
+    const img = assetCache['bg:' + bg.src];
+    if (img) {
+      // Cover the canvas, centred
+      const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      const dw = img.naturalWidth * scale;
+      const dh = img.naturalHeight * scale;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    } else {
+      // Still loading or failed — draw a grey fill
+      ctx.fillStyle = '#ccc';
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+}
+
+// ── Main render ───────────────────────────────────────────────
+function renderScene() {
+  if (showEnd) { drawEndScreen(); return; }
+
+  const stage = STAGES[sceneIdx];
+  updateMotion();
+  drawBackground();
+
+  const expr = sceneDone ? (lastBox && lastBox.acc > 0.85 ? 'happy' : 'wow') : 'happy';
+  chars.forEach(c => drawChar(c, expr));
+
+  // Ghost target hint on first try (skip if stage has hint suppressed)
+  if (tries === 0 && !sceneDone && !stage.suppressHint) {
+    const t = getTarget();
+    ctx.save();
+    ctx.strokeStyle = 'rgba(99,102,241,0.5)'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(t.x, t.y, t.w, t.h);
+    ctx.setLineDash([]);
+    ctx.font = 'bold 10px Arial'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(99,102,241,0.7)';
+    ctx.fillText('box here', t.x + t.w/2, t.y - 6);
+    ctx.restore();
+  }
+
+  if (lastBox) {
+    ctx.save();
+    ctx.strokeStyle = lastBox.col; ctx.lineWidth = 2;
+    ctx.strokeRect(lastBox.x, lastBox.y, lastBox.w, lastBox.h);
+    ctx.fillStyle = lastBox.col.replace('1)', '0.08)');
+    ctx.fillRect(lastBox.x, lastBox.y, lastBox.w, lastBox.h);
+    const labelY = lastBox.y > 26 ? lastBox.y - 8 : lastBox.y + lastBox.h + 16;
+    ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.fillStyle = lastBox.col;
+    ctx.fillText(Math.round(lastBox.acc * 100) + '%  +' + lastBox.pts + ' pts',
+                 lastBox.x + lastBox.w/2, labelY);
+    ctx.restore();
+  }
+
+  if (dragging) {
+    const rx = Math.min(dragX0, dragX1), ry = Math.min(dragY0, dragY1);
+    const rw = Math.abs(dragX1 - dragX0), rh = Math.abs(dragY1 - dragY0);
+    if (rw > 3 && rh > 3) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(99,102,241,0.9)'; ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(rx, ry, rw, rh);
+      ctx.fillStyle = 'rgba(99,102,241,0.06)';
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  ctx.font = '11px Arial'; ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.textAlign = 'right';
+  ctx.fillText('try ' + (sceneDone ? tries : tries + 1) + ' / ' + stage.maxTries, W - 10, H - 36);
+  ctx.font = '500 11px Arial'; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.textAlign = 'center';
+  ctx.fillText(stage.label, W/2, H - 36);
+}
+
+function drawEndScreen() {
+  ctx.fillStyle = 'white'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.fillRect(0, 0, W, H);
+  const grade = totalScore>900?'S rank — flawless!':totalScore>650?'A rank — excellent!':totalScore>400?'B rank — not bad!':'C rank — keep going!';
+  ctx.textAlign = 'center';
+  ctx.font = `bold ${Math.min(30, W*0.04)}px Arial`; ctx.fillStyle = '#4f46e5';
+  ctx.fillText(totalScore + ' pts', W/2, H*0.18);
+  ctx.font = `${Math.min(13, W*0.016)}px Arial`; ctx.fillStyle = '#888';
+  ctx.fillText(grade, W/2, H*0.27);
+  const cc = W/2, cy2 = H/2 + 10, sz2 = 60;
+  drawProceduralChar(cc, cy2, sz2, '#4f46e5', 'happy');
+  const pb = { x: cc - sz2*0.38, y: cy2 - sz2*0.44, w: sz2*0.76, h: sz2*1.04 };
+  ctx.save();
+  ctx.strokeStyle = 'rgba(52,211,153,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+  ctx.strokeRect(pb.x, pb.y, pb.w, pb.h); ctx.setLineDash([]);
+  ctx.font = 'bold 10px Arial'; ctx.fillStyle = 'rgba(52,211,153,0.9)'; ctx.textAlign = 'center';
+  ctx.fillText('100% perfect box', cc, pb.y - 8);
+  ctx.restore();
+  ctx.font = '10px Arial'; ctx.fillStyle = '#bbb'; ctx.textAlign = 'center';
+  ctx.fillText('refresh to play again', W/2, H - 16);
+}
+
+// ── Input ─────────────────────────────────────────────────────
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const sx = W / r.width, sy = H / r.height;
+  if (e.touches && e.touches.length > 0)
+    return { x: (e.touches[0].clientX - r.left)*sx, y: (e.touches[0].clientY - r.top)*sy };
+  return { x: (e.clientX - r.left)*sx, y: (e.clientY - r.top)*sy };
+}
+
+canvas.addEventListener('mousedown', e => {
+  if (showEnd) return;
+  const p = getPos(e); dragging = true; dragX0 = dragX1 = p.x; dragY0 = dragY1 = p.y;
+});
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const p = getPos(e); dragX1 = p.x; dragY1 = p.y;
+});
+canvas.addEventListener('mouseup', e => {
+  if (!dragging) return; dragging = false;
+  const p = getPos(e); dragX1 = p.x; dragY1 = p.y; handleDrop();
+});
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault(); if (showEnd) return;
+  const p = getPos(e); dragging = true; dragX0 = dragX1 = p.x; dragY0 = dragY1 = p.y;
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault(); if (!dragging) return;
+  const p = getPos(e); dragX1 = p.x; dragY1 = p.y;
+}, { passive: false });
+canvas.addEventListener('touchend', e => {
+  e.preventDefault(); if (!dragging) return; dragging = false; handleDrop();
+}, { passive: false });
+
+function handleDrop() {
+  if (sceneDone) { nextScene(); return; }
+  const rx = Math.min(dragX0, dragX1), ry = Math.min(dragY0, dragY1);
+  const rw = Math.abs(dragX1 - dragX0), rh = Math.abs(dragY1 - dragY0);
+  if (rw < 10 || rh < 10) return;
+  const t = getTarget();
+  const acc = calcIoU(rx, ry, rw, rh, t.x, t.y, t.w, t.h);
+  const pts = calcScore(acc);
+  totalScore += pts; tries++;
+  const col = acc > 0.88 ? 'rgba(52,211,153,1)' : acc > 0.6 ? 'rgba(251,146,60,1)' : 'rgba(226,75,74,1)';
+  lastBox = { x: rx, y: ry, w: rw, h: rh, acc, pts, col };
+  scoreEl.textContent = totalScore + ' pts';
+  const pct = Math.round(acc * 100);
+  hintEl.textContent = pct > 90 ? 'incredible! ' + pct + '%'
+                     : pct > 70 ? 'nice! tighten up — ' + pct + '%'
+                     :            'too loose — ' + pct + '% — try again!';
+  if (acc > 0.92 || tries >= STAGES[sceneIdx].maxTries) {
+    sceneDone = true;
+    hintEl.textContent = sceneIdx < TOTAL - 1 ? 'tap anywhere to continue →' : 'tap to see your final score →';
+  }
+}
+
+async function nextScene() {
+  sceneIdx++;
+  if (sceneIdx >= TOTAL) {
+    showEnd = true;
+    if (animRAF) cancelAnimationFrame(animRAF);
+    hintEl.textContent = 'game over!'; buildDots(TOTAL);
+    renderScene(); return;
+  }
+  tries = 0; sceneDone = false; lastBox = null; dragging = false;
+  const stage = STAGES[sceneIdx];
+  addressBar.textContent = stage.url;
+  tabTitle.textContent = stage.tab;
+  if (stage.favicon) { tabFavicon.src = stage.favicon; tabFavicon.style.display = ''; }
+  else tabFavicon.style.display = 'none';
+  hintEl.textContent = stage.hint;
+  buildDots(sceneIdx);
+  await spawnChars();
+}
+
+function loop() {
+  if (!showEnd) renderScene();
+  animRAF = requestAnimationFrame(loop);
+}
+
+// ── Background drawing functions (unchanged from original) ────
+
+function drawGoogleBg(ctx, W, H) {
+  ctx.fillStyle = 'white'; ctx.fillRect(0,0,W,H);
+  const cx = W/2, logoY = H*0.22, logoSz = Math.min(W*0.13, 52);
+  ctx.font = `bold ${logoSz}px Arial`; ctx.textAlign = 'center';
+  const colors = ['#4285F4','#EA4335','#FBBC05','#4285F4','#34A853','#EA4335'];
+  const letters = ['G','o','o','g','l','e'];
+  const widths = letters.map(l => ctx.measureText(l).width);
+  const totalW = widths.reduce((a,b)=>a+b,0);
+  let lx = cx - totalW/2;
+  letters.forEach((l,i) => { ctx.fillStyle=colors[i]; ctx.fillText(l, lx+widths[i]/2, logoY); lx+=widths[i]; });
+  const barW=Math.min(W*0.52,400), barH=36, barX=cx-barW/2, barY=logoY+logoSz*0.3;
+  ctx.fillStyle='white'; ctx.strokeStyle='#dfe1e5'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(barX,barY,barW,barH,18); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#9aa0a6'; ctx.font=`${Math.min(13,W*0.016)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('funny stick man walking', barX+14, barY+23);
+  ctx.fillStyle='#9aa0a6'; ctx.font='14px Arial'; ctx.textAlign='center';
+  ctx.fillText('🔍', barX+barW-18, barY+23);
+  const btnY=barY+barH+14, btnW=100, btnH=28;
+  [cx-btnW-8, cx+8].forEach((bx,i)=>{
+    ctx.fillStyle='#f8f9fa'; ctx.strokeStyle='#dfe1e5'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(bx,btnY,btnW,btnH,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#3c4043'; ctx.font='12px Arial'; ctx.textAlign='center';
+    ctx.fillText(i===0?'Google Search':"I'm Feeling Lucky", bx+btnW/2, btnY+18);
+  });
+}
+
+function drawGoogleImagesBg(ctx, W, H) {
+  ctx.fillStyle='white'; ctx.fillRect(0,0,W,H);
+  const headerH=H*0.13;
+  ctx.strokeStyle='#ebebeb'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,headerH); ctx.lineTo(W,headerH); ctx.stroke();
+  ctx.font=`bold ${Math.min(20,W*0.025)}px Arial`; ctx.fillStyle='#4285F4'; ctx.textAlign='left';
+  ctx.fillText('Google', 16, headerH*0.65);
+  const qW=Math.min(260,W*0.4), qH=28, qX=W*0.16, qY=headerH*0.18;
+  ctx.fillStyle='white'; ctx.strokeStyle='#dfe1e5'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(qX,qY,qW,qH,14); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#333'; ctx.font=`${Math.min(11,W*0.014)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('funny stick man walking', qX+10, qY+18);
+  const tabs=['All','Images','Videos','Shopping']; let tx=16;
+  tabs.forEach((t,i)=>{
+    const tw=ctx.measureText(t).width+16;
+    if(i===1){ctx.strokeStyle='#1a73e8'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(tx,headerH-1); ctx.lineTo(tx+tw,headerH-1); ctx.stroke(); ctx.fillStyle='#1a73e8';}
+    else ctx.fillStyle='#5f6368';
+    ctx.font=`${Math.min(12,W*0.015)}px Arial`; ctx.textAlign='left'; ctx.fillText(t,tx+8,headerH-8); tx+=tw+8;
+  });
+  ctx.fillStyle='#70757a'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('About 12,600,000 results (0.34 seconds)', 16, headerH+14);
+  ctx.fillStyle='#202124'; ctx.font=`bold ${Math.min(14,W*0.017)}px Arial`;
+  ctx.fillText('Images for funny stick man walking', 16, headerH+34);
+  const chips=['animated','gif','cartoon','running','happy']; let chipX=16;
+  const chipY=headerH+46;
+  chips.forEach(ch=>{
+    const cw=ctx.measureText(ch).width+18;
+    ctx.fillStyle='#f8f9fa'; ctx.strokeStyle='#dadce0'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(chipX,chipY,cw,22,11); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#3c4043'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='center';
+    ctx.fillText(ch,chipX+cw/2,chipY+15); chipX+=cw+6;
+  });
+  const imgTop=headerH+76, imgH=Math.min(90,H*0.28), imgW=Math.min(imgH*0.9,(W-32)/4-6);
+  for(let i=0;i<4;i++){
+    const ix=16+i*(imgW+6);
+    ctx.fillStyle='#f1f3f4'; ctx.beginPath(); ctx.rect(ix,imgTop,imgW,imgH); ctx.fill();
+    ctx.fillStyle='#bbb'; ctx.font=`${Math.min(10,W*0.012)}px Arial`; ctx.textAlign='center';
+    ctx.fillText('🧍',ix+imgW/2,imgTop+imgH/2+4);
+  }
+}
+
+function drawBlogBg(ctx, W, H) {
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  const navH=H*0.1;
+  ctx.fillStyle='#f97316'; ctx.fillRect(0,0,W,navH);
+  ctx.fillStyle='white'; ctx.font=`bold ${Math.min(16,W*0.02)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('D  Daily Boost', 16, navH*0.65);
+  const navItems=['Home','Productivity','Mindset','Health','About']; let nx=W*0.45;
+  navItems.forEach(n=>{ ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='left'; ctx.fillText(n,nx,navH*0.65); nx+=ctx.measureText(n).width+20; });
+  const contentY=navH+10;
+  ctx.fillStyle='#111'; ctx.font=`bold ${Math.min(22,W*0.03)}px Georgia`; ctx.textAlign='left';
+  ctx.fillText('How to Stay Productive Every Day', 16, contentY+28);
+  ctx.fillStyle='#777'; ctx.font=`${Math.min(11,W*0.013)}px Arial`;
+  ctx.fillText('by Jane Smith  ·  May 18, 2024  ·  Productivity', 16, contentY+46);
+  const aW=Math.min(200,W*0.38), aH=Math.min(120,H*0.32), aX=16, aY=contentY+58;
+  ctx.fillStyle='#e8f5e9'; ctx.beginPath(); ctx.rect(aX,aY,aW,aH); ctx.fill();
+  ctx.fillStyle='#aaa'; ctx.font='28px Arial'; ctx.textAlign='center'; ctx.fillText('🖥️',aX+aW*0.72,aY+aH*0.55);
+  ctx.fillStyle='#8bc34a'; ctx.font='18px Arial'; ctx.fillText('🌿',aX+18,aY+aH*0.7);
+  const textX=aX+aW+16;
+  ['Staying productive isn\'t about','doing more things—it\'s about','doing the right things consistently.'].forEach((l,i)=>{ ctx.fillStyle='#444'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='left'; ctx.fillText(l,textX,aY+20+i*17); });
+  const toc=['1. Plan Your Day','2. Avoid Distractions','3. Take Breaks','4. Set Small Goals','5. Stay Consistent','... and more'];
+  ctx.fillStyle='#222'; ctx.font=`bold ${Math.min(11,W*0.013)}px Arial`; ctx.fillText('In this article',textX,aY+72);
+  ctx.fillStyle='#1a73e8'; ctx.font=`${Math.min(10,W*0.012)}px Arial`;
+  toc.forEach((t,i)=>ctx.fillText(t,textX,aY+88+i*14));
+}
+
+function drawYoutubeBg(ctx, W, H) {
+  ctx.fillStyle='#0f0f0f'; ctx.fillRect(0,0,W,H);
+  const headerH=H*0.08;
+  ctx.fillStyle='#ff0000'; ctx.font=`bold ${Math.min(16,W*0.02)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('▶ Watchit', 14, headerH*0.7);
+  const searchW=Math.min(220,W*0.35), searchH=24, searchX=W*0.3, searchY=headerH*0.22;
+  ctx.fillStyle='#121212'; ctx.strokeStyle='#444'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(searchX,searchY,searchW,searchH,12); ctx.fill(); ctx.stroke();
+  const playerY=headerH+4, playerW=Math.min(W*0.68,500), playerH=Math.min(H*0.62,playerW*0.5625);
+  ctx.fillStyle='#1a1a1e'; ctx.fillRect(16,playerY,playerW,playerH);
+  const vY=playerY+playerH*0.05, vH=playerH*0.75;
+  ctx.fillStyle='#c8a97a'; ctx.beginPath(); ctx.roundRect(16,vY,playerW,vH,0); ctx.fill();
+  ctx.fillStyle='#a0785a'; ctx.fillRect(16,vY+vH*0.55,playerW*0.22,vH*0.45);
+  ctx.fillStyle='#8a6a50'; ctx.fillRect(16+playerW*0.22,vY+vH*0.65,playerW*0.12,vH*0.35);
+  ctx.fillStyle='#000000'; ctx.fillRect(16,vY,playerW*0.18,vH*0.9);
+  ctx.fillStyle='white'; ctx.font=`bold ${Math.min(9,W*0.011)}px Arial`; ctx.textAlign='center';
+  ['COFFEE','MAKES','EVERYTHING','BETTER'].forEach((t,i)=>ctx.fillText(t,16+playerW*0.09,vY+vH*(0.25+i*0.12)));
+  const ctrlY=playerY+playerH-30;
+  ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(16,ctrlY,playerW,30);
+  ctx.fillStyle='#333'; ctx.fillRect(16,ctrlY,playerW,3);
+  ctx.fillStyle='#ff0000'; ctx.fillRect(16,ctrlY,playerW*0.07,3);
+  ctx.fillStyle='white'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('▶  ⏭  🔊   0:04 / 0:12', 24, ctrlY+21);
+  const sideX=16+playerW+14;
+  ctx.fillStyle='#aaa'; ctx.font=`bold ${Math.min(11,W*0.013)}px Arial`; ctx.textAlign='left';
+  ctx.fillText('Up next', sideX, playerY+16);
+  [["Stick Man's Morning Routine","2.1M views"],["Motivation in 60 Seconds","1.3M views"],["Minimal Desk Setup","812K views"]].forEach((r,i)=>{
+    const ry=playerY+28+i*(Math.min(60,H*0.15)), tw=Math.min(56,W*0.07), th=Math.min(38,H*0.11);
+    ctx.fillStyle='#1a1a1e'; ctx.fillRect(sideX,ry,tw,th);
+    ctx.fillStyle='#555'; ctx.font='11px Arial'; ctx.textAlign='center'; ctx.fillText('🎬',sideX+tw/2,ry+th/2+4);
+    ctx.fillStyle='#eee'; ctx.font=`${Math.min(10,W*0.012)}px Arial`; ctx.textAlign='left';
+    ctx.fillText(r[0].slice(0,Math.floor((W-sideX-tw-8)/5.5)),sideX+tw+6,ry+12);
+    ctx.fillStyle='#aaa'; ctx.font=`${Math.min(9,W*0.011)}px Arial`; ctx.fillText(r[1],sideX+tw+6,ry+24);
+  });
+}
+
+function drawNewsBg(ctx, W, H) {
+  ctx.fillStyle='white'; ctx.fillRect(0,0,W,H);
+  const navH=H*0.1;
+  ctx.fillStyle='#1e3a5f'; ctx.fillRect(0,0,W,navH);
+  ctx.fillStyle='white'; ctx.font=`bold ${Math.min(16,W*0.02)}px Georgia`; ctx.textAlign='left';
+  ctx.fillText('Worldly News', 14, navH*0.7);
+  const navItems=['Home','World','Business','Tech','Science','Sports']; let nnx=W*0.35;
+  navItems.forEach(n=>{ ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font=`${Math.min(10,W*0.013)}px Arial`; ctx.textAlign='left'; ctx.fillText(n,nnx,navH*0.65); nnx+=ctx.measureText(n).width+20; });
+  ctx.fillStyle='#ff4444'; ctx.font=`bold ${Math.min(10,W*0.012)}px Arial`; ctx.textAlign='center';
+  ctx.fillRect(W-46,(navH-18)/2,36,18); ctx.fillStyle='white'; ctx.fillText('LIVE',W-28,navH/2+4);
+  const contentY=navH+10, articleW=Math.min(W*0.38,260);
+  ctx.fillStyle='#111'; ctx.font=`bold ${Math.min(18,W*0.025)}px Georgia`; ctx.textAlign='left';
+  const words='City Park Reopens After Beautiful Renovation'.split(' '); let line=''; let ly=contentY+24;
+  words.forEach(w=>{ const test=line+(line?' ':'')+w; if(ctx.measureText(test).width>articleW&&line){ctx.fillText(line,14,ly);ly+=20;line=w;}else line=test; }); ctx.fillText(line,14,ly); ly+=20;
+  ctx.fillStyle='#777'; ctx.font=`${Math.min(10,W*0.012)}px Arial`; ctx.fillText('By Mia Chen  ·  May 18, 2024',14,ly+10); ly+=22;
+  ['The city park officially reopened today','with new walking paths, gardens, and','play areas for families.'].forEach((l,i)=>{ ctx.fillStyle='#444'; ctx.font=`${Math.min(11,W*0.013)}px Arial`; ctx.fillText(l,14,ly+i*15); });
+  ctx.fillStyle='#1a73e8'; ctx.font=`${Math.min(10,W*0.012)}px Arial`; ctx.fillText('Read more',14,ly+3*15+12);
+  const imgX=articleW+28, imgY=navH+14, imgW=W-imgX-14, imgH=Math.min(H*0.58,200);
+  const gr=ctx.createLinearGradient(imgX,imgY,imgX,imgY+imgH); gr.addColorStop(0,'#87ceeb'); gr.addColorStop(1,'#a8d5a2');
+  ctx.fillStyle=gr; ctx.fillRect(imgX,imgY,imgW,imgH);
+  ctx.fillStyle='#5a8f3c'; ctx.fillRect(imgX,imgY+imgH*0.55,imgW,imgH*0.45);
+  ctx.fillStyle='#4a7a30'; ctx.font='20px Arial'; ctx.textAlign='center';
+  ['🌳','🌲','🌳'].forEach((t,i)=>ctx.fillText(t,imgX+imgW*(0.15+i*0.35),imgY+imgH*0.65));
+}
+
+// ── Init ──────────────────────────────────────────────────────
+async function init() {
+  // Generate the built-in alien sprite sheet and patch any stage
+  // that uses the magic src key '__alien__'
+  const alienSheet = generateAlienSpriteSheet();
+  STAGES.forEach(stage => {
+    stage.characters.forEach(cfg => {
+      if (cfg.src === '__alien__') {
+        cfg.src = alienSheet.dataURL;
+        cfg.frameCount = alienSheet.frameCount;
+      }
+    });
+  });
+
+  buildDots(0);
+  await spawnChars();
+  const s0 = STAGES[0];
+  addressBar.textContent = s0.url;
+  tabTitle.textContent = s0.tab;
+  if (s0.favicon) { tabFavicon.src = s0.favicon; }
+  else tabFavicon.style.display = 'none';
+  loop();
+}
+init();
+</script>
+</body>
+</html>
