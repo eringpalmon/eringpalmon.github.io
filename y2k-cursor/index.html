@@ -43,11 +43,10 @@
   .titlebar { background: linear-gradient(90deg, #9B59B6, #FF69B4, #9B59B6); border: 2px solid var(--gold); padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-family: 'Press Start 2P', monospace; font-size: 8px; color: white; text-shadow: 1px 1px 0 #000; flex-shrink: 0; position: relative; overflow: hidden; }
   .titlebar::after { content: '★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★'; position: absolute; bottom: 1px; left: 0; color: var(--gold); font-size: 6px; opacity: 0.5; letter-spacing: 2px; }
   .title-pixel-icon { width: 30px; height: 16px; background: var(--gold); flex-shrink: 0; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
-  .room-pill { font-size: 15px; font-family: 'Press Start 2P', monospace; padding: 2px 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); color: var(--gold); }
+  .room-pill { font-size: 15px; font-family: 'Press Start 2P', monospace; padding: 2px 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; }
   .main { display: flex; gap: 8px; flex: 1; min-height: 0; }
 
-  /* Sidebar with scroll */
-  .sidebar { width: 166px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; overflow-x: hidden; padding-top: 10px;}
+  .sidebar { width: 166px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; overflow-x: hidden; padding-top: 10px; }
   .sidebar::-webkit-scrollbar { width: 4px; }
   .sidebar::-webkit-scrollbar-track { background: var(--dark-bg); }
   .sidebar::-webkit-scrollbar-thumb { background: var(--purple); }
@@ -71,20 +70,17 @@
   .pixel-input { width: 100%; background: var(--input-bg); border: 2px solid var(--purple); color: var(--cyan); font-family: 'VT323', monospace; font-size: 16px; padding: 3px 6px; outline: none; }
   .pixel-input:focus { border-color: var(--pink); }
 
-  /* Cursor size control */
   .size-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
   .size-label { font-size: 12px; color: var(--light-purple); flex-shrink: 0; }
   .size-input { width: 40px; background: var(--input-bg); border: 2px solid var(--purple); color: var(--cyan); font-family: 'VT323', monospace; font-size: 16px; padding: 1px 4px; outline: none; text-align: center; }
   .size-btn { width: 20px; height: 20px; background: var(--input-bg); border: 1px solid var(--purple); color: var(--light-purple); font-family: 'VT323', monospace; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; padding: 0; }
   .size-btn:hover { border-color: var(--pink); color: var(--pink); }
 
-  /* Emotes panel */
   .emote-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
   .emote-option { background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; padding: 3px; transition: border-color 0.1s; }
   .emote-option:hover { border-color: var(--pink); }
   .emote-option.selected { border-color: var(--gold); background: #3D2060; }
 
-  /* Trail panel */
   .trail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 4px; }
   .trail-option { background: var(--input-bg); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: 'Press Start 2P', monospace; cursor: pointer; padding: 4px 2px; text-align: center; color: var(--light-purple); transition: border-color 0.1s; line-height: 1.4; }
   .trail-option:hover { border-color: var(--pink); }
@@ -101,10 +97,97 @@
   .msg .sender { font-size: 13px; font-family: 'Press Start 2P', monospace; margin-right: 6px; }
   .msg.system { color: var(--gold); font-size: 13px; text-align: center; opacity: 0.7; }
 
-  .remote-cursor { position: absolute; pointer-events: none; z-index: 50; }
+  .remote-cursor { position: absolute; pointer-events: none; z-index: 50; transition: left 0.1s linear, top 0.1s linear; }
   .remote-cursor .cursor-label { position: absolute; top: 22px; left: 4px; font-size: 11px; font-family: 'Press Start 2P', monospace; white-space: nowrap; padding: 1px 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.7); pointer-events: none; }
+  .remote-cursor.is-away .cursor-label { top: auto; bottom: -18px; left: 4px; }
   .cursor-layer { position: absolute; inset: 0; pointer-events: none; z-index: 100; }
-  .my-cursor { position: absolute; pointer-events: none; transform: translate(-2px, -2px); }
+  .my-cursor { position: absolute; pointer-events: none; transform: translate(-2px, -2px); transition: opacity 0.3s; }
+
+  #awayCursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 200;
+    display: none;
+    filter: drop-shadow(0 0 6px currentColor);
+    transition: color 0.25s;
+  }
+  #awayCursor.visible { display: block; }
+
+  #copyToast {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    background: var(--hot-pink);
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    border: 2px solid var(--gold);
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  #copyToast.show { opacity: 1; transform: translateX(-50%) translateY(0px); }
+
+  #copyToastChatRm {
+    position: absolute;
+    left: 50%;
+    top: 2px;
+    transform: translateX(-50%);
+    background: var(--hot-pink);
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    border: 2px solid var(--gold);
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  #copyToastChatRm.show { opacity: 1; transform: translateX(-50%) translateY(0px); }
+
+  /* Expiry warning overlay */
+  #expiryWarning {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,3,20,0.96);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    font-family: 'Press Start 2P', monospace;
+    text-align: center;
+    padding: 20px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  #expiryWarning.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: all;
+  }
+  #expiryWarning h2 { color: var(--gold); font-size: 12px; line-height: 2; }
+  #expiryWarning p { color: var(--light-purple); font-size: 9px; line-height: 2; }
+  #expiryCountdown { color: var(--hot-pink); font-size: 32px; letter-spacing: 4px; text-shadow: 0 0 20px #FF1493; }
+  #expiryWarning .stay-btn {
+    margin-top: 8px;
+    padding: 10px 20px;
+    border: 2px solid var(--gold);
+    background: linear-gradient(135deg, var(--purple), var(--hot-pink));
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    cursor: pointer;
+    transition: filter 0.1s;
+  }
+  #expiryWarning .stay-btn:hover { filter: brightness(1.2); }
 
   .input-bar { display: flex; gap: 6px; flex-shrink: 0; }
   .msg-input { flex: 1; background: var(--input-bg); border: 2px solid var(--purple); color: #E0D0F0; font-family: 'VT323', monospace; font-size: 18px; padding: 4px 8px; outline: none; }
@@ -123,7 +206,6 @@
   .status-dot { width: 6px; height: 6px; background: currentColor; }
   .pixel-deco { position: absolute; width: 4px; height: 4px; pointer-events: none; z-index: 0; }
 
-  /* Trail particles */
   .trail-particle { position: absolute; pointer-events: none; z-index: 99; font-size: 14px; animation: trailFade 0.8s ease-out forwards; }
   @keyframes trailFade { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-120%) scale(0.3); } }
   .trail-particle.sparkle { animation: trailSparkle 0.6s ease-out forwards; }
@@ -133,7 +215,6 @@
   .trail-particle.pixel { animation: trailPixel 0.5s steps(3) forwards; }
   @keyframes trailPixel { 0% { opacity: 1; transform: translate(-50%,-50%); } 100% { opacity: 0; transform: translate(-50%, 20px); } }
 
-  /* Cursor emote pop */
   .cursor-emote { position: absolute; pointer-events: none; z-index: 200; font-size: 24px; animation: emotePop 1.2s ease-out forwards; transform-origin: center bottom; }
   @keyframes emotePop {
     0%   { opacity: 1; transform: translate(-50%, -120%) scale(0.5); }
@@ -141,6 +222,9 @@
     60%  { transform: translate(-50%, -180%) scale(1); opacity: 1; }
     100% { transform: translate(-50%, -220%) scale(0.8); opacity: 0; }
   }
+
+  .zzz-particle { position: absolute; pointer-events: none; z-index: 201; font-family: 'Press Start 2P', monospace; font-size: 10px; color: #DDA0DD; animation: zzzFloat 1.8s ease-out forwards; }
+  @keyframes zzzFloat { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(12px,-30px) scale(0.5); } }
 </style>
 </head>
 <body>
@@ -166,34 +250,44 @@
         <div class="room-code-value" id="generatedCode">------</div>
         <div class="room-code-hint">share this with friends!</div>
         <button class="reroll-btn" onclick="rerollCode()">↺</button>
+        <button class="reroll-btn" style="right:40px;" onclick="copyRoomCode()">⧉</button>
       </div>
       <button class="connect-btn" id="hostBtn" onclick="joinChat('host')">CREATE ROOM ★</button>
+      <div id="copyToast">COPIED!</div>
     </div>
   </div>
+</div>
+
+<!-- Expiry warning overlay -->
+<div id="expiryWarning">
+  <div style="font-size:40px;">💤</div>
+  <h2>room going sleepy...</h2>
+  <p>no activity detected!<br>this room will self-destruct in:</p>
+  <div id="expiryCountdown">5:00</div>
+  <p>all messages + cursors will be wiped from the server</p>
+  <button class="stay-btn" onclick="touchActivity()">✦ i'm still here! stay awake ✦</button>
+  <p style="color:#555;font-size:7px;">move ur cursor or send a msg to dismiss</p>
 </div>
 
 <div class="app" id="app" style="display:none;">
   <div class="titlebar">
     <div class="title-pixel-icon"></div>
     ✦ CozyCursor ChatRoom ✦
-    <div class="room-pill" id="roomPill">LOBBY</div>
+    <div class="room-pill" id="roomPill" onclick="copyRoomPill()">LOBBY</div>
+    <div id="copyToastChatRm">COPIED!</div>
     <div class="status-badge connecting" id="statusBadge">
       <div class="status-dot"></div>
       <span id="statusText">connecting...</span>
     </div>
   </div>
   <div class="marquee-wrap">
-    <span class="marquee-inner">✨ welcome 2 cozychat ✨ asl? ✨ brb grabbing snacks ✨ omg hi!! ✨ lol ur so funny ✨ bff4eva ✨ ttyl ✨ ✦ g2g ✦ rofl ✦ ty ✦ np ✦ jk ✦ ily ✦ xoxo ✦</span>
+    <span class="marquee-inner">✨ welcome 2 cozychat ✨ ✦ asl? ✦ ✨ brb grabbing snacks ✨ ✦ omg hi!! ✦ ✨ lol ur so funny ✨ ✦ bff4eva ✦ ✨ ttyl ✨ ✦ g2g ✦ ✨ rofl ✨ ✦ ty ✦ ✨ np ✨ ✦ jk ✦ ✨ ily ✨ ✦ xoxo ✦</span>
   </div>
   <div class="main">
     <div class="sidebar">
-
-      <!-- Online panel -->
       <div class="panel" data-title="online" style="padding-top:14px;">
         <div class="users-list" id="usersList"></div>
       </div>
-
-      <!-- Cursor panel -->
       <div class="panel" data-title="ur cursor" style="padding-top:14px;">
         <div class="cursor-grid" id="cursorGrid"></div>
         <div style="margin-top:6px;font-size:12px;color:var(--light-purple);">color:</div>
@@ -209,23 +303,16 @@
           <input class="pixel-input" id="nameInput" maxlength="12" placeholder="nickname">
         </div>
       </div>
-
-      <!-- Emojis panel -->
       <div class="panel" data-title="emojis" style="padding-top:14px;">
         <div style="display:flex;flex-wrap:wrap;gap:4px;" id="emojiBar"></div>
       </div>
-
-      <!-- Emotes panel (animated cursor emotes) -->
       <div class="panel" data-title="emotes" style="padding-top:14px;">
         <div style="font-size:10px;color:var(--light-purple);margin-bottom:6px;font-family:'Press Start 2P',monospace;line-height:1.5;">click to pop!</div>
         <div class="emote-grid" id="emoteGrid"></div>
       </div>
-
-      <!-- Trail panel -->
       <div class="panel" data-title="cursor trail" style="padding-top:14px;">
         <div class="trail-grid" id="trailGrid"></div>
       </div>
-
     </div>
     <div class="chat-area">
       <div class="chat-viewport" id="chatViewport">
@@ -233,6 +320,7 @@
         <div id="remoteCursors"></div>
         <div class="cursor-layer" id="cursorLayer">
           <div class="my-cursor" id="myCursor"></div>
+          <div id="awayCursor"></div>
         </div>
       </div>
       <div class="input-bar">
@@ -257,8 +345,6 @@ const CURSOR_SHAPES = [
 ];
 const CURSOR_COLORS = ['#FF69B4','#FF1493','#9B59B6','#00FFFF','#ADFF2F','#FFD700','#FF6347','#00BFFF','#7FFFD4','#FF8C00','#E066FF','#FFFFFF'];
 const EMOJIS = ['✨','💖','🌟','💫','🦄','🍭','🌈','💎','🔮','🎀','👾','💝','🌸','⭐','🎆','🦋'];
-
-// Animated emotes that pop above cursor
 const EMOTES = [
   { id: 'heart',   label: '💖', frames: ['💖','❤️','💗'] },
   { id: 'star',    label: '⭐', frames: ['⭐','✨','🌟'] },
@@ -273,8 +359,6 @@ const EMOTES = [
   { id: 'gg',      label: '🎮', frames: ['🎮','GG!'] },
   { id: 'vibe',    label: '🎵', frames: ['🎵','🎶','🎸'] },
 ];
-
-// Trail definitions
 const TRAIL_TYPES = [
   { id: 'none',     label: '✕\nnone',      particles: [] },
   { id: 'sparkle',  label: '✨\nsparkle',   particles: ['✨','⭐','💫'], cls: 'sparkle' },
@@ -285,8 +369,105 @@ const TRAIL_TYPES = [
   { id: 'flowers',  label: '🌸\nflowers',   particles: ['🌸','🌺','🌼'], cls: 'default' },
   { id: 'rainbow',  label: '🌈\nrainbow',   particles: ['🔴','🟠','🟡','🟢','🔵','🟣'], cls: 'bubble' },
 ];
-
 const chatColors = ['#FF69B4','#00FFFF','#ADFF2F','#FFD700','#FF8C00','#E066FF','#7FFFD4','#FF6347','#DDA0DD','#00BFFF'];
+const DVD_COLORS = ['#FF69B4','#00FFFF','#ADFF2F','#FFD700','#FF6347','#E066FF','#7FFFD4','#FF8C00','#DDA0DD','#FF1493'];
+
+// ── Inactivity / expiry constants ───────────────────────────────────────────────
+const INACTIVITY_LIMIT_MS  = 60 * 60 * 1000;  // 1 hour  – room expires after this long with no activity
+const WARNING_BEFORE_MS    = 59  * 60 * 1000;  // 5 min   – show warning this long before expiry
+const ACTIVITY_CHECK_MS    = 30 * 1000;        // 30 sec  – how often we poll the room's last-activity
+const ACTIVITY_WRITE_MS    = 60 * 1000;        // 60 sec  – how often we write our heartbeat (throttled)
+
+let lastActivityWrite = 0;   // last time THIS client wrote to Firebase activity
+let expiryWarningActive = false;
+let expiryCountdownInterval = null;
+let roomActivityRef = null;   // Firebase ref: rooms/<code>/lastActivity
+
+// Call this on any real user action (mouse, keypress, message send)
+function touchActivity() {
+  const now = Date.now();
+  // Bypass throttle when warning is showing — must write immediately so watcher
+  // sees fresh activity and doesn't re-trigger the warning within 30s
+  const bypassThrottle = expiryWarningActive;
+  if (isConnected && roomActivityRef && (bypassThrottle || now - lastActivityWrite > ACTIVITY_WRITE_MS)) {
+    lastActivityWrite = now;
+    try { roomActivityRef.set(now); } catch(e) {}
+  }
+  if (expiryWarningActive) {
+    hideExpiryWarning();
+  }
+}
+
+function showExpiryWarning(msLeft) {
+  expiryWarningActive = true;
+  document.getElementById('expiryWarning').classList.add('visible');
+  updateExpiryCountdown(msLeft);
+  if (expiryCountdownInterval) clearInterval(expiryCountdownInterval);
+  let remaining = msLeft;
+  expiryCountdownInterval = setInterval(() => {
+    remaining -= 1000;
+    if (remaining <= 0) {
+      clearInterval(expiryCountdownInterval);
+      triggerRoomExpiry();
+    } else {
+      updateExpiryCountdown(remaining);
+    }
+  }, 1000);
+}
+
+function hideExpiryWarning() {
+  expiryWarningActive = false;
+  document.getElementById('expiryWarning').classList.remove('visible');
+  if (expiryCountdownInterval) { clearInterval(expiryCountdownInterval); expiryCountdownInterval = null; }
+}
+
+function updateExpiryCountdown(ms) {
+  const totalSec = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  document.getElementById('expiryCountdown').textContent = `${m}:${String(s).padStart(2,'0')}`;
+}
+
+async function triggerRoomExpiry() {
+  hideExpiryWarning();
+  addMessage({ type: 'system', text: '💤 room expired due to inactivity. cleaning up...' });
+  // Remove ourselves first
+  try { await cursorsRef.child(myId).remove(); } catch(e){}
+  // Wipe the whole room from Firebase
+  if (firebaseDB && roomCode) {
+    try { await firebaseDB.ref(`rooms/${roomCode.toLowerCase()}`).remove(); } catch(e) {}
+  }
+  // Brief delay so the message shows, then reload to connect screen
+  setTimeout(() => {
+    window.location.reload();
+  }, 2500);
+}
+
+// Periodic check: read lastActivity from Firebase, decide if we should warn / expire
+function startActivityWatcher() {
+  if (!roomActivityRef) return;
+  setInterval(async () => {
+    try {
+      const snap = await roomActivityRef.once('value');
+      const lastActive = snap.val() || Date.now();
+      const idleMs = Date.now() - lastActive;
+      const msUntilExpiry = INACTIVITY_LIMIT_MS - idleMs;
+
+      if (msUntilExpiry <= 0) {
+        // Already expired
+        triggerRoomExpiry();
+      } else if (msUntilExpiry <= WARNING_BEFORE_MS && !expiryWarningActive) {
+        showExpiryWarning(msUntilExpiry);
+      } else if (msUntilExpiry > WARNING_BEFORE_MS && expiryWarningActive) {
+        // Activity came in from another user
+        hideExpiryWarning();
+      } else if (expiryWarningActive) {
+        // Update countdown to stay in sync with actual server time
+        updateExpiryCountdown(msUntilExpiry);
+      }
+    } catch(e) {}
+  }, ACTIVITY_CHECK_MS);
+}
 
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -295,12 +476,52 @@ function generateRoomCode() {
   return code;
 }
 function rerollCode() { document.getElementById('generatedCode').textContent = generateRoomCode(); }
+function copyRoomCode() {
+  const code = document.getElementById('generatedCode').textContent.trim();
+  copyToClipboard(code);
+}
+function copyToClipboard(text) {
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text);
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  showCopyToast("COPIED!");
+}
+function copyRoomPill() {
+  const code = document.getElementById('roomPill').textContent.trim();
+  copyToClipboard(code);
+  showCopyToastChatroom("COPIED!");
+}
 function switchTab(tab) {
   document.getElementById('tabJoin').classList.toggle('active', tab==='join');
   document.getElementById('tabHost').classList.toggle('active', tab==='host');
   document.getElementById('panelJoin').classList.toggle('active', tab==='join');
   document.getElementById('panelHost').classList.toggle('active', tab==='host');
 }
+
+let toastTimer = null;
+function showCopyToast(text = "COPIED!") {
+  const el = document.getElementById("copyToast");
+  el.textContent = text;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove("show"); }, 900);
+}
+function showCopyToastChatroom(text = "COPIED!") {
+  const el = document.getElementById("copyToastChatRm");
+  el.textContent = text;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove("show"); }, 900);
+}
+
 rerollCode();
 
 let myId = (typeof uuid!=='undefined'&&uuid.v4)?uuid.v4():Math.random().toString(36).slice(2);
@@ -311,10 +532,11 @@ let myCursorSize = 22;
 let myTrail = 'sparkle';
 let myColor = chatColors[Math.floor(Math.random()*chatColors.length)];
 let localX = 0, localY = 0;
-let firebaseDB = null, cursorsRef = null, messagesRef = null;
+let firebaseDB = null, cursorsRef = null, messagesRef = null, fxRef = null;
 let remoteUsers = {};
 let roomCode = 'LOBBY';
 let isConnected = false;
+let DEBUG_FREEZE_DVD = false;
 
 let firebaseReadyResolve, firebaseReadyReject;
 const firebaseReady = new Promise((res,rej) => { firebaseReadyResolve=res; firebaseReadyReject=rej; });
@@ -334,6 +556,117 @@ function getCursorSVG(shapeId, color, size) {
   return shape.svg(color, size||22);
 }
 
+function getCozyCursorSVG(shapeId, color, size, dvdColor) {
+  const s = size || 22;
+  const total = s + 28;
+  const col = dvdColor || color;
+  const shape = CURSOR_SHAPES.find(c=>c.id===shapeId)||CURSOR_SHAPES[0];
+  const innerSVG = shape.svg(col, s);
+  return `<svg width="${total}" height="${total + 18}" viewBox="0 0 ${total} ${total + 18}" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${total/2}" cy="2" r="3" fill="white" opacity="0.9"/>
+    <line x1="${total/2-7}" y1="${s*0.2}" x2="${total/2+7}" y2="${s*0.2}" stroke="white" stroke-width="1.5" opacity="0.5"/>
+    <g transform="translate(${(total-s)/2}, ${s*0.3})">${innerSVG}</g>
+    <rect x="2" y="${s*0.3 + s*0.55}" width="${total-4}" height="${s*0.55 + 10}" rx="6" fill="${col}" opacity="0.85"/>
+    <rect x="2" y="${s*0.3 + s*0.5}" width="${total-4}" height="10" rx="4" fill="white" opacity="0.5"/>
+    <text x="${total/2}" y="${s*0.3 + s*0.8 + 4}" text-anchor="middle" font-size="9" opacity="0.7" fill="white">✦ ✦</text>
+    <text x="${total - 6}" y="${s*0.3 - 2}" font-size="8" fill="#DDA0DD" opacity="0.9" font-family="monospace">z</text>
+    <polygon points="${total/2},2 ${total/2-10},${s*0.6} ${total/2+10},${s*0.6}" fill="${col}" opacity="0.9"/>
+  </svg>`;
+}
+
+// ── DVD Away State ─────────────────────────────────────────────────────────────
+let isAway = false;
+let dvdX = 60, dvdY = 60;
+let dvdVX = 1.8, dvdVY = 1.4;
+let dvdColorIdx = 0;
+let dvdRAF = null;
+let zzzTimer = null;
+
+const awayCursorEl = document.getElementById('awayCursor');
+
+function getAwaySize() { return myCursorSize + 28; }
+
+function updateAwayCursorSVG() {
+  const col = DVD_COLORS[dvdColorIdx % DVD_COLORS.length];
+  awayCursorEl.innerHTML = getCozyCursorSVG(myCursorShape, myCursorColor, myCursorSize, col);
+}
+
+function dvdTick() {
+  if (DEBUG_FREEZE_DVD) return;
+  const vp = document.getElementById('chatViewport');
+  const W = vp.clientWidth;
+  const H = vp.clientHeight;
+  const sz = getAwaySize();
+  const szH = sz + 18;
+  dvdX += dvdVX; dvdY += dvdVY;
+  let bounced = false;
+  if (dvdX <= 0)        { dvdX = 0; dvdVX = Math.abs(dvdVX); bounced = true; }
+  if (dvdX + sz >= W)   { dvdX = W - sz; dvdVX = -Math.abs(dvdVX); bounced = true; }
+  if (dvdY <= 0)        { dvdY = 0; dvdVY = Math.abs(dvdVY); bounced = true; }
+  if (dvdY + szH >= H)  { dvdY = H - szH; dvdVY = -Math.abs(dvdVY); bounced = true; }
+  if (bounced) { dvdColorIdx++; updateAwayCursorSVG(); }
+  awayCursorEl.style.left = dvdX + 'px';
+  awayCursorEl.style.top  = dvdY + 'px';
+  dvdRAF = requestAnimationFrame(dvdTick);
+}
+
+function spawnZzz() {
+  if (!isAway) return;
+  const vp = document.getElementById('chatViewport');
+  const sz = getAwaySize();
+  const z = document.createElement('div');
+  z.className = 'zzz-particle';
+  z.textContent = ['z','zz','zzz'][Math.floor(Math.random()*3)];
+  z.style.left = (dvdX + sz - 10) + 'px';
+  z.style.top  = dvdY + 'px';
+  vp.appendChild(z);
+  setTimeout(() => z.remove(), 1800);
+  if (isAway) zzzTimer = setTimeout(spawnZzz, 1200 + Math.random()*800);
+}
+
+function enterAwayMode() {
+  if (isAway) return;
+  isAway = true;
+  dvdX = Math.max(0, localX - getAwaySize()/2);
+  dvdY = Math.max(0, localY - (getAwaySize()+18)/2);
+  dvdVX = (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random());
+  dvdVY = (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random());
+  updateAwayCursorSVG();
+  awayCursorEl.classList.add('visible');
+  document.getElementById('myCursor').style.opacity = '0';
+  dvdRAF = requestAnimationFrame(dvdTick);
+  zzzTimer = setTimeout(spawnZzz, 600);
+  broadcastPresence();
+}
+
+function exitAwayMode() {
+  if (!isAway) return;
+  isAway = false;
+  awayCursorEl.classList.remove('visible');
+  document.getElementById('myCursor').style.opacity = '1';
+  if (dvdRAF) { cancelAnimationFrame(dvdRAF); dvdRAF = null; }
+  if (zzzTimer) { clearTimeout(zzzTimer); zzzTimer = null; }
+  broadcastPresence();
+}
+
+// ── Away triggers ──────────────────────────────────────────────────────────────
+const viewport = document.getElementById('chatViewport');
+
+viewport.addEventListener('mouseleave', () => enterAwayMode());
+viewport.addEventListener('mouseenter', (e) => {
+  const rect = viewport.getBoundingClientRect();
+  localX = e.clientX - rect.left;
+  localY = e.clientY - rect.top;
+  exitAwayMode();
+  touchActivity();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) enterAwayMode();
+  else { exitAwayMode(); touchActivity(); }
+});
+
+// ── Cursor grid / color / size ─────────────────────────────────────────────────
 function buildCursorGrid() {
   const grid = document.getElementById('cursorGrid');
   grid.innerHTML = CURSOR_SHAPES.map(s=>`<div class="cursor-option${s.id===myCursorShape?' selected':''}" data-id="${s.id}">${s.label}</div>`).join('');
@@ -342,7 +675,8 @@ function buildCursorGrid() {
       myCursorShape=el.dataset.id;
       grid.querySelectorAll('.cursor-option').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
-      updateMyCursor(); broadcastPresence();
+      updateMyCursor(); broadcastPresence(); touchActivity();
+      if (isAway) updateAwayCursorSVG();
     });
   });
 }
@@ -355,7 +689,8 @@ function buildColorSwatches() {
       myCursorColor=el.dataset.color;
       bar.querySelectorAll('.swatch').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
-      updateMyCursor(); broadcastPresence();
+      updateMyCursor(); broadcastPresence(); touchActivity();
+      if (isAway) updateAwayCursorSVG();
     });
   });
 }
@@ -365,17 +700,17 @@ function buildSizeControls() {
   document.getElementById('sizeUp').addEventListener('click',()=>{
     myCursorSize = Math.min(64, myCursorSize+4);
     input.value = myCursorSize;
-    updateMyCursor(); broadcastPresence();
+    updateMyCursor(); broadcastPresence(); touchActivity();
   });
   document.getElementById('sizeDown').addEventListener('click',()=>{
     myCursorSize = Math.max(12, myCursorSize-4);
     input.value = myCursorSize;
-    updateMyCursor(); broadcastPresence();
+    updateMyCursor(); broadcastPresence(); touchActivity();
   });
   input.addEventListener('change',()=>{
     myCursorSize = Math.max(12, Math.min(64, parseInt(input.value)||22));
     input.value = myCursorSize;
-    updateMyCursor(); broadcastPresence();
+    updateMyCursor(); broadcastPresence(); touchActivity();
   });
 }
 
@@ -383,7 +718,12 @@ function buildEmojiBar() {
   const bar = document.getElementById('emojiBar');
   bar.innerHTML = EMOJIS.map(e=>`<span style="font-size:18px;cursor:pointer;" class="emote-btn" data-e="${e}">${e}</span>`).join('');
   bar.querySelectorAll('.emote-btn').forEach(el=>{
-    el.addEventListener('click',()=>{ const inp=document.getElementById('msgInput'); inp.value+=el.dataset.e; inp.focus(); });
+    el.addEventListener('click',()=>{
+      const inp=document.getElementById('msgInput');
+      inp.value+=el.dataset.e;
+      inp.focus();
+      touchActivity();
+    });
   });
 }
 
@@ -393,10 +733,13 @@ function buildEmoteGrid() {
   grid.querySelectorAll('.emote-option').forEach(el=>{
     el.addEventListener('click',()=>{
       const emote = EMOTES.find(e=>e.id===el.dataset.id);
-      if (emote) popEmote(localX, localY, emote);
-      // briefly highlight
+      if (emote) {
+        popEmoteAt(localX, localY, emote);
+        broadcastFX({ type: 'emote', emoteId: emote.id, x: Math.round(localX), y: Math.round(localY) });
+      }
       el.classList.add('selected');
       setTimeout(()=>el.classList.remove('selected'),400);
+      touchActivity();
     });
   });
 }
@@ -409,7 +752,7 @@ function buildTrailGrid() {
       myTrail=el.dataset.id;
       grid.querySelectorAll('.trail-option').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
-      broadcastPresence();
+      broadcastPresence(); touchActivity();
     });
   });
 }
@@ -418,14 +761,12 @@ function updateMyCursor() {
   document.getElementById('myCursor').innerHTML = getCursorSVG(myCursorShape, myCursorColor, myCursorSize);
 }
 
-// --- Trail system ---
+// ── Trail ──────────────────────────────────────────────────────────────────────
 let trailThrottle = 0;
-function spawnTrail(x, y) {
-  const trailDef = TRAIL_TYPES.find(t=>t.id===myTrail);
+
+function renderTrailParticle(x, y, trailId) {
+  const trailDef = TRAIL_TYPES.find(t=>t.id===trailId);
   if (!trailDef || !trailDef.particles.length) return;
-  const now = Date.now();
-  if (now - trailThrottle < 80) return;
-  trailThrottle = now;
   const vp = document.getElementById('chatViewport');
   const p = document.createElement('div');
   p.className = 'trail-particle ' + (trailDef.cls||'default');
@@ -437,8 +778,18 @@ function spawnTrail(x, y) {
   setTimeout(()=>p.remove(), 900);
 }
 
-// --- Emote pop ---
-function popEmote(x, y, emote) {
+function spawnTrail(x, y) {
+  const trailDef = TRAIL_TYPES.find(t=>t.id===myTrail);
+  if (!trailDef || !trailDef.particles.length) return;
+  const now = Date.now();
+  if (now - trailThrottle < 80) return;
+  trailThrottle = now;
+  renderTrailParticle(x, y, myTrail);
+  broadcastFX({ type: 'trail', trailId: myTrail, x: Math.round(x), y: Math.round(y) });
+}
+
+// ── Emote pop ──────────────────────────────────────────────────────────────────
+function popEmoteAt(x, y, emote) {
   const vp = document.getElementById('chatViewport');
   let frameIdx = 0;
   const el = document.createElement('div');
@@ -447,20 +798,49 @@ function popEmote(x, y, emote) {
   el.style.top = y + 'px';
   el.textContent = emote.frames[0];
   vp.appendChild(el);
-  // cycle frames
   if (emote.frames.length > 1) {
-    const iv = setInterval(()=>{
-      frameIdx = (frameIdx+1) % emote.frames.length;
-      el.textContent = emote.frames[frameIdx];
-    }, 200);
+    const iv = setInterval(()=>{ frameIdx=(frameIdx+1)%emote.frames.length; el.textContent=emote.frames[frameIdx]; },200);
     setTimeout(()=>clearInterval(iv), 1200);
   }
   setTimeout(()=>el.remove(), 1300);
 }
 
-// Messages
-let localMessages = [];
-let seenMsgIds = new Set();
+// ── FX broadcast ──────────────────────────────────────────────────────────────
+let fxJoinTime = Date.now();
+function broadcastFX(payload) {
+  if (!isConnected || !fxRef) return;
+  try {
+    const ref = fxRef.push();
+    ref.set({ ...payload, uid: myId, ts: Date.now() });
+    setTimeout(() => { try { ref.remove(); } catch(e) {} }, 4000);
+  } catch(e) {}
+}
+function listenFX() {
+  if (!fxRef) return;
+  fxRef.on('child_added', snap => {
+    const d = snap.val();
+    if (!d || d.uid === myId) return;
+    if ((d.ts || 0) < fxJoinTime) return;
+    if (d.type === 'trail') renderTrailParticle(d.x, d.y, d.trailId);
+    else if (d.type === 'emote') { const emote = EMOTES.find(e=>e.id===d.emoteId); if (emote) popEmoteAt(d.x, d.y, emote); }
+  });
+}
+
+// ── Mouse ──────────────────────────────────────────────────────────────────────
+const myCursorEl = document.getElementById('myCursor');
+viewport.addEventListener('mousemove',(e)=>{
+  const rect = viewport.getBoundingClientRect();
+  localX = e.clientX - rect.left;
+  localY = e.clientY - rect.top;
+  myCursorEl.style.left = localX+'px';
+  myCursorEl.style.top = localY+'px';
+  spawnTrail(localX, localY);
+  broadcastPresence();
+  touchActivity();
+});
+
+// ── Messages ───────────────────────────────────────────────────────────────────
+let localMessages = [], seenMsgIds = new Set();
 function addMessage(msg) {
   if (msg.id && seenMsgIds.has(msg.id)) return;
   if (msg.id) seenMsgIds.add(msg.id);
@@ -478,38 +858,22 @@ function renderMessages() {
 }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// Mouse tracking + trail
-const viewport = document.getElementById('chatViewport');
-const myCursorEl = document.getElementById('myCursor');
-viewport.addEventListener('mousemove',(e)=>{
-  const rect = viewport.getBoundingClientRect();
-  localX = e.clientX - rect.left;
-  localY = e.clientY - rect.top;
-  myCursorEl.style.left = localX+'px';
-  myCursorEl.style.top = localY+'px';
-  spawnTrail(localX, localY);
-  broadcastPresence();
-});
-
-// Send message
 function sendMessage() {
   const inp = document.getElementById('msgInput');
   const text = inp.value.trim();
   if (!text) return;
   inp.value = '';
   const msgObj = { id: myId+'_'+Date.now(), name: myName, color: myColor, text, ts: Date.now(), type: 'chat' };
-  if (isConnected && messagesRef) {
-    try { messagesRef.push().set(msgObj); } catch(e) { addMessage(msgObj); }
-  } else { addMessage(msgObj); }
+  if (isConnected && messagesRef) { try { messagesRef.push().set(msgObj); } catch(e) { addMessage(msgObj); } }
+  else addMessage(msgObj);
+  touchActivity(); // sending a message counts as activity
 }
 document.getElementById('sendBtn').addEventListener('click', sendMessage);
 document.getElementById('msgInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendMessage(); });
-document.getElementById('nameInput').addEventListener('input',(e)=>{
-  myName = e.target.value.trim()||'anon';
-  updateUsersList(); broadcastPresence();
-});
+document.getElementById('msgInput').addEventListener('input', () => touchActivity());
+document.getElementById('nameInput').addEventListener('input',(e)=>{ myName=e.target.value.trim()||'anon'; updateUsersList(); broadcastPresence(); touchActivity(); });
 
-// Presence
+// ── Presence ──────────────────────────────────────────────────────────────────
 let lastBroadcast = 0;
 function broadcastPresence() {
   if (!isConnected||!cursorsRef) return;
@@ -517,20 +881,83 @@ function broadcastPresence() {
   if (now-lastBroadcast < 50) return;
   lastBroadcast = now;
   try {
-    cursorsRef.child(myId).set({ id:myId, name:myName, color:myColor, x:Math.round(localX), y:Math.round(localY), shape:myCursorShape, cursorColor:myCursorColor, cursorSize:myCursorSize, trail:myTrail, ts:Date.now() });
+    cursorsRef.child(myId).set({
+      id: myId,
+      name: myName,
+      color: myColor,
+      x: Math.round(localX),
+      y: Math.round(localY),
+      shape: myCursorShape,
+      cursorColor: myCursorColor,
+      cursorSize: myCursorSize,
+      trail: myTrail,
+      ts: Date.now(),
+      isAway: isAway,
+      dvdColorIdx: dvdColorIdx,
+    });
   } catch(e) {}
 }
-setInterval(broadcastPresence, 2000);
+setInterval(broadcastPresence, 4000);
 
 function updateUsersList() {
   const list = document.getElementById('usersList');
-  let html = `<div class="user-entry"><div class="user-dot"></div><span style="color:${myColor}">${escHtml(myName)}</span></div>`;
-  Object.values(remoteUsers).forEach(u=>{
-    html += `<div class="user-entry"><div class="user-dot" style="background:${u.color||'#ADFF2F'}"></div><span style="color:${u.color||'#E0D0F0'}">${escHtml(u.name||'anon')}</span></div>`;
-  });
+  let html = `<div class="user-entry"><div class="user-dot"></div><span style="color:${myColor}">${escHtml(myName)}${isAway?' 💤':''}</span></div>`;
+  Object.values(remoteUsers).forEach(u=>{ html += `<div class="user-entry"><div class="user-dot" style="background:${u.color||'#ADFF2F'}"></div><span style="color:${u.color||'#E0D0F0'}">${escHtml(u.name||'anon')}${u.isAway?' 💤':''}</span></div>`; });
   list.innerHTML = html;
 }
 
+// ── Per-remote-user local DVD bounce state ─────────────────────────────────────
+const remoteAwayState = {};
+
+function startRemoteDvd(uid, u) {
+  if (remoteAwayState[uid]) return;
+  const vp = document.getElementById('chatViewport');
+  const sz = (u.cursorSize || 22) + 28;
+  let rx = Math.max(0, Math.min(vp.clientWidth - sz, u.x || 60));
+  let ry = Math.max(0, Math.min(vp.clientHeight - sz - 18, u.y || 60));
+  let rvx = (Math.random() > 0.5 ? 1 : -1) * (1.4 + Math.random() * 0.8);
+  let rvy = (Math.random() > 0.5 ? 1 : -1) * (1.1 + Math.random() * 0.6);
+  let rci = u.dvdColorIdx || 0;
+  const state = { x: rx, y: ry, vx: rvx, vy: rvy, colorIdx: rci, raf: null };
+  remoteAwayState[uid] = state;
+
+  function tick() {
+    if (!remoteAwayState[uid]) return;
+    const W = vp.clientWidth, H = vp.clientHeight;
+    const szH = sz + 18;
+    state.x += state.vx; state.y += state.vy;
+    let bounced = false;
+    if (state.x <= 0)        { state.x = 0; state.vx = Math.abs(state.vx); bounced = true; }
+    if (state.x + sz >= W)   { state.x = W - sz; state.vx = -Math.abs(state.vx); bounced = true; }
+    if (state.y <= 0)        { state.y = 0; state.vy = Math.abs(state.vy); bounced = true; }
+    if (state.y + szH >= H)  { state.y = H - szH; state.vy = -Math.abs(state.vy); bounced = true; }
+    if (bounced) state.colorIdx++;
+    const el = document.querySelector(`.remote-cursor[data-uid="${uid}"]`);
+    if (el) {
+      el.style.left = Math.round(state.x) + 'px';
+      el.style.top  = Math.round(state.y) + 'px';
+      if (bounced) {
+        const dvdCol = DVD_COLORS[state.colorIdx % DVD_COLORS.length];
+        const ru = remoteUsers[uid];
+        if (ru) {
+          el.innerHTML = getCozyCursorSVG(ru.shape||'arrow', ru.cursorColor||ru.color||'#FF69B4', ru.cursorSize||22, dvdCol)
+            + `<div class="cursor-label" style="color:${ru.color||'#FF69B4'}">${escHtml(ru.name||'?')} 💤</div>`;
+        }
+      }
+    }
+    state.raf = requestAnimationFrame(tick);
+  }
+  state.raf = requestAnimationFrame(tick);
+}
+
+function stopRemoteDvd(uid) {
+  const s = remoteAwayState[uid];
+  if (!s) return;
+  if (s.raf) cancelAnimationFrame(s.raf);
+  delete remoteAwayState[uid];
+}
+
+// ── Remote cursor rendering ────────────────────────────────────────────────────
 function updateRemoteCursors() {
   const container = document.getElementById('remoteCursors');
   const existing = {};
@@ -539,13 +966,34 @@ function updateRemoteCursors() {
   Object.values(remoteUsers).forEach(u=>{
     if (now-(u.ts||0)>15000) return;
     let el = existing[u.id];
-    if (!el) { el=document.createElement('div'); el.className='remote-cursor'; el.dataset.uid=u.id; container.appendChild(el); }
-    el.style.left = u.x+'px';
-    el.style.top = u.y+'px';
-    const sz = u.cursorSize||22;
-    el.innerHTML = getCursorSVG(u.shape||'arrow', u.cursorColor||u.color||'#FF69B4', sz) + `<div class="cursor-label" style="color:${u.color||'#FF69B4'}">${escHtml(u.name||'?')}</div>`;
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'remote-cursor';
+      el.dataset.uid = u.id;
+      container.appendChild(el);
+    }
+    if (u.isAway) {
+      el.classList.add('is-away');
+      if (!remoteAwayState[u.id]) {
+        const dvdCol = DVD_COLORS[(u.dvdColorIdx || 0) % DVD_COLORS.length];
+        const sz = u.cursorSize || 22;
+        el.innerHTML = getCozyCursorSVG(u.shape||'arrow', u.cursorColor||u.color||'#FF69B4', sz, dvdCol)
+          + `<div class="cursor-label" style="color:${u.color||'#FF69B4'}">${escHtml(u.name||'?')} 💤</div>`;
+        startRemoteDvd(u.id, u);
+      }
+    } else {
+      if (remoteAwayState[u.id]) stopRemoteDvd(u.id);
+      el.classList.remove('is-away');
+      el.style.left = u.x + 'px';
+      el.style.top  = u.y + 'px';
+      const sz = u.cursorSize || 22;
+      el.innerHTML = getCursorSVG(u.shape||'arrow', u.cursorColor||u.color||'#FF69B4', sz)
+        + `<div class="cursor-label" style="color:${u.color||'#FF69B4'}">${escHtml(u.name||'?')}</div>`;
+    }
   });
-  Object.keys(existing).forEach(uid=>{ if(!remoteUsers[uid]) existing[uid].remove(); });
+  Object.keys(existing).forEach(uid=>{
+    if (!remoteUsers[uid]) { existing[uid].remove(); stopRemoteDvd(uid); }
+  });
 }
 
 function setStatus(state, text) {
@@ -574,19 +1022,25 @@ function connectFirebase() {
     if (!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     firebaseDB = firebase.database();
     const room = roomCode.toLowerCase();
-    cursorsRef = firebaseDB.ref(`rooms/${room}/cursors`);
-    messagesRef = firebaseDB.ref(`rooms/${room}/messages`);
-    cursorsRef.on('value',(snap)=>{
-      const data = snap.val()||{};
-      remoteUsers = {};
-      Object.entries(data).forEach(([uid,u])=>{ if(uid!==myId) remoteUsers[uid]=u; });
-      updateRemoteCursors(); updateUsersList();
-    });
+    cursorsRef    = firebaseDB.ref(`rooms/${room}/cursors`);
+    messagesRef   = firebaseDB.ref(`rooms/${room}/messages`);
+    fxRef         = firebaseDB.ref(`rooms/${room}/fx`);
+    roomActivityRef = firebaseDB.ref(`rooms/${room}/lastActivity`);
+
+    cursorsRef.on('value',(snap)=>{ const data=snap.val()||{}; remoteUsers={}; Object.entries(data).forEach(([uid,u])=>{ if(uid!==myId) remoteUsers[uid]=u; }); updateRemoteCursors(); updateUsersList(); });
     messagesRef.limitToLast(50).on('child_added',(snap)=>{ const m=snap.val(); if(m&&m.id) addMessage(m); });
+    listenFX();
     cursorsRef.child(myId).onDisconnect().remove();
+
     isConnected = true;
     setStatus('connected','connected!');
+
+    // Write initial activity timestamp when joining
+    roomActivityRef.set(Date.now()).catch(()=>{});
+    lastActivityWrite = Date.now();
+
     broadcastPresence();
+    startActivityWatcher();
   } catch(e) {
     console.error(e);
     setStatus('offline','demo mode');
@@ -597,32 +1051,45 @@ function connectFirebase() {
 function startDemoMode() {
   isConnected = false;
   addMessage({ type:'system', text:'running in demo mode ✦' });
+
   const demoUsers = [
-    { id:'demo1', name:'xox_luna',  color:'#00FFFF', shape:'star',   cursorColor:'#00FFFF', cursorSize:22, trail:'sparkle', x:80,  y:80,  ts:Date.now() },
-    { id:'demo2', name:'pixie_grl', color:'#ADFF2F', shape:'heart',  cursorColor:'#ADFF2F', cursorSize:28, trail:'hearts',  x:200, y:140, ts:Date.now() },
-    { id:'demo3', name:'sk8r_boi',  color:'#FFD700', shape:'gem',    cursorColor:'#FFD700', cursorSize:18, trail:'pixels',  x:350, y:60,  ts:Date.now() },
+    { id:'demo1', name:'xox_luna',  color:'#00FFFF', shape:'star',   cursorColor:'#00FFFF', cursorSize:22, trail:'sparkle', x:80,  y:80,  ts:Date.now(), isAway:false, dvdColorIdx:0 },
+    { id:'demo2', name:'pixie_grl', color:'#ADFF2F', shape:'heart',  cursorColor:'#ADFF2F', cursorSize:28, trail:'hearts',  x:200, y:140, ts:Date.now(), isAway:false, dvdColorIdx:0 },
+    { id:'demo3', name:'sk8r_boi',  color:'#FFD700', shape:'gem',    cursorColor:'#FFD700', cursorSize:18, trail:'pixels',  x:350, y:60,  ts:Date.now(), isAway:true,  dvdColorIdx:2 },
   ];
+
   const demoMsgs = [
     { name:'xox_luna',  color:'#00FFFF', text:'omg hiiii ✨ welcome to cozychat!!' },
-    { name:'pixie_grl', color:'#ADFF2F', text:'asl?? jk lol 💖' },
-    { name:'sk8r_boi',  color:'#FFD700', text:'this chatroom is sooo cute wtf' },
-    { name:'xox_luna',  color:'#00FFFF', text:'try the emotes + trails!! ✿' },
+    { name:'pixie_grl', color:'#ADFF2F', text:'sk8r_boi went afk and is bouncing around 💤' },
+    { name:'xox_luna',  color:'#00FFFF', text:'lol dvd screensaver mode!! leave the canvas to go cozy too~' },
+    { name:'pixie_grl', color:'#ADFF2F', text:'try the emotes + trails!! ✿' },
   ];
+
   demoUsers.forEach(u=>{ remoteUsers[u.id]=u; });
   updateUsersList(); updateRemoteCursors();
+
   let mi=0;
   function addNext() { if(mi<demoMsgs.length){addMessage({type:'chat',id:'demo_'+mi,...demoMsgs[mi++]});setTimeout(addNext,900+Math.random()*600);} }
   setTimeout(addNext,600);
+
   function animate() {
-    const t=Date.now()/1000;
+    const t = Date.now()/1000;
     demoUsers[0].x=60+Math.sin(t*0.7)*80; demoUsers[0].y=80+Math.cos(t*0.5)*50;
     demoUsers[1].x=200+Math.cos(t*0.4)*100; demoUsers[1].y=130+Math.sin(t*0.6)*60;
-    demoUsers[2].x=300+Math.sin(t*0.3+1)*120; demoUsers[2].y=80+Math.cos(t*0.5+2)*70;
     demoUsers.forEach(u=>{ u.ts=Date.now(); remoteUsers[u.id]=u; });
     updateRemoteCursors();
+    demoUsers.filter(u=>!u.isAway).forEach(u => renderTrailParticle(u.x, u.y, u.trail));
     requestAnimationFrame(animate);
   }
   animate();
+
+  setInterval(() => {
+    const active = demoUsers.filter(u=>!u.isAway);
+    if (!active.length) return;
+    const u = active[Math.floor(Math.random()*active.length)];
+    const emote = EMOTES[Math.floor(Math.random()*EMOTES.length)];
+    popEmoteAt(u.x, u.y, emote);
+  }, 3500);
 }
 
 function initFirebase() {
@@ -645,18 +1112,25 @@ async function joinChat(mode) {
   else { name=document.getElementById('joinName').value.trim(); code=document.getElementById('joinRoom').value.trim().toUpperCase(); }
   if (!name||!code||code==='------') { alert('Enter a nickname'+(mode==='join'?' and room code.':'.')); return; }
   document.getElementById('joinBtn').disabled=true; document.getElementById('hostBtn').disabled=true;
-  document.getElementById('fbStatus').textContent='connecting...'; document.getElementById('fbStatus').className='firebase-status';
   myName=name; roomCode=code;
+  fxJoinTime = Date.now();
   document.getElementById('nameInput').value=name;
   document.getElementById('roomPill').textContent=code;
   document.getElementById('connectScreen').style.display='none';
   document.getElementById('app').style.display='flex';
   if (mode==='host') addMessage({type:'system',text:`room "${code}" created! share the code ★`});
   addMessage({type:'system',text:'★ welcome to CozyCursor Chat ★'});
+  addMessage({type:'system',text:'💤 This temporary chat room will reset after 60 minutes of inactivity. 💤'});
   updateUsersList();
   try { await firebaseReady; connectFirebase(); }
   catch(e) { setStatus('offline','demo mode'); startDemoMode(); }
 }
+
+// Global fallback: any click or keypress anywhere dismisses the warning
+// (needed because the overlay sits on top and may absorb the event)
+document.addEventListener('keydown', () => { if (expiryWarningActive) touchActivity(); });
+document.addEventListener('click',   () => { if (expiryWarningActive) touchActivity(); });
+document.addEventListener('mousemove', () => { if (expiryWarningActive) touchActivity(); });
 
 setInterval(updateRemoteCursors, 100);
 initFirebase();
