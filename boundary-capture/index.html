@@ -1,137 +1,392 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0b0d14;--surface:#131621;--card:#181c2c;--border:rgba(130,110,255,0.2);
-  --purple:#7c5cf6;--purple-lo:rgba(124,92,246,0.13);
-  --green:#3ecf8e;--green-lo:rgba(62,207,142,0.13);
-  --amber:#f5a623;--amber-lo:rgba(245,166,35,0.13);
-  --red:#f05252;--red-lo:rgba(240,82,82,0.13);
-  --blue:#38bdf8;
-  --text:#e8eaf0;--muted:#5a6480;--soft:#8892aa;
+  --bg:#002f59;--surface:#13132a;--card:#183148;--border:rgba(180,100,255,0.22);
+  --purple:#b44dff;--purple-lo:rgba(180,77,255,0.14);
+  --green:#00ffaa;--green-lo:rgba(0,255,170,0.13);
+  --amber:#ffcc00;--amber-lo:rgba(255,204,0,0.14);
+  --red:#ff4466;--red-lo:rgba(255,68,102,0.13);
+  --blue:#44ccff;
+  --text:#f0eaff;--muted:#7060a0;--soft:#a890d0;
+  --shadow:0 4px 24px rgba(180,77,255,0.18);
+  --poly-stroke:rgba(180,77,255,0.22);
+  --neon-border: 0 0 8px rgba(180,77,255,0.5), 0 0 20px rgba(180,77,255,0.15);
 }
-body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-height:600px;display:flex;flex-direction:column;align-items:center;padding:0 0 32px}
-.screen{width:100%;max-width:420px;padding:0 16px;display:flex;flex-direction:column;align-items:center}
+
+@keyframes floatA{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(6px,-10px) rotate(8deg)}}
+@keyframes floatB{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(-8px,8px) rotate(-6deg)}}
+@keyframes floatC{0%,100%{transform:translate(0,0)}50%{transform:translate(4px,-6px)}}
+@keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:0.7;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes popIn{from{opacity:0;transform:scale(0.8) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 10px rgba(180,77,255,0.4),0 0 30px rgba(180,77,255,0.1)}50%{box-shadow:0 0 18px rgba(180,77,255,0.7),0 0 50px rgba(180,77,255,0.25)}}
+@keyframes starSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes scorePopUp{0%{opacity:0;transform:translateY(0) scale(0.6)}40%{opacity:1;transform:translateY(-30px) scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(0.9)}}
+
+body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-height:600px;display:flex;flex-direction:column;align-items:center;padding:0 0 32px;position:relative;overflow-x:hidden}
+
+.poly-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.poly-bg svg{width:100%;height:100%}
+
+.screen{width:100%;max-width:420px;padding:0 16px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
 .hidden{display:none!important}
 
-.setup-hero{text-align:center;padding:28px 0 16px}
-.logo{font-size:40px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:'Monaco',monospace}
-.mode-badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;letter-spacing:2px;padding:4px 12px;border-radius:8px;background:var(--red-lo);color:var(--red);border:1px solid rgba(240,82,82,0.3);font-family:'Courier New',monospace}
-.setup-desc{font-size:12px;color:var(--soft);text-align:center;line-height:1.6;margin:10px 0 20px;padding:0 4px}
+.setup-hero{text-align:center;padding:28px 0 10px}
+.logo{font-size:48px;font-weight:900;letter-spacing:-3px;font-family:'Monaco',monospace;position:relative;
+  background:linear-gradient(135deg,#b44dff,#44ccff,#00ffaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:200% auto;animation:shimmer 3s linear infinite}
+.logo span{-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mode-badge{display:inline-block;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:2px;padding:5px 16px;border-radius:20px;
+  background:var(--red-lo);color:var(--red);border:1px solid rgba(255,68,102,0.35);font-family:'Courier New',monospace;
+  animation:pulse 2s ease-in-out infinite;box-shadow:0 0 12px rgba(255,68,102,0.25)}
+
 .section-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;width:100%;font-family:'Courier New',monospace}
 
-/* .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-bottom:20px}
-.time-opt{padding:12px 4px;border-radius:12px;border:1px solid var(--border);background:var(--card);text-align:center;cursor:pointer;transition:border-color .2s,background .2s;user-select:none}
-.time-opt .t-val{font-size:19px;font-weight:800;font-family:'Courier New',monospace}
-.time-opt .t-lbl{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Courier New',monospace}
-.time-opt.selected{border-color:var(--red);background:var(--red-lo)}
-.time-opt.selected .t-val{color:var(--red)} */
-
 .scoring-row{display:flex;gap:6px;width:100%;margin-bottom:20px}
-.s-pip{flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);background:var(--surface);text-align:center}
-.s-pip-pts{font-size:13px;font-weight:800;font-family:'Courier New',monospace}
-.s-pip-lbl{font-size:9px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+.s-pip{flex:1;padding:10px 4px;border-radius:16px;border:1px solid var(--border);background:var(--card);text-align:center;
+  box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;cursor:default;animation:popIn .5s ease both}
+.s-pip:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 0 18px rgba(180,77,255,0.35)}
+.s-pip:nth-child(1){animation-delay:.05s}.s-pip:nth-child(2){animation-delay:.1s}.s-pip:nth-child(3){animation-delay:.15s}.s-pip:nth-child(4){animation-delay:.2s}.s-pip:nth-child(5){animation-delay:.25s}
+.s-pip-pts{font-size:14px;font-weight:800;font-family:'Courier New',monospace}
+.s-pip-lbl{font-size:9px;color:var(--muted);font-family:'Courier New',monospace;margin-top:3px}
 
-.rules-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+.rules-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:20px;
+  box-shadow:var(--shadow);animation:popIn .5s ease .2s both}
 .rule{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
 .rule:last-child{margin-bottom:0}
-.rule-ico{font-size:15px;flex-shrink:0;margin-top:1px}
-.rule-text{font-size:12px;color:var(--soft);line-height:1.5}
+.rule-ico{font-size:18px;flex-shrink:0;margin-top:1px;animation:floatC 3s ease-in-out infinite}
+.rule-ico:nth-child(1){animation-delay:0s}.rule:nth-child(2) .rule-ico{animation-delay:.5s}.rule:nth-child(3) .rule-ico{animation-delay:1s}.rule:nth-child(4) .rule-ico{animation-delay:1.5s}
+.rule-text{font-size:12.5px;color:var(--soft);line-height:1.6}
 .rule-text b{color:var(--text)}
 
-.btn-start{width:100%;padding:15px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Georgia',serif}
+.btn-start{width:100%;padding:18px;border-radius:16px;border:none;
+  background:linear-gradient(135deg,#b44dff,#f15151);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;
+  box-shadow:0 0 24px rgba(180,77,255,0.5),0 4px 20px rgba(100,40,200,0.4);
+  transition:transform .14s,box-shadow .14s;animation:glowPulse 2.5s ease-in-out infinite;position:relative;overflow:hidden}
+.btn-start::before{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;
+  background:rgba(255,255,255,0.12);transform:skewX(-20deg);transition:left .4s}
+.btn-start:hover::before{left:120%}
+.btn-start:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 0 36px rgba(180,77,255,0.65),0 8px 28px rgba(100,40,200,0.5)}
+.btn-start:active{transform:scale(0.97)}
 
-.game-hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 0 6px}
-.hdr-back{width:32px;height:32px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;user-select:none}
+.top-bar{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 0 4px}
+.icon-btn{width:36px;height:36px;border-radius:12px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;user-select:none;box-shadow:var(--shadow);transition:background .15s,box-shadow .15s}
+.icon-btn:hover{background:var(--surface);box-shadow:0 0 12px rgba(180,77,255,0.3)}
 
-/* .hud{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}
-.hud-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 8px;text-align:center}
-.hud-label{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace}
-.hud-val{font-size:21px;font-weight:800;margin-top:2px;font-family:'Courier New',monospace} */
-/* .hud-val.t-val{color:var(--red)}
-.hud-val.t-val.urgent{animation:pulse .5s infinite alternate} */
-@keyframes pulse{from{opacity:1}to{opacity:.3}}
-/* .hud-val.s-val{color:var(--amber)}
-.hud-val.r-val{color:var(--blue)} */
-
-.skip-wrap{width:100%;display:flex;align-items:center;gap:10px;min-height:24px;margin-bottom:3px}
-.skip-bar-outer{flex:1;height:5px;border-radius:3px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
-.skip-bar-inner{height:100%;border-radius:3px;width:100%}
+.skip-wrap{width:100%;display:flex;align-items:center;gap:10px;min-height:24px;margin-bottom:4px}
+.skip-bar-outer{flex:1;height:8px;border-radius:6px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.skip-bar-inner{height:100%;border-radius:6px;width:100%;transition:background .3s;position:relative}
+.skip-bar-inner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.25) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.5s linear infinite}
 .skip-lbl{font-size:10px;color:var(--muted);font-family:'Courier New',monospace;min-width:52px;text-align:right}
 
-.info-strip{width:100%;min-height:26px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
-.info-msg{font-size:12px;font-weight:700;font-family:'Courier New',monospace;padding:3px 12px;border-radius:8px}
-.msg-hint{background:var(--purple-lo);color:var(--purple);border:1px solid rgba(124,92,246,.3)}
-.msg-ok{background:var(--green-lo);color:var(--green);border:1px solid rgba(62,207,142,.3)}
-.msg-skip{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+.info-strip{width:100%;min-height:30px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.info-msg{font-size:12px;font-weight:700;font-family:'Courier New',monospace;padding:5px 16px;border-radius:12px;transition:all .3s}
+.msg-hint{background:var(--purple-lo);color:var(--purple);border:1px solid rgba(180,77,255,.3);box-shadow:0 0 10px rgba(180,77,255,.15)}
+.msg-ok{background:var(--green-lo);color:var(--green);border:1px solid rgba(0,255,170,.35);box-shadow:0 0 14px rgba(0,255,170,.2)}
+.msg-skip{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(255,204,0,.35);box-shadow:0 0 10px rgba(255,204,0,.15)}
 
-.canvas-wrap{position:relative;border-radius:16px;border:1px solid var(--border);background:var(--card);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
-#gc{display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-#flash{position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .07s}
+.canvas-wrap{position:relative;border-radius:20px;border:1.5px solid var(--border);background:var(--card);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;box-shadow:0 0 30px rgba(180,77,255,0.18),0 0 60px rgba(68,204,255,0.06)}
+#gc{display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#flash{position:absolute;inset:0;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .07s}
+
+.score-popup{position:absolute;pointer-events:none;font-size:22px;font-weight:900;font-family:'Courier New',monospace;
+  color:var(--green);text-shadow:0 0 12px rgba(0,255,170,0.6);animation:scorePopUp 1s ease-out forwards;z-index:10}
+
+.game-actions{display:flex;justify-content:center;margin:10px 0 6px}
+.btn-reset{background:var(--card);color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:10px 20px;font-size:12px;font-weight:700;font-family:'Courier New',monospace;cursor:pointer;transition:.15s ease;box-shadow:var(--shadow)}
+.btn-reset:hover{background:var(--surface);color:var(--text);box-shadow:0 0 12px rgba(180,77,255,.25)}
 
 .end-hero{text-align:center;padding:24px 0 14px}
-.end-title{font-size:28px;font-weight:800;margin-bottom:5px}
+.end-title{font-size:30px;font-weight:800;margin-bottom:5px;
+  background:linear-gradient(135deg,#ff4466,#ffcc00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:pulse 1.5s ease-in-out infinite}
 .end-sub{font-size:13px;color:var(--muted)}
-.end-score-box{width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px}
+.end-score-box{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:22px;text-align:center;margin-bottom:14px;
+  box-shadow:0 0 28px rgba(255,204,0,0.18),var(--shadow);animation:popIn .6s ease both}
 .end-score-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'Courier New',monospace}
-.end-score-val{font-size:60px;font-weight:900;font-family:'Courier New',monospace;color:var(--amber);line-height:1.1;margin:4px 0}
+.end-score-val{font-size:68px;font-weight:900;font-family:'Courier New',monospace;
+  background:linear-gradient(135deg,#ffcc00,#ff8844);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1;margin:4px 0;animation:pulse 1.5s ease-in-out infinite}
 .end-score-rounds{font-size:13px;color:var(--soft)}
 .end-breakdown{width:100%;margin-bottom:18px}
-.eb-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid rgba(255,255,255,.04);margin-bottom:4px}
+.eb-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:4px;transition:transform .15s}
+.eb-row:hover{transform:translateX(3px)}
 .eb-round{font-size:11px;color:var(--muted);font-family:'Courier New',monospace}
 .eb-info{font-size:11px;font-family:'Courier New',monospace;color:var(--soft)}
 .eb-pts{font-size:13px;font-weight:800;font-family:'Courier New',monospace;color:var(--amber)}
 .end-btns{width:100%;display:flex;flex-direction:column;gap:8px}
-.btn-share-end{padding:13px;border-radius:12px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-play-again-end{padding:11px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--soft);font-size:13px;font-weight:700;cursor:pointer;font-family:'Georgia',serif}
+.btn-share-end{padding:15px;border-radius:16px;border:none;
+  background:linear-gradient(135deg,#b44dff,#44ccff);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 0 24px rgba(180,77,255,0.35);transition:transform .15s,box-shadow .15s}
+.btn-share-end:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(180,77,255,0.5)}
+.btn-play-again-end{padding:13px;border-radius:16px;border:1.5px solid var(--border);background:var(--card);color:var(--soft);font-size:13px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;
+  box-shadow:var(--shadow);transition:transform .15s}
+.btn-play-again-end:hover{transform:translateY(-1px);color:var(--text)}
 
-.game-actions{
-  display:flex;
-  justify-content:center;
-  margin:10px 0 6px;
-}
+#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:9px 20px;font-size:12px;font-weight:600;color:var(--text);z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;font-family:'Courier New',monospace;white-space:nowrap;box-shadow:0 0 20px rgba(180,77,255,0.3)}
 
-.btn-reset{
-  background:#1e2640;
-  color:#d8dcff;
-  border:1.5px solid rgba(124,92,246,0.45);
-  border-radius:12px;
-  padding:10px 16px;
-  font-size:12px;
-  font-weight:700;
-  font-family:'Courier New', monospace;
-  cursor:pointer;
-  transition:0.15s ease;
-}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:18px 20px 32px;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.46,1);max-height:88vh;overflow-y:auto;border-top:1px solid var(--border);box-shadow:0 -4px 40px rgba(180,77,255,0.2)}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px;text-align:center;
+  background:linear-gradient(135deg,#b44dff,#44ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text)}
+.settings-row:last-child{border-bottom:none}
+.toggle{width:44px;height:24px;border-radius:12px;background:var(--surface);border:1.5px solid var(--border);cursor:pointer;position:relative;transition:background .2s}
+.toggle.on{background:var(--purple);border-color:var(--purple);box-shadow:0 0 10px rgba(180,77,255,0.4)}
+.toggle-thumb{width:18px;height:18px;border-radius:9px;background:#fff;position:absolute;top:1px;left:1px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle.on .toggle-thumb{transform:translateX(20px)}
+.modal-section{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-family:'Courier New',monospace}
+.tnc-text{font-size:11px;color:var(--soft);line-height:1.7;padding:12px 0}
 
-.btn-reset:active{
-  transform:scale(0.96);
-}
+.demo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.demo-overlay.open{opacity:1;pointer-events:all}
+.demo-sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:18px 0 32px;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.46,1);border-top:1px solid var(--border);box-shadow:0 -4px 40px rgba(180,77,255,0.2)}
+.demo-overlay.open .demo-sheet{transform:translateY(0)}
+.demo-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 14px}
+.demo-title{text-align:center;font-size:16px;font-weight:700;margin-bottom:16px;
+  background:linear-gradient(135deg,#b44dff,#44ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.carousel-viewport{overflow:hidden;width:100%}
+.carousel-track{display:flex;transition:transform .32s cubic-bezier(.4,0,.2,1)}
+.carousel-slide{min-width:100%;padding:0 20px 8px}
+.slide-visual{width:100%;height:150px;border-radius:18px;background:var(--surface);border:1.5px solid var(--border);margin-bottom:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.slide-heading{font-size:15px;font-weight:700;margin-bottom:6px;text-align:center;color:var(--text)}
+.slide-body{font-size:12.5px;color:var(--soft);line-height:1.65;text-align:center}
+.slide-body b{color:var(--text)}
+.carousel-dots{display:flex;gap:6px;justify-content:center;margin:14px 0}
+.cdot{width:7px;height:7px;border-radius:4px;background:var(--border);cursor:pointer;transition:background .2s,width .2s}
+.cdot.active{background:var(--purple);width:20px;box-shadow:0 0 8px rgba(180,77,255,0.5)}
+.demo-nav{display:flex;gap:10px;padding:0 20px}
+.demo-btn{flex:1;padding:11px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;transition:.15s}
+.demo-btn.primary{background:linear-gradient(135deg,#b44dff,#7733ff);color:#fff;border-color:transparent;box-shadow:0 0 16px rgba(180,77,255,0.35)}
+.demo-btn:hover{transform:translateY(-1px)}
 
-.btn-reset:hover{
-  background:#2a3358;
-}
-
-#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text);z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;font-family:'Courier New',monospace;white-space:nowrap}
+.deco-float{position:fixed;pointer-events:none;z-index:0;opacity:0.55}
+.deco-a{top:8%;right:4%;animation:floatA 6s ease-in-out infinite;animation-delay:0s}
+.deco-b{top:22%;left:2%;animation:floatB 7s ease-in-out infinite;animation-delay:-.5s}
+.deco-c{top:55%;right:3%;animation:floatC 5s ease-in-out infinite;animation-delay:-1s}
+.deco-d{bottom:22%;left:4%;animation:floatA 8s ease-in-out infinite;animation-delay:-2s}
 </style>
 
 <div id="toast"></div>
 
+<div class="poly-bg">
+<svg viewBox="0 0 420 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="rg1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(180,77,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(180,77,255,0)"/>
+    </radialGradient>
+    <radialGradient id="rg2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(68,204,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(68,204,255,0)"/>
+    </radialGradient>
+    <radialGradient id="rg3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(0,255,170,0.15)"/>
+      <stop offset="100%" stop-color="rgba(0,255,170,0)"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="330" cy="100" rx="160" ry="160" fill="url(#rg1)"/>
+  <ellipse cx="80" cy="300" rx="120" ry="120" fill="url(#rg2)"/>
+  <ellipse cx="360" cy="500" rx="130" ry="130" fill="url(#rg3)"/>
+  <ellipse cx="60" cy="700" rx="110" ry="110" fill="url(#rg1)"/>
+  <ellipse cx="300" cy="820" rx="140" ry="140" fill="url(#rg2)"/>
+  <polygon points="30,60 110,20 160,90 80,130" fill="none" stroke="rgba(180,77,255,0.28)" stroke-width="1.5"/>
+  <polygon points="300,40 380,70 360,150 280,120" fill="none" stroke="rgba(68,204,255,0.22)" stroke-width="1.5"/>
+  <polygon points="10,250 70,220 100,280 40,310" fill="none" stroke="rgba(0,255,170,0.2)" stroke-width="1"/>
+  <polygon points="340,200 400,180 410,260 360,270" fill="none" stroke="rgba(180,77,255,0.18)" stroke-width="1"/>
+  <polygon points="50,450 120,420 150,490 90,520 40,500" fill="none" stroke="rgba(68,204,255,0.2)" stroke-width="1.5"/>
+  <polygon points="320,380 390,360 400,430 350,460" fill="none" stroke="rgba(255,204,0,0.18)" stroke-width="1"/>
+  <polygon points="20,680 80,650 110,710 60,740" fill="none" stroke="rgba(0,255,170,0.22)" stroke-width="1.5"/>
+  <polygon points="350,600 410,580 420,650 370,670" fill="none" stroke="rgba(180,77,255,0.16)" stroke-width="1"/>
+  <polygon points="160,800 230,780 250,840 190,860" fill="none" stroke="rgba(68,204,255,0.2)" stroke-width="1"/>
+  <circle cx="200" cy="140" r="3" fill="rgba(180,77,255,0.5)"/>
+  <circle cx="380" cy="300" r="2.5" fill="rgba(68,204,255,0.45)"/>
+  <circle cx="40" cy="380" r="2.5" fill="rgba(0,255,170,0.4)"/>
+  <circle cx="350" cy="480" r="2" fill="rgba(255,204,0,0.45)"/>
+  <circle cx="100" cy="600" r="3" fill="rgba(180,77,255,0.4)"/>
+</svg>
+</div>
+
+<div class="deco-float deco-a"><svg width="36" height="36" viewBox="0 0 36 36"><polygon points="18,2 34,28 2,28" fill="none" stroke="rgba(180,77,255,0.6)" stroke-width="2"/></svg></div>
+<div class="deco-float deco-b"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="4" fill="none" stroke="rgba(68,204,255,0.55)" stroke-width="2" transform="rotate(20 14 14)"/></svg></div>
+<div class="deco-float deco-c"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="rgba(0,255,170,0.5)" stroke-width="2" stroke-dasharray="4 3"/></svg></div>
+<div class="deco-float deco-d"><svg width="32" height="32" viewBox="0 0 32 32"><polygon points="16,2 20,12 30,12 22,19 25,30 16,24 7,30 10,19 2,12 12,12" fill="none" stroke="rgba(255,204,0,0.5)" stroke-width="1.5"/></svg></div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal" onclick="closeSettingsOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Settings</div>
+    <!-- <div class="modal-section">Appearance</div> -->
+    <!-- <div class="settings-row">
+      <span>Dark Mode</span>
+      <div class="toggle on" id="dark-toggle" onclick="toggleDark()"><div class="toggle-thumb"></div></div>
+    </div> -->
+    <!-- <div class="modal-section">Gameplay</div> -->
+    <!-- <div class="settings-row">
+      <span>Sound Effects</span>
+      <div class="toggle on" id="sound-toggle" onclick="toggleSetting('sound-toggle')"><div class="toggle-thumb"></div></div>
+    </div> -->
+    <!-- <div class="settings-row">
+      <span>Haptic Feedback (Mobile Only)</span>
+      <div class="toggle on" id="haptic-toggle" onclick="toggleSetting('haptic-toggle')"><div class="toggle-thumb"></div></div>
+    </div> -->
+    <div class="modal-section">About</div>
+    <div class="settings-row" style="cursor:pointer" onclick="openDemo()">
+      <span>How to Play</span>
+      <span style="color:var(--muted);font-size:13px">›</span>
+    </div>
+    <div class="settings-row" style="cursor:pointer">
+      <a href="https://ko-fi.com/YOUR_USERNAME"
+        target="_blank"
+        style="display:inline-block;
+                padding:10px 14px;
+                border-radius:8px;
+                background:#ff5e5e;
+                color:white;
+                text-decoration:none;
+                font-weight:bold;">
+        ☕ Support the game (Ko-fi)
+      </a>
+    </div>
+    <div class="modal-section">Legal</div>
+    <div class="tnc-text">
+      <b style="color:var(--text);font-size:12px">Terms & Conditions</b><br><br>
+By playing Polynk, you agree to these Terms and Conditions. Polynk is provided for entertainment purposes only. Scores and gameplay data are stored locally on your device unless otherwise stated.<br><br>
+We may update, modify, suspend, or discontinue features of Polynk at any time without notice. All game content, artwork, mechanics, and related materials are the property of Polynk and may not be reproduced, copied, modified, or distributed without permission.<br><br>
+<b style="color:var(--text);font-size:12px">Privacy Policy</b><br><br>
+Polynk does not collect, store, or transmit personal information. Gameplay data is stored locally on your device or within your browser.
+    </div>
+  </div>
+</div>
+
+<!-- DEMO CAROUSEL -->
+<div class="demo-overlay" id="demo-modal" onclick="closeDemoOutside(event)">
+  <div class="demo-sheet">
+    <div class="demo-handle"></div>
+    <div class="demo-title">How to Play</div>
+    <div class="carousel-viewport">
+      <div class="carousel-track" id="carousel-track">
+        <div class="carousel-slide">
+          <div class="slide-visual">
+            <svg viewBox="0 0 260 150" width="260" height="150">
+              <circle cx="130" cy="75" r="3" fill="#ff4466"/>
+              <line x1="130" y1="50" x2="130" y2="100" stroke="#ff4466" stroke-width="4" stroke-linecap="round"/>
+              <line x1="105" y1="75" x2="155" y2="75" stroke="#ff4466" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="130" cy="50" r="5" fill="#ff4466" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+              <circle cx="130" cy="100" r="5" fill="#ff4466" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+              <circle cx="105" cy="75" r="5" fill="#ff4466" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+              <circle cx="155" cy="75" r="5" fill="#ff4466" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+              <circle cx="130" cy="75" r="4" fill="rgba(255,68,102,0.3)" stroke="#ff4466" stroke-width="1"/>
+              <text x="130" y="128" text-anchor="middle" font-size="11" fill="#7060a0" font-family="Courier New">the ✛ cross target</text>
+            </svg>
+          </div>
+          <div class="slide-heading">The Cross Target</div>
+          <div class="slide-body">Each round spawns a glowing <b>✛ cross</b>. Your goal is to trap it inside a polygon by connecting dots. All <b>4 arm tips</b> must be inside your shape!</div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-visual">
+            <svg viewBox="0 0 260 150" width="260" height="150">
+              <circle cx="80" cy="40" r="12" fill="rgba(180,77,255,0.1)" stroke="rgba(180,77,255,0.5)" stroke-width="2"/>
+              <circle cx="190" cy="55" r="12" fill="rgba(180,77,255,0.1)" stroke="rgba(180,77,255,0.5)" stroke-width="2"/>
+              <circle cx="170" cy="125" r="12" fill="rgba(180,77,255,0.1)" stroke="rgba(180,77,255,0.5)" stroke-width="2"/>
+              <circle cx="40" cy="80" r="12" fill="rgba(180,77,255,0.25)" stroke="rgba(180,77,255,0.9)" stroke-width="2.5"/>
+              <circle cx="130" cy="30" r="12" fill="rgba(180,77,255,0.25)" stroke="rgba(180,77,255,0.9)" stroke-width="2.5"/>
+              <circle cx="210" cy="95" r="12" fill="rgba(180,77,255,0.25)" stroke="rgba(180,77,255,0.9)" stroke-width="2.5"/>
+              <text x="40" y="84" text-anchor="middle" font-size="9" fill="rgba(230,210,255,1)" font-family="Courier New" font-weight="bold">1</text>
+              <text x="130" y="34" text-anchor="middle" font-size="9" fill="rgba(230,210,255,1)" font-family="Courier New" font-weight="bold">2</text>
+              <text x="210" y="99" text-anchor="middle" font-size="9" fill="rgba(230,210,255,1)" font-family="Courier New" font-weight="bold">3</text>
+              <polygon points="40,80 130,30 210,95" fill="rgba(180,77,255,0.1)" stroke="rgba(180,77,255,0.7)" stroke-width="2" stroke-dasharray="6,4"/>
+              <text x="130" y="140" text-anchor="middle" font-size="11" fill="#7060a0" font-family="Courier New">tap or drag to select</text>
+            </svg>
+          </div>
+          <div class="slide-heading">Tap or Drag</div>
+          <div class="slide-body"><b>Tap</b> individual dots to add them. Or <b>drag</b> your finger across the grid — dots you pass through get selected automatically!</div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-visual">
+            <svg viewBox="0 0 260 150" width="260" height="150">
+              <polygon points="60,35 200,45 210,120 50,115" fill="rgba(0,255,170,0.12)" stroke="rgba(0,255,170,0.85)" stroke-width="2"/>
+              <circle cx="130" cy="80" r="3" fill="#00ffaa"/>
+              <line x1="130" y1="62" x2="130" y2="98" stroke="#00ffaa" stroke-width="4" stroke-linecap="round"/>
+              <line x1="112" y1="80" x2="148" y2="80" stroke="#00ffaa" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="130" cy="62" r="5" fill="#00ffaa" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <circle cx="130" cy="98" r="5" fill="#00ffaa" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <circle cx="112" cy="80" r="5" fill="#00ffaa" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <circle cx="148" cy="80" r="5" fill="#00ffaa" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <text x="130" y="138" text-anchor="middle" font-size="12" fill="#00ffaa" font-family="Courier New" font-weight="bold">captured!</text>
+            </svg>
+          </div>
+          <div class="slide-heading">Auto-Capture!</div>
+          <div class="slide-body">No button to press — the moment all 4 cross tips are <b>enclosed</b>, it triggers <b>automatically</b>. The shape turns green and you score!</div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-visual">
+            <svg viewBox="0 0 260 150" width="260" height="150">
+              <text x="70" y="75" font-size="38" text-anchor="middle" fill="#ffcc00" font-family="Courier New" font-weight="900">500</text>
+              <text x="70" y="95" font-size="11" fill="#7060a0" text-anchor="middle" font-family="Courier New">3 dots</text>
+              <text x="70" y="115" font-size="10" fill="#7060a0" text-anchor="middle" font-family="Courier New">triangle!</text>
+              <line x1="130" y1="25" x2="130" y2="125" stroke="rgba(180,77,255,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+              <text x="185" y="75" font-size="28" text-anchor="middle" fill="#7060a0" font-family="Courier New">60</text>
+              <text x="185" y="95" font-size="11" fill="#7060a0" text-anchor="middle" font-family="Courier New">6+ dots</text>
+              <text x="130" y="138" text-anchor="middle" font-size="11" fill="#7060a0" font-family="Courier New">fewer dots = more points!</text>
+            </svg>
+          </div>
+          <div class="slide-heading">Score Big</div>
+          <div class="slide-body">Fewer dots = more points. A <b>3-dot triangle</b> scores up to <b style="color:#ffcc00">500 pts</b>. Speed bonus + area bonus stack on top!</div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-visual">
+            <svg viewBox="0 0 260 150" width="260" height="150">
+              <circle cx="130" cy="68" r="18" fill="rgba(255,68,102,0.55)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+              <line x1="120" y1="58" x2="140" y2="78" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+              <line x1="140" y1="58" x2="120" y2="78" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+              <text x="130" y="108" text-anchor="middle" font-size="11" fill="#ff4466" font-family="Courier New" font-weight="bold">obstacle!</text>
+              <text x="130" y="128" text-anchor="middle" font-size="10" fill="#7060a0" font-family="Courier New">timer runs out = game over</text>
+            </svg>
+          </div>
+          <div class="slide-heading">Watch Out!</div>
+          <div class="slide-body">Don't let the <b>timer bar</b> run out. Avoid <b>red obstacles</b> that spawn over time. Either one ends your game!</div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-dots" id="carousel-dots">
+      <div class="cdot active" onclick="goSlide(0)"></div>
+      <div class="cdot" onclick="goSlide(1)"></div>
+      <div class="cdot" onclick="goSlide(2)"></div>
+      <div class="cdot" onclick="goSlide(3)"></div>
+      <div class="cdot" onclick="goSlide(4)"></div>
+    </div>
+    <div class="demo-nav">
+      <button class="demo-btn" id="demo-prev" onclick="prevSlide()">← Back</button>
+      <button class="demo-btn primary" id="demo-next" onclick="nextSlide()">Next →</button>
+    </div>
+  </div>
+</div>
+
 <!-- SETUP -->
 <div id="screen-setup" class="screen">
   <div class="setup-hero">
-    <div class="logo">Polynk</div>
+    <div class="logo">Poly<span>nk</span></div>
     <div class="mode-badge">⚡ Capture Mode</div>
   </div>
-  <p class="setup-desc">Surround the <b style="color:var(--text)">✛ cross</b> target by tapping or dragging across dots. The cross must be <b style="color:var(--text)">fully inside</b> your polygon — capture is instant and automatic!</p>
 
-  <!-- <div class="section-label">Time limit</div>
-  <div class="time-grid" id="time-grid">
-    <div class="time-opt selected" data-t="30"><div class="t-val">30</div><div class="t-lbl">secs</div></div>
-    <div class="time-opt" data-t="60"><div class="t-val">60</div><div class="t-lbl">secs</div></div>
-    <div class="time-opt" data-t="90"><div class="t-val">90</div><div class="t-lbl">secs</div></div>
-    <div class="time-opt" data-t="120"><div class="t-val">2</div><div class="t-lbl">mins</div></div>
-  </div> -->
+  <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin:10px 0 18px">
+    <p style="font-size:15px;color:var(--soft);line-height:1.6;flex:1;padding-right:10px">Surround the <b style="color:var(--green)">✛ cross</b> target with a polygon.<br> Capture all for tips to win!</p>
+    <div style="display:flex;gap:8px">
+      <div class="icon-btn" onclick="openDemo()" title="How to play">?</div>
+      <div class="icon-btn" onclick="openSettings()" title="Settings">⚙</div>
+    </div>
+  </div>
 
   <div class="section-label">Scoring</div>
   <div class="scoring-row">
@@ -142,33 +397,32 @@ body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-heig
     <div class="s-pip"><div class="s-pip-pts" style="color:var(--blue)">+⏱</div><div class="s-pip-lbl">speed</div></div>
   </div>
 
-  <div class="section-label">How to play</div>
+  <div class="section-label">Rules</div>
   <div class="rules-card">
-    <div class="rule"><div class="rule-ico">✛</div><div class="rule-text">Each round shows a <b>cross target</b>. Enclose <b>all 4 tips</b> of the cross inside your polygon to capture it.</div></div>
-    <div class="rule"><div class="rule-ico">👆</div><div class="rule-text"><b>Tap</b> dots or <b>drag</b> across them to select. Capture triggers <b>automatically</b> the moment the cross is fully enclosed.</div></div>
-    <div class="rule"><div class="rule-ico">⚠️</div><div class="rule-text">Failing to capture the cross is <b>game over</b>. <b>Avoid</b> spawning obstacles!</div></div>
-    <div class="rule"><div class="rule-ico">📐</div><div class="rule-text"><b>Fewer</b> dots + <b>Smaller</b> Polygon + <b>Faster</b> = <b>Higher Score!</b></div></div>
+    <div class="rule"><div class="rule-ico">✛</div><div class="rule-text">Enclose <b>all 4 tips</b> of the cross inside your polygon to capture it.</div></div>
+    <div class="rule"><div class="rule-ico">👆</div><div class="rule-text"><b>Tap</b> dots or <b>drag</b> across them. Capture triggers <b>automatically</b>.</div></div>
+    <div class="rule"><div class="rule-ico">⚠️</div><div class="rule-text">Timer runs out or hitting obstacles = <b>game over</b>.</div></div>
+    <div class="rule"><div class="rule-ico">📐</div><div class="rule-text"><b>Fewer dots + smaller polygon + faster</b> = higher score!</div></div>
   </div>
 
   <button class="btn-start" onclick="startCapture()">Start Game →</button>
+  <div style="margin-top:10px; font-size:12px; opacity:0.8;">
+  Like the game? <a href="https://ko-fi.com/YOUR_USERNAME" target="_blank" style="color:#f15151;">Buy me a coffee ☕</a>
+</div>
+</div>
+  <!-- <p style="font-size:10px;color:var(--muted);margin-top:12px;text-align:center;font-family:'Courier New',monospace;cursor:pointer" onclick="openSettings()">Settings & T&C</p> -->
 </div>
 
 <!-- GAME -->
 <div id="screen-game" class="screen hidden">
-  <div class="game-hdr">
-    <div class="hdr-back" onclick="confirmQuit()">←</div>
+  <div class="top-bar">
+    <div class="icon-btn" onclick="confirmQuit()">←</div>
     <div style="text-align:center">
-      <div style="color:var(--red);font-size:15px;font-weight:800;font-family:'Verdana',sans-serif">Polynk</div>
+      <div style="font-size:15px;font-weight:800;font-family:'Monaco',monospace;background:linear-gradient(135deg,#b44dff,#44ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Polynk</div>
       <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">⚡ Capture</div>
     </div>
-    <div style="width:32px"></div>
+    <div class="icon-btn" onclick="openSettings()">⚙</div>
   </div>
-
-  <!-- <div class="hud">
-    <div class="hud-box"><div class="hud-label">Time</div><div class="hud-val t-val" id="hud-time">30</div></div>
-    <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val s-val" id="hud-score">0</div></div>
-    <div class="hud-box"><div class="hud-label">Round</div><div class="hud-val r-val" id="hud-round">1</div></div>
-  </div> -->
 
   <div class="skip-wrap">
     <div class="skip-bar-outer"><div class="skip-bar-inner" id="skip-bar"></div></div>
@@ -182,9 +436,8 @@ body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-heig
     <div id="flash"></div>
   </div>
 
-  
   <div class="game-actions">
-    <button class="btn-reset" onclick="resetSelection()">Reset Selection</button>
+    <button class="btn-reset" onclick="resetSelection()">↺ Reset Selection</button>
   </div>
 </div>
 
@@ -210,59 +463,52 @@ body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;min-heig
 </div>
 
 <script>
-var C = {
-  GW:0,GH:0,
-  totalScore:0,roundNum:1,
+var C={
+  GW:0,GH:0,totalScore:0,roundNum:1,
   gameRunning:false,transitioning:false,
   mainTimer:null,skipRafId:null,skipDeadline:0,SKIP_MS:5000,
-
-  target:null,
-  CROSS_ARM:10,
-
-  gridDots:[],
-  selected:[],
-  roundLog:[],
-
+  target:null,CROSS_ARM:10,
+  gridDots:[],selected:[],roundLog:[],
   canvas:null,ctx:null,
-
   DOT_R:11,HIT_R:26,
-
-  isDragging:false,
-  dragPos:null,
-  lastDragPos:null,
-  dragAddedThisStroke:[],
-
-  // lastCaptureTime:0,
-  // FAIL_NO_CAPTURE_MS:45000,
-
-  // ✅ MISSING PIECES (IMPORTANT FIX)
-  obstacles:[],
-  obstacleTimers:[20],
-  nextObstacleIndex:0
+  isDragging:false,dragPos:null,lastDragPos:null,dragAddedThisStroke:[],
+  obstacles:[],obstacleTimers:[20],nextObstacleIndex:0,sessionStart:0,lastCaptureTime:0,
+  particles:[]
 };
 
+var isDark=true;
+var carouselIdx=0;
+var TOTAL_SLIDES=5;
+
+function toggleDark(){
+  isDark=!isDark;
+  document.body.setAttribute('data-theme',isDark?'':'light');
+  var t=document.getElementById('dark-toggle');
+  if(isDark)t.classList.add('on');else t.classList.remove('on');
+}
+function toggleSetting(id){var t=document.getElementById(id);t.classList.toggle('on');}
+function openSettings(){document.getElementById('settings-modal').classList.add('open');}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open');}
+function closeSettingsOutside(e){if(e.target===document.getElementById('settings-modal'))closeSettings();}
+function openDemo(){document.getElementById('settings-modal').classList.remove('open');carouselIdx=0;updateCarousel();document.getElementById('demo-modal').classList.add('open');}
+function closeDemo(){document.getElementById('demo-modal').classList.remove('open');}
+function closeDemoOutside(e){if(e.target===document.getElementById('demo-modal'))closeDemo();}
+function goSlide(n){carouselIdx=Math.max(0,Math.min(TOTAL_SLIDES-1,n));updateCarousel();}
+function nextSlide(){if(carouselIdx===TOTAL_SLIDES-1){closeDemo();return;}carouselIdx++;updateCarousel();}
+function prevSlide(){if(carouselIdx===0){closeDemo();return;}carouselIdx--;updateCarousel();}
+function updateCarousel(){
+  document.getElementById('carousel-track').style.transform='translateX(-'+(carouselIdx*100)+'%)';
+  document.querySelectorAll('.cdot').forEach(function(d,i){d.classList.toggle('active',i===carouselIdx);});
+  document.getElementById('demo-prev').textContent=carouselIdx===0?'✕ Close':'← Back';
+  document.getElementById('demo-next').textContent=carouselIdx===TOTAL_SLIDES-1?'✓ Got it!':'Next →';
+}
+
 function showScreen(id){
-  ['screen-setup','screen-game','screen-end'].forEach(function(s){
-    document.getElementById(s).classList.toggle('hidden',s!==id);
-  });
+  ['screen-setup','screen-game','screen-end'].forEach(function(s){document.getElementById(s).classList.toggle('hidden',s!==id);});
 }
-function goSetup(){
-  clearInterval(C.mainTimer);
-  cancelAnimationFrame(C.skipRafId);
-  C.gameRunning=false;
-  showScreen('screen-setup');
-}
+function goSetup(){clearInterval(C.mainTimer);cancelAnimationFrame(C.skipRafId);C.gameRunning=false;showScreen('screen-setup');}
 
-// document.getElementById('time-grid').addEventListener('click',function(e){
-//   var opt=e.target.closest('.time-opt');if(!opt)return;
-//   document.querySelectorAll('.time-opt').forEach(function(o){o.classList.remove('selected');});
-//   opt.classList.add('selected');
-//   C.timeLimit=parseInt(opt.dataset.t);
-// });
-
-// ── GEOMETRY ──
 function dist(a,b){return Math.sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));}
-
 function pointInPoly(pt,poly){
   var x=pt.x,y=pt.y,inside=false;
   for(var i=0,j=poly.length-1;i<poly.length;j=i++){
@@ -271,28 +517,17 @@ function pointInPoly(pt,poly){
   }
   return inside;
 }
-
-// All 4 arm-tips of the cross must be inside the polygon
 function crossFullyEnclosed(poly){
   if(poly.length<3)return false;
   var t=C.target,arm=C.CROSS_ARM;
-  var tips=[
-    {x:t.x,       y:t.y-arm},  // top
-    {x:t.x,       y:t.y+arm},  // bottom
-    {x:t.x-arm,   y:t.y},      // left
-    {x:t.x+arm,   y:t.y}       // right
-  ];
+  var tips=[{x:t.x,y:t.y-arm},{x:t.x,y:t.y+arm},{x:t.x-arm,y:t.y},{x:t.x+arm,y:t.y}];
   return tips.every(function(p){return pointInPoly(p,poly);});
 }
-
 function polyArea(pts){
   var a=0;
-  for(var i=0,j=pts.length-1;i<pts.length;j=i++){
-    a+=pts[j].x*pts[i].y-pts[i].x*pts[j].y;
-  }
+  for(var i=0,j=pts.length-1;i<pts.length;j=i++){a+=pts[j].x*pts[i].y-pts[i].x*pts[j].y;}
   return Math.abs(a)/2;
 }
-
 function segTouchesCircle(ax,ay,bx,by,cx,cy,r){
   var dx=bx-ax,dy=by-ay,len=Math.sqrt(dx*dx+dy*dy);
   if(len<0.001)return dist({x:ax,y:ay},{x:cx,y:cy})<r;
@@ -301,15 +536,19 @@ function segTouchesCircle(ax,ay,bx,by,cx,cy,r){
   return dist({x:ax+t*dx,y:ay+t*dy},{x:cx,y:cy})<r;
 }
 
-// ── ROUND GENERATION — target placed first, 3 guard dots guaranteed around it ──
+function spawnParticles(x,y,color,count){
+  for(var i=0;i<count;i++){
+    var angle=Math.random()*Math.PI*2;
+    var speed=1.5+Math.random()*3;
+    C.particles.push({x:x,y:y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1,color:color,r:2+Math.random()*3});
+  }
+}
+
 function generateRound(){
   var margin=0.12,GW=C.GW,GH=C.GH;
-  var tx=(0.25+Math.random()*0.50)*GW;
-  var ty=(0.25+Math.random()*0.50)*GH;
+  var tx=(0.25+Math.random()*0.50)*GW,ty=(0.25+Math.random()*0.50)*GH;
   var target={x:tx,y:ty};
-
-  var guardDots=[];
-  var baseAngle=Math.random()*Math.PI*2;
+  var guardDots=[],baseAngle=Math.random()*Math.PI*2;
   for(var g=0;g<3;g++){
     var a=baseAngle+g*(Math.PI*2/3)+(Math.random()*0.35-0.175);
     var r=GW*(0.16+Math.random()*0.14);
@@ -317,52 +556,36 @@ function generateRound(){
     var gy=Math.max(margin*GH,Math.min((1-margin)*GH,ty+Math.sin(a)*r));
     guardDots.push({x:gx,y:gy,guard:true});
   }
-  // verify enclosure with cross tips
   var arm=C.CROSS_ARM;
   var tips=[{x:tx,y:ty-arm},{x:tx,y:ty+arm},{x:tx-arm,y:ty},{x:tx+arm,y:ty}];
   var allIn=tips.every(function(p){return pointInPoly(p,guardDots);});
   if(!allIn){
     guardDots=guardDots.map(function(d){
-      var dx=d.x-tx,dy=d.y-ty,len=Math.sqrt(dx*dx+dy*dy)||1;
-      var s=Math.max(1.35,(GW*0.20)/len);
-      return{x:Math.max(margin*GW,Math.min((1-margin)*GW,tx+dx*s)),
-             y:Math.max(margin*GH,Math.min((1-margin)*GH,ty+dy*s)),guard:true};
+      var dx=d.x-tx,dy=d.y-ty,len=Math.sqrt(dx*dx+dy*dy)||1,s=Math.max(1.35,(GW*0.20)/len);
+      return{x:Math.max(margin*GW,Math.min((1-margin)*GW,tx+dx*s)),y:Math.max(margin*GH,Math.min((1-margin)*GH,ty+dy*s)),guard:true};
     });
   }
-
-  var extraCount=6+Math.floor(Math.random()*5);
-  var extras=[],minSep=GW*0.09,tries=0;
+  var extraCount=6+Math.floor(Math.random()*5),extras=[],minSep=GW*0.09,tries=0;
   while(extras.length<extraCount&&tries<300){
     tries++;
-    var ex=(margin+Math.random()*(1-2*margin))*GW;
-    var ey=(margin+Math.random()*(1-2*margin))*GH;
+    var ex=(margin+Math.random()*(1-2*margin))*GW,ey=(margin+Math.random()*(1-2*margin))*GH;
     var ok=dist({x:ex,y:ey},target)>minSep;
     if(ok)guardDots.concat(extras).forEach(function(d){if(dist({x:ex,y:ey},d)<minSep)ok=false;});
     if(ok)extras.push({x:ex,y:ey,guard:false});
   }
-
   var all=guardDots.concat(extras);
   for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=all[i];all[i]=all[j];all[j]=tmp;}
   return{target:target,dots:all};
 }
 
-// ── START ──
 function startCapture(){
-  C.sessionStart = Date.now();
-  C.lastCaptureTime = Date.now();
-
-  C.obstacles = [];
-  C.obstacleTimers = [20];
-  C.nextObstacleIndex = 0;
-
-  C.timeLeft=C.timeLimit;C.totalScore=0;C.roundNum=1;
-  C.roundLog=[];C.gameRunning=true;C.transitioning=false;
+  C.sessionStart=Date.now();C.lastCaptureTime=Date.now();
+  C.obstacles=[];C.obstacleTimers=[20];C.nextObstacleIndex=0;
+  C.totalScore=0;C.roundNum=1;C.roundLog=[];C.gameRunning=true;C.transitioning=false;C.particles=[];
   showScreen('screen-game');
-
   var availW=Math.min(window.innerWidth-32,388);
   C.GW=Math.floor(availW);C.GH=C.GW;
-  C.CROSS_ARM=Math.round(C.GW*0.038); // scale arm to canvas
-
+  C.CROSS_ARM=Math.round(C.GW*0.038);
   var oldC=document.getElementById('gc');
   var newC=oldC.cloneNode(false);
   oldC.parentNode.replaceChild(newC,oldC);
@@ -370,63 +593,25 @@ function startCapture(){
   C.canvas.width=C.GW;C.canvas.height=C.GH;
   C.canvas.style.width=C.GW+'px';C.canvas.style.height=C.GH+'px';
   document.getElementById('canvas-wrap').style.width=C.GW+'px';
-
-  bindEvents();
-  initRound();
-  // startMainTimer();
-  // startSessionWatcher();
+  bindEvents();initRound();
 }
-
-// function startSessionWatcher(){
-//   setInterval(function(){
-//     if(!C.gameRunning || C.transitioning) return;
-
-//     var idle = Date.now() - C.lastCaptureTime;
-
-//     if(idle > C.FAIL_NO_CAPTURE_MS){
-//       triggerFail("No capture for too long");
-//     }
-
-//     handleObstacleSpawns();
-//   }, 500);
-// }
 
 function spawnObstacle(){
   var margin=0.12;
-  var x=(margin+Math.random()*(1-2*margin))*C.GW;
-  var y=(margin+Math.random()*(1-2*margin))*C.GH;
-
-  C.obstacles.push({x:x,y:y,r:10});
+  C.obstacles.push({x:(margin+Math.random()*(1-2*margin))*C.GW,y:(margin+Math.random()*(1-2*margin))*C.GH,r:10,pulse:0});
 }
-
 function handleObstacleSpawns(){
-  var elapsed = (Date.now() - C.sessionStart)/1000;
-
-  while(
-    C.nextObstacleIndex < C.obstacleTimers.length &&
-    elapsed >= C.obstacleTimers[C.nextObstacleIndex]
-  ){
-    spawnObstacle();
-
-    C.nextObstacleIndex++;
-
-    // extend timeline after 60s
-    if(C.nextObstacleIndex >= C.obstacleTimers.length){
-      C.obstacleTimers.push(
-        C.obstacleTimers[C.obstacleTimers.length-1] + 20
-      );
-    }
-
-    setMsg("⚠ Obstacle spawned!", "msg-skip");
+  var elapsed=(Date.now()-C.sessionStart)/1000;
+  while(C.nextObstacleIndex<C.obstacleTimers.length&&elapsed>=C.obstacleTimers[C.nextObstacleIndex]){
+    spawnObstacle();C.nextObstacleIndex++;
+    if(C.nextObstacleIndex>=C.obstacleTimers.length)C.obstacleTimers.push(C.obstacleTimers[C.obstacleTimers.length-1]+20);
+    setMsg('⚠ Obstacle spawned!','msg-skip');
   }
 }
-
 function checkObstacleCollision(a,b){
   for(var i=0;i<(C.obstacles||[]).length;i++){
     var o=C.obstacles[i];
-    if(segTouchesCircle(a.x,a.y,b.x,b.y,o.x,o.y,o.r)){
-      return true;
-    }
+    if(segTouchesCircle(a.x,a.y,b.x,b.y,o.x,o.y,o.r))return true;
   }
   return false;
 }
@@ -434,50 +619,30 @@ function checkObstacleCollision(a,b){
 function initRound(){
   C.selected=[];C.transitioning=false;
   C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];
-  var r=generateRound();
-  C.target=r.target;C.gridDots=r.dots;
+  var r=generateRound();C.target=r.target;C.gridDots=r.dots;
   C.roundStartTime=Date.now();
-  updateHUD();
   setMsg('Surround the ✛ cross to capture','msg-hint');
-  resetSkipTimer();
-  draw();
+  resetSkipTimer();draw();
 }
-
-// ── TIMERS ──
-// function startMainTimer(){
-//   clearInterval(C.mainTimer);
-//   C.mainTimer=setInterval(function(){
-//     if(!C.gameRunning)return;
-//     C.timeLeft--;updateHUD();
-//     if(C.timeLeft<=0)endGame();
-//   },1000);
-// }
 
 function resetSkipTimer(){
   cancelAnimationFrame(C.skipRafId);
   C.skipDeadline=Date.now()+C.SKIP_MS;
   tickSkip();
 }
-
 function tickSkip(){
   if(!C.gameRunning||C.transitioning)return;
   handleObstacleSpawns();
   var rem=C.skipDeadline-Date.now();
   var pct=Math.max(0,Math.min(1,rem/C.SKIP_MS));
-  var bar=document.getElementById('skip-bar');
-  var lbl=document.getElementById('skip-lbl');
-  if(bar){bar.style.width=(pct*100)+'%';bar.style.background=pct>0.5?'#3ecf8e':pct>0.2?'#f5a623':'#f05252';}
+  var bar=document.getElementById('skip-bar'),lbl=document.getElementById('skip-lbl');
+  if(bar){
+    bar.style.width=(pct*100)+'%';
+    bar.style.background=pct>0.5?'linear-gradient(90deg,#00ffaa,#44ccff)':pct>0.2?'linear-gradient(90deg,#ffcc00,#ff8844)':'linear-gradient(90deg,#ff4466,#b44dff)';
+  }
   if(lbl)lbl.textContent=(Math.max(0,rem)/1000).toFixed(1)+'s';
-  if(rem<=0){triggerFail("Capture Failed");return;}
+  if(rem<=0){triggerFail('Capture Failed');return;}
   C.skipRafId=requestAnimationFrame(tickSkip);
-}
-
-function doSkip(){
-  if(C.transitioning||!C.gameRunning)return;
-  C.transitioning=true;
-  C.roundLog.push({round:C.roundNum,dots:0,pts:0,skipped:true,elapsed:5});
-  setMsg('Skipped! Next round…','msg-skip');
-  flashCanvas('rgba(240,82,82,0.52)',function(){C.roundNum++;initRound();});
 }
 
 function flashCanvas(color,cb){
@@ -485,38 +650,29 @@ function flashCanvas(color,cb){
   f.style.background=color;f.style.opacity='1';
   setTimeout(function(){f.style.opacity='0';setTimeout(function(){if(cb)cb();},180);},300);
 }
-
-// ── HUD ──
-function updateHUD(){
-  // var te=document.getElementById('hud-time');
-  // te.textContent=C.timeLeft;
-  // te.classList.toggle('urgent',C.timeLeft<=8);
-  // document.getElementById('hud-score').textContent=C.totalScore;
-  // document.getElementById('hud-round').textContent=C.roundNum;
-}
-
 function setMsg(txt,cls){
   var el=document.getElementById('info-msg');
   el.textContent=txt;el.className='info-msg '+(cls||'msg-hint');
 }
 
-// ── AUTO-CAPTURE CHECK — called after every selection change ──
+function showScorePopup(x,y,pts){
+  var wrap=document.getElementById('canvas-wrap');
+  var pop=document.createElement('div');
+  pop.className='score-popup';
+  pop.style.left=x+'px';pop.style.top=y+'px';
+  pop.textContent='+'+pts;
+  wrap.appendChild(pop);
+  setTimeout(function(){if(pop.parentNode)pop.parentNode.removeChild(pop);},1000);
+}
+
 function checkCapture(){
   if(C.transitioning||!C.gameRunning)return;
   var selPts=C.selected.map(function(i){return C.gridDots[i];});
   if(!crossFullyEnclosed(selPts))return;
-
   for(var i=0;i<selPts.length-1;i++){
-    if(checkObstacleCollision(selPts[i],selPts[i+1])){
-      triggerFail("Polygon touched obstacle");
-      return;
-    }
+    if(checkObstacleCollision(selPts[i],selPts[i+1])){triggerFail('Polygon line touched obstacle');return;}
   }
-
-  // cross is fully inside — trigger capture
-  C.transitioning=true;
-  cancelAnimationFrame(C.skipRafId);
-
+  C.transitioning=true;cancelAnimationFrame(C.skipRafId);
   var elapsed=(Date.now()-C.roundStartTime)/1000;
   var n=C.selected.length;
   var base=n<=3?500:n===4?300:n===5?150:60;
@@ -524,73 +680,51 @@ function checkCapture(){
   var pArea=polyArea(selPts);
   var areaBonus=Math.round(Math.max(0,1-(pArea/canvasArea)*20)*200);
   var speedBonus=Math.round(Math.max(0,(5-elapsed)/5)*150);
-  var pts=base+areaBonus+speedBonus;
+  var multiplier =
+  1 +
+  (areaBonus / 300) +
+  (speedBonus / 250);
 
+var pts = Math.round(base * multiplier);
   C.totalScore+=pts;
   C.roundLog.push({round:C.roundNum,dots:n,pts:pts,elapsed:Math.round(elapsed*10)/10,skipped:false});
   setMsg('+'+pts+' pts  ('+n+' dots · '+Math.round(elapsed*10)/10+'s)','msg-ok');
-  updateHUD();
-
-  var flashCol=n<=3?'rgba(62,207,142,0.50)':'rgba(245,166,35,0.46)';
-  draw(); // draw once with captured state before flash
-  flashCanvas(flashCol,function(){C.roundNum++;initRound();});
+  // spawnParticles(C.target.x,C.target.y,'#00ffaa',18);
+  showScorePopup(C.target.x-20,C.target.y-30,pts);
+  var flashCol=n<=3?'rgba(0,255,170,0.35)':'rgba(68,204,255,0.3)';
+  draw();flashCanvas(flashCol,function(){C.roundNum++;initRound();});
 }
 
 function triggerFail(reason){
-  if(!C.gameRunning) return;
-
-  C.gameRunning=false;
-  C.transitioning=true;
-
-  flashCanvas('rgba(240,82,82,0.6)',function(){
-    alert("Game Over: " + reason);
-    endGame();
-  });
+  if(!C.gameRunning)return;
+  C.gameRunning=false;C.transitioning=true;
+  // spawnParticles(C.target?C.target.x:C.GW/2,C.target?C.target.y:C.GH/2,'#ff4466',12);
+  flashCanvas('rgba(255,68,102,0.5)',function(){alert('Game Over: '+reason);endGame();});
 }
 
-// ── DOT SELECTION ──
-function selectDot(i){
-  if(C.selected.includes(i))return false;
-  C.selected.push(i);
-  return true;
-}
-
+function selectDot(i){if(C.selected.includes(i))return false;C.selected.push(i);return true;}
 function selectDotsAlongSegment(from,to){
   var added=false;
   for(var i=0;i<C.gridDots.length;i++){
-    if(C.selected.includes(i))continue;
-    if(C.dragAddedThisStroke.includes(i))continue;
+    if(C.selected.includes(i)||C.dragAddedThisStroke.includes(i))continue;
     var d=C.gridDots[i];
-    if(segTouchesCircle(from.x,from.y,to.x,to.y,d.x,d.y,C.HIT_R)){
-      selectDot(i);
-      C.dragAddedThisStroke.push(i);
-      added=true;
-    }
+    if(segTouchesCircle(from.x,from.y,to.x,to.y,d.x,d.y,C.HIT_R)){selectDot(i);C.dragAddedThisStroke.push(i);added=true;}
   }
   return added;
 }
-
 function afterSelect(){
-  // resetSkipTimer();
-  // update hint message
   var selPts=C.selected.map(function(i){return C.gridDots[i];});
   var enc=crossFullyEnclosed(selPts);
-  if(!enc){
-    var n=C.selected.length;
-    setMsg(n===0?'Surround the ✛ cross to capture':'Keep going · '+n+' dot'+(n!==1?'s':'')+' selected','msg-hint');
-  }
-  draw();
-  checkCapture();
+  if(!enc){var n=C.selected.length;setMsg(n===0?'Surround the ✛ cross to capture':'Keep going · '+n+' dot'+(n!==1?'s':'')+' selected','msg-hint');}
+  draw();checkCapture();
 }
 
-// ── POINTER HELPERS ──
 function getPos(e){
   var r=C.canvas.getBoundingClientRect();
   var src=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;
   var sx=C.GW/r.width,sy=C.GH/r.height;
   return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};
 }
-
 function nearestDot(pos){
   var best=-1,bestD=C.HIT_R;
   for(var i=0;i<C.gridDots.length;i++){
@@ -601,41 +735,24 @@ function nearestDot(pos){
   return best;
 }
 
-// ── EVENT BINDING ──
 function bindEvents(){
   var canvas=C.canvas;
-
   function onDown(e){
-    e.preventDefault();
-    if(!C.gameRunning||C.transitioning)return;
-    var pos=getPos(e);
-    C.isDragging=true;C.lastDragPos=pos;C.dragPos=pos;C.dragAddedThisStroke=[];
+    e.preventDefault();if(!C.gameRunning||C.transitioning)return;
+    var pos=getPos(e);C.isDragging=true;C.lastDragPos=pos;C.dragPos=pos;C.dragAddedThisStroke=[];
     var hit=nearestDot(pos);
-    if(hit!==-1){selectDot(hit);C.dragAddedThisStroke.push(hit);afterSelect();}
-    else draw();
+    if(hit!==-1){selectDot(hit);C.dragAddedThisStroke.push(hit);afterSelect();}else draw();
   }
   function onMove(e){
-    e.preventDefault();
-    if(!C.isDragging||!C.gameRunning||C.transitioning)return;
+    e.preventDefault();if(!C.isDragging||!C.gameRunning||C.transitioning)return;
     var pos=getPos(e);
     var added=selectDotsAlongSegment(C.lastDragPos,pos);
+    if(checkObstacleCollision(C.lastDragPos,pos)){triggerFail('Hit obstacle');return;}
     C.lastDragPos=pos;C.dragPos=pos;
-    if(checkObstacleCollision(C.lastDragPos,pos)){
-      triggerFail("Hit obstacle");
-      return;
-    }
-    if(added)afterSelect();
-    else draw();
+    if(added)afterSelect();else draw();
   }
-  function onUp(e){
-    e.preventDefault();
-    C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];
-    draw();
-  }
-  function onLeave(e){
-    if(C.isDragging){C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];draw();}
-  }
-
+  function onUp(e){e.preventDefault();C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];draw();}
+  function onLeave(){if(C.isDragging){C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];draw();}}
   canvas.addEventListener('mousedown',onDown,{passive:false});
   canvas.addEventListener('mousemove',onMove,{passive:false});
   canvas.addEventListener('mouseup',onUp,{passive:false});
@@ -646,154 +763,143 @@ function bindEvents(){
   canvas.addEventListener('touchcancel',onUp,{passive:false});
 }
 
-// ── DRAW ──
+function updateParticles(){
+  C.particles=C.particles.filter(function(p){
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.life-=0.035;return p.life>0;
+  });
+}
+
 function draw(){
   var canvas=C.canvas,ctx=C.ctx,GW=C.GW,GH=C.GH;
   if(!canvas)return;
   ctx.clearRect(0,0,GW,GH);
 
-  // faint grid
-  ctx.strokeStyle='rgba(130,110,255,0.04)';ctx.lineWidth=1;ctx.setLineDash([]);
+  var dotFill='rgba(26,22,53,0.95)';
+  var dotStrokeU='rgba(100,70,200,0.45)';
+  var dotStrokeS='rgba(180,77,255,0.95)';
+  var gridLine='rgba(180,77,255,0.05)';
+
+  ctx.strokeStyle=gridLine;ctx.lineWidth=1;ctx.setLineDash([]);
   for(var gx=0;gx<=GW;gx+=GW/4){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,GH);ctx.stroke();}
   for(var gy=0;gy<=GH;gy+=GH/4){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(GW,gy);ctx.stroke();}
 
   var selPts=C.selected.map(function(i){return C.gridDots[i];});
   var enclosed=crossFullyEnclosed(selPts);
 
-  // polygon fill + stroke
   if(selPts.length>=2){
-    ctx.beginPath();
-    ctx.moveTo(selPts[0].x,selPts[0].y);
+    ctx.beginPath();ctx.moveTo(selPts[0].x,selPts[0].y);
     for(var k=1;k<selPts.length;k++)ctx.lineTo(selPts[k].x,selPts[k].y);
     if(selPts.length>=3){
       ctx.closePath();
-      ctx.fillStyle=enclosed?'rgba(62,207,142,0.14)':'rgba(124,92,246,0.09)';
+      ctx.fillStyle=enclosed?'rgba(0,255,170,0.1)':'rgba(180,77,255,0.08)';
       ctx.fill();
     }
-    ctx.strokeStyle=enclosed?'rgba(62,207,142,0.88)':'rgba(124,92,246,0.72)';
-    ctx.lineWidth=2;ctx.setLineDash(enclosed?[]:[6,4]);
-    ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=enclosed?'rgba(0,255,170,0.9)':'rgba(180,77,255,0.85)';
+    if(enclosed){ctx.shadowColor='rgba(0,255,170,0.4)';ctx.shadowBlur=10;}
+    ctx.lineWidth=2.5;ctx.setLineDash(enclosed?[]:[6,4]);ctx.stroke();
+    ctx.shadowBlur=0;ctx.setLineDash([]);
   }
 
-  // drag trail line
   if(C.isDragging&&C.dragPos&&selPts.length>=1){
     var last=selPts[selPts.length-1];
     ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(C.dragPos.x,C.dragPos.y);
-    ctx.strokeStyle='rgba(124,92,246,0.32)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+    ctx.strokeStyle='rgba(180,77,255,0.4)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
     ctx.stroke();ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(C.dragPos.x,C.dragPos.y,4,0,Math.PI*2);
-    ctx.fillStyle='rgba(124,92,246,0.38)';ctx.fill();
+    ctx.beginPath();ctx.arc(C.dragPos.x,C.dragPos.y,5,0,Math.PI*2);
+    ctx.fillStyle='rgba(180,77,255,0.45)';ctx.fill();
   }
 
-  // proximity halos during drag
   if(C.isDragging&&C.dragPos){
     for(var i=0;i<C.gridDots.length;i++){
       if(C.selected.includes(i))continue;
       if(dist(C.dragPos,C.gridDots[i])<C.HIT_R*1.9){
-        ctx.beginPath();ctx.arc(C.gridDots[i].x,C.gridDots[i].y,C.DOT_R+8,0,Math.PI*2);
-        ctx.fillStyle='rgba(124,92,246,0.10)';ctx.fill();
+        ctx.beginPath();ctx.arc(C.gridDots[i].x,C.gridDots[i].y,C.DOT_R+9,0,Math.PI*2);
+        ctx.fillStyle='rgba(180,77,255,0.11)';ctx.fill();
       }
     }
   }
 
-  // ── TARGET CROSS ──
-  var t=C.target,arm=C.CROSS_ARM,thick=3.5;
-  var tipsCaptured=enclosed||C.transitioning;
-
-  // OBSTACLES
   for(var i=0;i<C.obstacles.length;i++){
     var o=C.obstacles[i];
-    ctx.beginPath();
-    ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
-    ctx.fillStyle='rgba(240,82,82,0.6)';
-    ctx.fill();
-
-    ctx.lineWidth=2;
-    ctx.strokeStyle='rgba(255,255,255,0.5)';
-    ctx.stroke();
+    var pulse=Math.sin(Date.now()*0.006+i)*0.3+0.7;
+    ctx.beginPath();ctx.arc(o.x,o.y,o.r*1.6,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,68,102,0.12)';ctx.fill();
+    ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,68,102,'+(0.45+pulse*0.2)+')';ctx.fill();
+    ctx.shadowColor='rgba(255,68,102,0.6)';ctx.shadowBlur=10*pulse;
+    ctx.lineWidth=2;ctx.strokeStyle='rgba(255,150,150,0.5)';ctx.stroke();
+    ctx.shadowBlur=0;
   }
 
-  // soft glow behind cross
-  var grad=ctx.createRadialGradient(t.x,t.y,0,t.x,t.y,arm+10);
-  grad.addColorStop(0,tipsCaptured?'rgba(62,207,142,0.28)':'rgba(255,80,80,0.22)');
-  grad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.beginPath();ctx.arc(t.x,t.y,arm+12,0,Math.PI*2);
-  ctx.fillStyle=grad;ctx.fill();
+  var t=C.target,arm=C.CROSS_ARM,thick=3.5;
+  var tipsCaptured=enclosed||C.transitioning;
+  var crossColor=tipsCaptured?'#00ffaa':'#ff4466';
+  var glowColor=tipsCaptured?'rgba(0,255,170,0.55)':'rgba(255,68,102,0.5)';
 
-  // cross arms — bright and sharp
-  var crossColor=tipsCaptured?'#3ecf8e':'#ff4444';
-  var glowColor=tipsCaptured?'rgba(62,207,142,0.7)':'rgba(255,68,68,0.6)';
-
-  // outer glow stroke
   ctx.lineCap='round';
+  ctx.shadowColor=glowColor;ctx.shadowBlur=12;
   ctx.lineWidth=thick+4;ctx.strokeStyle=glowColor;
   ctx.beginPath();ctx.moveTo(t.x,t.y-arm);ctx.lineTo(t.x,t.y+arm);ctx.stroke();
   ctx.beginPath();ctx.moveTo(t.x-arm,t.y);ctx.lineTo(t.x+arm,t.y);ctx.stroke();
-  // bright centre stroke
+  ctx.shadowBlur=0;
   ctx.lineWidth=thick;ctx.strokeStyle=crossColor;
   ctx.beginPath();ctx.moveTo(t.x,t.y-arm);ctx.lineTo(t.x,t.y+arm);ctx.stroke();
   ctx.beginPath();ctx.moveTo(t.x-arm,t.y);ctx.lineTo(t.x+arm,t.y);ctx.stroke();
 
-  // 4 tip dots — these are the points that must be enclosed
   [[t.x,t.y-arm],[t.x,t.y+arm],[t.x-arm,t.y],[t.x+arm,t.y]].forEach(function(tp){
     var tipIn=pointInPoly({x:tp[0],y:tp[1]},selPts);
-    ctx.beginPath();ctx.arc(tp[0],tp[1],3.5,0,Math.PI*2);
-    ctx.fillStyle=tipIn?'#3ecf8e':'#ff4444';ctx.fill();
-    ctx.lineWidth=1.5;ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.stroke();
+    ctx.beginPath();ctx.arc(tp[0],tp[1],4,0,Math.PI*2);
+    ctx.fillStyle=tipIn?'#00ffaa':'#ff4466';
+    ctx.shadowColor=tipIn?'rgba(0,255,170,0.6)':'rgba(255,68,102,0.6)';
+    ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
+    ctx.lineWidth=1.5;ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.stroke();
   });
-
-  // centre dot
-  ctx.beginPath();ctx.arc(t.x,t.y,3,0,Math.PI*2);
-  ctx.fillStyle='#fff';ctx.fill();
-
+  ctx.beginPath();ctx.arc(t.x,t.y,3.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fill();
   ctx.lineCap='butt';
 
-  // ── GRID DOTS ──
   C.gridDots.forEach(function(dot,i){
-    var isSel=C.selected.includes(i);
-    var order=C.selected.indexOf(i);
-    var r=C.DOT_R;
+    var isSel=C.selected.includes(i),order=C.selected.indexOf(i),r=C.DOT_R;
     if(isSel){
-      ctx.beginPath();ctx.arc(dot.x,dot.y,r+8,0,Math.PI*2);
-      ctx.fillStyle='rgba(124,92,246,0.18)';ctx.fill();
+      ctx.beginPath();ctx.arc(dot.x,dot.y,r+9,0,Math.PI*2);
+      ctx.fillStyle='rgba(180,77,255,0.14)';ctx.fill();
+      ctx.shadowColor='rgba(180,77,255,0.4)';ctx.shadowBlur=8;
     }
     ctx.beginPath();ctx.arc(dot.x,dot.y,r,0,Math.PI*2);
-    ctx.fillStyle=isSel?'#1e1a3a':'#1e2640';ctx.fill();
+    ctx.fillStyle=dotFill;ctx.fill();
     ctx.lineWidth=isSel?2.5:1.5;
-    ctx.strokeStyle=isSel?'rgba(124,92,246,0.95)':'rgba(90,120,180,0.48)';
-    ctx.stroke();
+    ctx.strokeStyle=isSel?'rgba(180,77,255,0.95)':dotStrokeU;ctx.stroke();
+    ctx.shadowBlur=0;
     if(isSel&&order>=0){
       ctx.font='bold 10px "Courier New",monospace';
-      ctx.fillStyle='rgba(190,170,255,1)';
+      ctx.fillStyle='rgba(230,210,255,1)';
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText(order+1,dot.x,dot.y);
     }
-    ctx.beginPath();ctx.arc(dot.x-r*0.22,dot.y-r*0.24,r*0.27,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fill();
   });
-
   ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.setLineDash([]);
+
+  updateParticles();
+  C.particles.forEach(function(p){
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    var col=p.color.replace(')',','+p.life.toFixed(2)+')').replace('rgb(','rgba(').replace('#','');
+    ctx.fillStyle='rgba(0,255,170,'+p.life.toFixed(2)+')';
+    if(p.color==='#ff4466')ctx.fillStyle='rgba(255,68,102,'+p.life.toFixed(2)+')';
+    ctx.fill();
+  });
+  if(C.particles.length>0&&C.gameRunning&&!C.transitioning){
+    requestAnimationFrame(function(){if(C.gameRunning)draw();});
+  }
 }
 
 function resetSelection(){
-  if(!C.gameRunning || C.transitioning) return;
-
-  C.selected = [];
-  C.isDragging = false;
-  C.dragPos = null;
-  C.lastDragPos = null;
-  C.dragAddedThisStroke = [];
-
-  setMsg('Selection cleared','msg-hint');
-
-  draw();
+  if(!C.gameRunning||C.transitioning)return;
+  C.selected=[];C.isDragging=false;C.dragPos=null;C.lastDragPos=null;C.dragAddedThisStroke=[];
+  setMsg('Selection cleared','msg-hint');draw();
 }
 
-// ── END ──
 function endGame(){
   clearInterval(C.mainTimer);cancelAnimationFrame(C.skipRafId);
-  C.gameRunning=false;
-  showScreen('screen-end');
+  C.gameRunning=false;showScreen('screen-end');
   document.getElementById('end-score-val').textContent=C.totalScore;
   var caps=C.roundLog.filter(function(r){return !r.skipped;}).length;
   var skips=C.roundLog.filter(function(r){return r.skipped;}).length;
@@ -817,10 +923,16 @@ function endGame(){
 
 function shareCapture(){
   var caps=C.roundLog.filter(function(r){return !r.skipped;});
-  var emojis=C.roundLog.map(function(r){return r.skipped?'🟥':r.dots<=3?'🟩':'🟨';}).join('');
-  var text='Polynk ⚡ Capture\n🏆 '+C.totalScore+' pts ('+C.timeLimit+'s)\n'+caps.length+' captures\n'+emojis;
+  var skips=C.roundLog.filter(function(r){return r.skipped;});
+  var greenCount=C.roundLog.filter(function(r){return !r.skipped&&r.dots<=3;}).length;
+  var yellowCount=C.roundLog.filter(function(r){return !r.skipped&&r.dots>3;}).length;
+  var resultLine='';
+  if(greenCount>0)resultLine+='🟩 x'+greenCount+' (triangle!)  ';
+  if(yellowCount>0)resultLine+='🟨 x'+yellowCount+' (captured)  ';
+  if(skips.length>0)resultLine+='🟥 x'+skips.length+' (failed)';
+  var text='Polynk ⚡ Capture\n🏆 '+C.totalScore+' pts\n'+caps.length+' captures · '+skips.length+' failed\n'+resultLine.trim();
   if(navigator.share)navigator.share({title:'Polynk',text:text}).catch(function(){});
-  else navigator.clipboard.writeText(text).then(function(){showToast('Copied!');}).catch(function(){showToast(text);});
+  else navigator.clipboard.writeText(text).then(function(){showToast('Copied to clipboard!');}).catch(function(){showToast(text);});
 }
 
 function confirmQuit(){
