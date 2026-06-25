@@ -652,18 +652,58 @@ function exitAwayMode() {
 // ── Away triggers ──────────────────────────────────────────────────────────────
 const viewport = document.getElementById('chatViewport');
 
-viewport.addEventListener('mouseleave', () => enterAwayMode());
-viewport.addEventListener('mouseenter', (e) => {
-  const rect = viewport.getBoundingClientRect();
-  localX = e.clientX - rect.left;
-  localY = e.clientY - rect.top;
-  exitAwayMode();
-  touchActivity();
+// viewport.addEventListener('mouseleave', () => enterAwayMode());
+// viewport.addEventListener('mouseenter', (e) => {
+//   const rect = viewport.getBoundingClientRect();
+//   localX = e.clientX - rect.left;
+//   localY = e.clientY - rect.top;
+//   exitAwayMode();
+//   touchActivity();
+// });
+
+let isWindowAway = false;
+
+function checkAwayState() {
+  if (document.hidden || isWindowAway) {
+    enterAwayMode();
+  } else {
+    exitAwayMode();
+  }
+}
+
+// tab switch (already correct)
+document.addEventListener('visibilitychange', checkAwayState);
+
+// window loses focus (alt-tab, click outside browser)
+window.addEventListener('blur', () => {
+  isWindowAway = true;
+  checkAwayState();
+});
+
+// window regains focus
+window.addEventListener('focus', () => {
+  isWindowAway = false;
+  checkAwayState();
 });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) enterAwayMode();
   else { exitAwayMode(); touchActivity(); }
+});
+
+document.addEventListener('mouseout', (e) => {
+  if (!e.relatedTarget && !e.toElement) {
+    // mouse left browser completely
+    isWindowAway = true;
+    checkAwayState();
+  }
+});
+
+document.addEventListener('mouseover', (e) => {
+  if (isWindowAway) {
+    isWindowAway = false;
+    checkAwayState();
+  }
 });
 
 // ── Cursor grid / color / size ─────────────────────────────────────────────────
