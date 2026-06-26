@@ -1,91 +1,636 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Game Hub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>~*~ Game Hub ~*~ Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Tahoma&display=swap" rel="stylesheet" />
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #000080;
+      --silver:  #c0c0c0;
+      --white:   #ffffff;
+      --ltgray:  #d4d0c8;
+      --dkgray:  #808080;
+      --btnface: #ece9d8;
+      --inset:   #7b7b6e;
+      --teal:    #008080;
+      --lime:    #00ff41;
+      --pink:    #ff69b4;
+      --winblu:  #0055e5;
+    }
+
     body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #fef9ef;
-      padding: 40px;
+      font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+      font-size: 11px;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
+    /* ── Starfield ── */
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .grid {
+    /* ── Desktop wrapper ── */
+    .desktop {
+      position: relative;
+      z-index: 1;
+      padding: 20px 16px 40px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── Marquee bar ── */
+    .marquee-bar {
+      background: var(--navy);
+      border: 2px solid;
+      border-color: #ffffff #808080 #808080 #ffffff;
+      padding: 4px 8px;
+      margin-bottom: 14px;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: var(--lime);
+      text-shadow: 0 0 8px var(--lime);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    /* ── Main window ── */
+    .window {
+      background: var(--btnface);
+      border: 2px solid;
+      border-color: #ffffff #808080 #808080 #ffffff;
+      box-shadow: 2px 2px 0 #000, inset 1px 1px 0 #dfdfdf;
+    }
+
+    .title-bar {
+      background: linear-gradient(to right, #0831d9, #1f5cc8, #0831d9);
+      padding: 4px 6px;
       display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
     }
 
-    .card {
-      width: 180px;
-      padding: 20px;
-      border: 3px solid #1a1008;
-      border-radius: 10px;
-      background: white;
+    .title-bar-text {
+      font-family: 'Tahoma', sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      flex: 1;
+      letter-spacing: 0.03em;
+    }
+
+    .title-bar-icon {
+      font-size: 14px;
+    }
+
+    .win-btns {
+      display: flex;
+      gap: 2px;
+    }
+
+    .win-btn {
+      width: 16px;
+      height: 14px;
+      background: var(--btnface);
+      border: 1px solid;
+      border-color: #ffffff #808080 #808080 #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: bold;
       cursor: pointer;
+      color: #000;
+      font-family: 'Tahoma', sans-serif;
+    }
+
+    .window-body {
+      padding: 12px;
+    }
+
+    /* ── Profile badge ── */
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: var(--white);
+      border: 2px solid;
+      border-color: #808080 #ffffff #ffffff #808080;
+      margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border: 2px solid #000080;
+      background: linear-gradient(135deg, #0a3cff, #a020f0, #ff1493);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'VT323', monospace;
+      font-size: 26px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .profile-text h1 {
+      font-family: 'VT323', monospace;
+      font-size: 28px;
+      color: var(--navy);
+      line-height: 1;
+      letter-spacing: 0.04em;
+    }
+
+    .profile-text p {
+      font-size: 11px;
+      color: var(--dkgray);
+      margin-top: 2px;
+    }
+
+    .visitor-count {
+      margin-left: auto;
+      text-align: center;
+    }
+
+    .visitor-count .odometer {
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      background: #000;
+      color: var(--lime);
+      padding: 2px 8px;
+      border: 1px inset #555;
+      text-shadow: 0 0 6px var(--lime);
+      letter-spacing: 0.1em;
+      display: block;
+    }
+
+    .visitor-count .vc-label {
+      font-size: 9px;
+      color: var(--dkgray);
+      display: block;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 2px;
+      border: none;
+      border-top: 1px solid var(--inset);
+      border-bottom: 1px solid var(--white);
+      margin: 10px 0;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--navy);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--dkgray);
+    }
+
+    /* ── Game grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Game card ── */
+    .card {
+      display: block;
       text-decoration: none;
-      color: black;
-      box-shadow: 4px 4px 0 #1a1008;
-      transition: transform 0.1s ease;
+      color: #000;
+      background: var(--btnface);
+      border: 2px solid;
+      border-color: #ffffff #808080 #808080 #ffffff;
+      padding: 8px;
+      cursor: pointer;
+      transition: none;
+      position: relative;
     }
 
     .card:hover {
-      transform: scale(1.05);
+      border-color: #808080 #ffffff #ffffff #808080;
+      background: #e0e0d8;
     }
 
-    .emoji {
-      font-size: 40px;
+    .card:active {
+      border-color: #808080 #ffffff #ffffff #808080;
+    }
+
+    .card-inner {
+      border: 1px solid;
+      border-color: #808080 #ffffff #ffffff #808080;
+      padding: 8px;
+      background: var(--white);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-emoji {
+      font-size: 28px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--navy);
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 10px;
+      color: var(--dkgray);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .card-link {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #0000ee;
+      text-decoration: underline;
+    }
+
+    /* WIP */
+    .card.wip .card-inner {
+      background: #f0f0f0;
+    }
+
+    .wip-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 8px;
+      font-weight: bold;
+      background: #ffff00;
+      color: #000;
+      border: 1px solid #000;
+      padding: 1px 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Under construction bar ── */
+    .construction {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: #ffff00;
+      border: 2px solid;
+      border-color: #ffffff #808080 #808080 #ffffff;
+      margin-top: 10px;
+    }
+
+    .construction-stripes {
+      width: 32px;
+      height: 18px;
+      background: repeating-linear-gradient(
+        45deg,
+        #000 0px, #000 4px,
+        #ffff00 4px, #ffff00 8px
+      );
+      flex-shrink: 0;
+      border: 1px solid #000;
+    }
+
+    .construction p {
+      font-size: 10px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    /* ── Taskbar ── */
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background: var(--btnface);
+      border-top: 2px solid #ffffff;
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      gap: 4px;
+      z-index: 100;
+    }
+
+    .start-btn {
+      background: linear-gradient(to bottom, #3c8f3c, #277f27);
+      border: 2px solid;
+      border-color: #8fd68f #1a5c1a #1a5c1a #8fd68f;
+      color: white;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+    }
+
+    .taskbar-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--dkgray);
+      margin: 0 2px;
+    }
+
+    .taskbar-clock {
+      margin-left: auto;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 11px;
+      padding: 2px 8px;
+      border: 1px solid;
+      border-color: #808080 #ffffff #ffffff #808080;
+      background: var(--btnface);
+      color: #000;
+    }
+
+    .taskbar-task {
+      background: var(--btnface);
+      border: 2px solid;
+      border-color: #808080 #ffffff #ffffff #808080;
+      padding: 2px 10px;
+      font-size: 11px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      color: #000;
+      font-family: 'Tahoma', sans-serif;
+    }
+
+    /* ── Scrolling marquee text ── */
+    .marquee-inner {
+      display: inline-block;
+      animation: marquee 18s linear infinite;
+    }
+
+    @keyframes marquee {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ── Blinking cursor ── */
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Animated gif placeholder row ── */
+    .gif-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 10px;
+      font-size: 10px;
+      color: var(--dkgray);
+    }
+
+    .gif-box {
+      width: 88px;
+      height: 31px;
+      border: 1px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .gif-box.nb { background: #000; color: #fff; }
+    .gif-box.y2k { background: linear-gradient(90deg,#ff00cc,#3333ff); color: #fff; font-size: 11px; text-align: center; line-height: 1.2; padding: 2px; }
+
+    @media (max-width: 500px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .profile-text h1 { font-size: 22px; }
+      .gif-row { display: none; }
     }
   </style>
 </head>
-
 <body>
-  <h1>🎮 Game Hub</h1>
 
-  <div class="grid">
-    <a class="card" href="./prod-button/">
-      <div class="emoji">🟢</div>
-      Productivity Button
-    </a>
+<canvas id="stars"></canvas>
 
-    <a class="card" href="./comicrelay/">
-      <div class="emoji">💬</div>
-      Comic Game (works best on web!)
-    </a>
+<div class="desktop">
 
-    <a class="card" href="./dots/">
-      <div class="emoji">📐</div>
-      Dots Game
-    </a>
-
-    <a class="card" href="./boundary-capture/">
-      <div class="emoji">⏱️</div>
-      Dots Game - Boundary Capture Mode
-    </a>
-
-    <a class="card" href="./boxer/">
-      <div class="emoji">📦</div>
-      Boxer (WIP)
-    </a>
-
-    <a class="card" href="./tug-of-war/">
-      <div class="emoji">🪢</div>
-      Tug Of War (WIP)
-    </a>
-
-    <a class="card" href="./y2k-cursor/">
-      <div class="emoji">✨</div>
-      Y2K Cursor Chatroom (WIP)
-    </a>
-
-
+  <!-- Marquee -->
+  <div class="marquee-bar">
+    <span class="marquee-inner">
+      ★ WELCOME TO ERIN'S GAME HUB ★ &nbsp;&nbsp;&nbsp; ☆ YOU ARE VISITOR #000147 ☆ &nbsp;&nbsp;&nbsp; ~*~ THANKS FOR VISITING! ~*~ &nbsp;&nbsp;&nbsp;
+    </span>
   </div>
+
+  <!-- Main window -->
+  <div class="window">
+
+    <div class="title-bar">
+      <span class="title-bar-icon">🎮</span>
+      <span class="title-bar-text">Game Hub — My Portfolio</span>
+      <div class="win-btns">
+        <div class="win-btn">_</div>
+        <div class="win-btn">□</div>
+        <div class="win-btn" style="font-size:8px;">✕</div>
+      </div>
+    </div>
+
+    <div class="window-body">
+
+      <!-- Profile -->
+      <div class="profile-row">
+        <div class="avatar">GH</div>
+        <div class="profile-text">
+          <h1>★ GAME HUB ★<span class="blink">_</span></h1>
+          <p>browser games & experiments // built with curiosity</p>
+          <p style="color:#0000ee; font-size:10px; margin-top:3px;">portfolio.dev &nbsp;|&nbsp; last updated: 2026</p>
+        </div>
+      </div>
+
+      <!-- GIF row -->
+      <div class="gif-row">
+        <div class="gif-box nb">NOW<br>LOADING</div>
+        <div class="gif-box y2k">✨ Y2K<br>READY ✨</div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Live games -->
+      <div class="section-label">📂 PLAYABLE GAMES</div>
+
+      <div class="grid">
+
+        <a class="card" href="./prod-button/">
+          <div class="card-inner">
+            <div class="card-emoji">🟢</div>
+            <div class="card-title">Productivity Button</div>
+            <div class="card-sub">Need help being productive? Here's a button!</div>
+            <div class="card-link">▶ play now</div>
+          </div>
+        </a>
+
+        <a class="card" href="./comicrelay/">
+          <div class="card-inner">
+            <div class="card-emoji">💬</div>
+            <div class="card-title">Comic Relay (Best played on desktop!)</div>
+            <div class="card-sub">Panel-by-panel multiplayerstorytelling game.</div>
+            <div class="card-link">▶ play now</div>
+          </div>
+        </a>
+
+        <a class="card" href="./dots/">
+          <div class="card-inner">
+            <div class="card-emoji">📐</div>
+            <div class="card-title">Dots Game</div>
+            <div class="card-sub">Connect-the-dots strategy game. Think you're good at estimating areas of polygons? You might be surprised!</div>
+            <div class="card-link">▶ play now</div>
+          </div>
+        </a>
+
+        <a class="card" href="./boundary-capture/">
+          <div class="card-inner">
+            <div class="card-emoji">⏱️</div>
+            <div class="card-title">Boundary Capture</div>
+            <div class="card-sub">Dots Game but time-based. Capture the cross before time runs out!</div>
+            <div class="card-link">▶ play now</div>
+          </div>
+        </a>
+
+        
+        <a class="card" href="./y2k-cursor/">
+          <div class="card-inner">
+            <div class="card-emoji">✨</div>
+            <div class="card-title">Y2K Cursor Chatroom</div>
+            <div class="card-sub">Retro cursor-based chatroom. Y2K aesthetic fully intentional.</div>
+            <div class="card-link">▶ play now</div>
+          </div>
+        </a>
+
+      </div>
+
+      <hr class="divider" />
+
+      <!-- WIP -->
+      <div class="section-label">🔧 COMING SOON (WIP)</div>
+
+      <div class="grid">
+
+        <a class="card wip" href="./boxer/">
+          <span class="wip-badge">WIP</span>
+          <div class="card-inner">
+            <div class="card-emoji">📦</div>
+            <div class="card-title">Boxer</div>
+            <div class="card-sub">Box the character with rectangles. Still cooking…</div>
+            <div class="card-link" style="color:#808080;">⧗ in progress</div>
+          </div>
+        </a>
+
+        <a class="card wip" href="./tug-of-war/">
+          <span class="wip-badge">WIP</span>
+          <div class="card-inner">
+            <div class="card-emoji">🪢</div>
+            <div class="card-title">Tug of War</div>
+            <div class="card-sub">Real-time multiplayer pulling mechanics on your computer.</div>
+            <div class="card-link" style="color:#808080;">⧗ in progress</div>
+          </div>
+        </a>
+
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Taskbar -->
+<div class="taskbar">
+  <button class="start-btn">🪟 Start</button>
+  <div class="taskbar-divider"></div>
+  <div class="taskbar-task">🎮 Game Hub</div>
+  <div class="taskbar-clock" id="clock">12:00 AM</div>
+</div>
+
+<script>
+  /* Starfield */
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initStars() {
+    stars = Array.from({length: 120}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.008
+    }));
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.a = Math.max(0.1, Math.min(1, s.a + s.da));
+      if (s.a <= 0.1 || s.a >= 1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+
+  resize();
+  initStars();
+  drawStars();
+  window.addEventListener('resize', () => { resize(); initStars(); });
+
+  /* Clock */
+  function updateClock() {
+    const now = new Date();
+    let h = now.getHours(), m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('clock').textContent =
+      `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+  updateClock();
+  setInterval(updateClock, 10000);
+</script>
+
 </body>
 </html>

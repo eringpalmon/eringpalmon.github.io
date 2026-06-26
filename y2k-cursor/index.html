@@ -374,7 +374,7 @@ const DVD_COLORS = ['#FF69B4','#00FFFF','#ADFF2F','#FFD700','#FF6347','#E066FF',
 
 // ── Inactivity / expiry constants ───────────────────────────────────────────────
 const INACTIVITY_LIMIT_MS  = 60 * 60 * 1000;  // 1 hour  – room expires after this long with no activity
-const WARNING_BEFORE_MS    = 59  * 60 * 1000;  // 5 min   – show warning this long before expiry
+const WARNING_BEFORE_MS    = 5  * 60 * 1000;  // 5 min   – show warning this long before expiry
 const ACTIVITY_CHECK_MS    = 30 * 1000;        // 30 sec  – how often we poll the room's last-activity
 const ACTIVITY_WRITE_MS    = 60 * 1000;        // 60 sec  – how often we write our heartbeat (throttled)
 
@@ -563,14 +563,13 @@ function getCozyCursorSVG(shapeId, color, size, dvdColor) {
   const shape = CURSOR_SHAPES.find(c=>c.id===shapeId)||CURSOR_SHAPES[0];
   const innerSVG = shape.svg(col, s);
   return `<svg width="${total}" height="${total + 18}" viewBox="0 0 ${total} ${total + 18}" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="${total/2}" cy="2" r="3" fill="white" opacity="0.9"/>
-    <line x1="${total/2-7}" y1="${s*0.2}" x2="${total/2+7}" y2="${s*0.2}" stroke="white" stroke-width="1.5" opacity="0.5"/>
     <g transform="translate(${(total-s)/2}, ${s*0.3})">${innerSVG}</g>
-    <rect x="2" y="${s*0.3 + s*0.55}" width="${total-4}" height="${s*0.55 + 10}" rx="6" fill="${col}" opacity="0.85"/>
-    <rect x="2" y="${s*0.3 + s*0.5}" width="${total-4}" height="10" rx="4" fill="white" opacity="0.5"/>
-    <text x="${total/2}" y="${s*0.3 + s*0.8 + 4}" text-anchor="middle" font-size="9" opacity="0.7" fill="white">✦ ✦</text>
+    <rect x="10" y="${s*0.4 + s*0.55}" width="${total-20}" height="${s*0.55 + 10}" rx="6" fill="${col}" opacity="0.85"/>
+    <rect x="10" y="${s*0.4 + s*0.5}" width="${total-20}" height="10" rx="4" fill="white" opacity="0.5"/>
+    <text x="${total/2}" y="${s*0.3 + s*0.8 + 15}" text-anchor="middle" font-size="9" opacity="0.7" fill="white">☾ ⏾⋆˚.</text>
     <text x="${total - 6}" y="${s*0.3 - 2}" font-size="8" fill="#DDA0DD" opacity="0.9" font-family="monospace">z</text>
-    <polygon points="${total/2},2 ${total/2-10},${s*0.6} ${total/2+10},${s*0.6}" fill="${col}" opacity="0.9"/>
+    <polygon points="${total/2},2 ${total/2-8},${s*0.6} ${total/2+8},${s*0.6}" fill="${col}" opacity="0.9"/>
+    <circle cx="${total/2}" cy="2" r="3" fill="white" opacity="0.9"/>
   </svg>`;
 }
 
